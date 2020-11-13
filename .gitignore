@@ -2,6 +2,10 @@
 idea/
 .idea/
 
+# Do not commit Django-Database Migrations
+user/migrations/
+.user/migrations/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
