@@ -1,33 +1,33 @@
 from django.db import models
-from user.models import User
+from user.models import Authentication
 from django.utils import timezone
 
 
-class JobOffer:
+class JobOffer(models.Model):
     owner = models.ForeignKey(
-        User,
+        Authentication,
         on_delete=models.CASCADE,
     )
     hashtags = models.TextField()
-    jobCats = models.TextField()
+    job_cats = models.TextField()
     filled = models.TextField()
-    isDeleted = models.TextField()
+    is_deleted = models.TextField()
 
     JOBTYPE_CHOICES = [
-        'Vollzeit',
-        'Teilzeit',
-        'Ausbildung',
-        'Praktikum',
-        'Volunteer'
+        ('Vollzeit', 'Vollzeit'),
+        ('Teilzeit', 'Teilzeit'),
+        ('Ausbildung', 'Ausbildung'),
+        ('Praktikum', 'Praktikum'),
+        ('Volunteer', 'Volunteer')
     ]
 
-    jobType = models.CharField(
+    job_type = models.CharField(
         max_length=100,
         choices=JOBTYPE_CHOICES,
         default='Vollzeit'
     )
 
-    jobTitle = models.CharField(
+    job_title = models.CharField(
         max_length=255,
         blank=False
     )
@@ -57,11 +57,11 @@ class JobOffer:
     last_modified = models.DateTimeField()
 
     def save(self, *args, **kwargs):
-        ''' On save, update timestamps '''
+        # On save, update timestamps
         if not self.id:
             self.created_at = timezone.now()
         self.last_modified = timezone.now()
-        return super(User, self).save(*args, **kwargs)
+        return super(Authentication, self).save(*args, **kwargs)
 
 
 # used to store Images for Joboffers
