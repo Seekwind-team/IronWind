@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 import graphene
 from graphql_jwt.decorators import login_required
 from graphene_django import DjangoObjectType
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 
 class UserType(DjangoObjectType):
@@ -18,15 +20,18 @@ class CreateUser(graphene.Mutation):
         password = graphene.String(required=True)
 
     def mutate(self, info, email, password):
-        user = get_user_model()(
-            email=email,
-            is_superuser=True,
-            is_staff=True,
-        )
-        user.set_password(password)
-        user.save()
+        try:
+            validate_email(email)
+        except ValidationError as e:
+            raise Exception("invalid email address, ",e)
+        else:
+            user = get_user_model().objects.create_user(
+                email=email,
+                password=password
+            )
+            user.save()
 
-        return CreateUser(user=user)
+            return CreateUser(user=user)
 
 
 class Mutation(graphene.ObjectType):
