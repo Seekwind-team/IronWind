@@ -54,14 +54,17 @@ class CreateUser(graphene.Mutation):
 class UpdatedProfile(graphene.Mutation):
     updated_profile = graphene.Field(UserDataType)
 
+    # accepted arguments from mutation
     class Arguments:
         first_name = graphene.String()
         last_name = graphene.String()
         phone_number = graphene.String()
         short_bio = graphene.String()
+        gender = graphene.String()
+        birth_date = graphene.Date()
 
-    @login_required
-    @user_passes_test(lambda user: not is_company(user))
+    @login_required  # requires login
+    @user_passes_test(lambda user: not is_company(user))  # only applicable for non-company accounts
     def mutate(self, info,
                first_name=None,
                last_name=None,
@@ -69,6 +72,8 @@ class UpdatedProfile(graphene.Mutation):
                short_bio=None,
                gender=None,
                birth_date=None):
+
+        # creates new Database entry, if none exists
         if not UserData.objects.filter(belongs_to=info.context.user):
             user_data = UserData(
                 belongs_to=info.context.user
@@ -100,9 +105,11 @@ class Query(graphene.AbstractType):
     users = graphene.List(UserType)
     users_by_id = graphene.Field(UserType, id=graphene.Int())
 
+    @login_required
     def resolve_users(self, info):
         return get_user_model().objects.all()
 
+    @login_required
     def resolve_me(self, info):
         return info.context.user
 
