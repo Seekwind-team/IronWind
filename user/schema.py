@@ -1,15 +1,31 @@
 from django.contrib.auth import get_user_model
 
 import graphene
-from graphql_jwt.decorators import login_required
+from graphql_jwt.decorators import login_required, user_passes_test
 from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+
+from user.models import UserData, CompanyData
+
+# To Check whether a user is on a company accout or not
+def is_company(user):
+    return user.is_company is True
 
 
 class UserType(DjangoObjectType):
     class Meta:
         model = get_user_model()
+
+
+class UserDataType(DjangoObjectType):
+    class Meta:
+        model = UserData
+
+
+class CompanyDataType(DjangoObjectType):
+    class Meta:
+        model = CompanyData
 
 
 class CreateUser(graphene.Mutation):
@@ -18,24 +34,65 @@ class CreateUser(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
         password = graphene.String(required=True)
+        is_company = graphene.Boolean(required=True)
 
-    def mutate(self, info, email, password):
+    def mutate(self, info, email, password, is_company=False):
         try:
             validate_email(email)
         except ValidationError as e:
-            raise Exception("invalid email address, ",e)
+            raise Exception("invalid email address, ", e)
         else:
-            user = get_user_model().objects.create_user(
-                email=email,
-                password=password
-            )
+            user = get_user_model()(email=email.lower())
+            user.set_password(password)
+            user.is_company = is_company
             user.save()
 
             return CreateUser(user=user)
 
 
+class UpdatedProfile(graphene.Mutation):
+    updated_profile = graphene.Field(UserDataType)
+
+    class Arguments:
+        password = graphene.String()
+        first_name = graphene.String()
+        last_name = graphene.String()
+        phone_number = graphene.String()
+        short_bio = graphene.String()
+
+    @login_required
+    @user_passes_test(lambda user: not is_company(user))
+    def mutate(self, info,
+               first_name=None,
+               last_name=None,
+               phone_number=None,
+               short_bio=None,
+               gender=None,
+               birth_date=None):
+        if not UserData.objects.filter(belongs_to=info.context.user):
+            user_data = UserData(
+                belongs_to=info.context.user
+            )
+            user_data.save()
+
+        # Grabs the entry from the Database belonging to current User
+        data_object = UserData.objects.filter(belongs_to=info.context.user).get()
+
+        # overwrites all Not-None-Values
+        data_object.first_name = first_name or data_object.first_name
+        data_object.last_name = last_name or data_object.last_name
+        data_object.phone_number = phone_number or data_object.phone_number
+        data_object.short_bio = short_bio or data_object.short_bio
+        data_object.gender = gender or data_object.gender
+        data_object.birth_date = birth_date or data_object.birth_date
+        data_object.save()
+
+        return UpdatedProfile(updated_profile=data_object)
+
+
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
+    update_profile = UpdatedProfile.Field()
 
 
 class Query(graphene.AbstractType):

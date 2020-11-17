@@ -6,6 +6,8 @@ from django.utils import timezone
 
 from django.utils.translation import gettext_lazy as _
 
+from IronWind import settings
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password):
@@ -96,6 +98,7 @@ class UserData(models.Model):
 
 class CompanyData(models.Model):
     belongs_to = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
 
