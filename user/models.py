@@ -25,7 +25,8 @@ class UserManager(BaseUserManager):
             email,
             password=password,
         )
-        user.is_admin = True
+        user.is_superuser = True
+        user.is_staff = True
         user.save()
         return user
 
@@ -92,7 +93,6 @@ class UserData(models.Model):
     location = models.CharField(max_length=50, blank=True)
     birth_date = models.DateField(null=True, blank=True)
 
-
 class CompanyData(models.Model):
     belongs_to = models.ForeignKey(
         Authentication,
@@ -107,8 +107,4 @@ class CompanyData(models.Model):
     phone_number = models.CharField(_('phone number'), max_length=21, blank=True)
     company_picture = models.ImageField(upload_to='images/')
     meisterbrief = models.ImageField(upload_to='images/')
-
-
-
-
 
