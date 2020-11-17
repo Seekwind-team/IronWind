@@ -8,6 +8,7 @@ from django.core.validators import validate_email
 
 from user.models import UserData, CompanyData
 
+
 # To Check whether a user is on a company accout or not
 def is_company(user):
     return user.is_company is True
@@ -54,7 +55,6 @@ class UpdatedProfile(graphene.Mutation):
     updated_profile = graphene.Field(UserDataType)
 
     class Arguments:
-        password = graphene.String()
         first_name = graphene.String()
         last_name = graphene.String()
         phone_number = graphene.String()
