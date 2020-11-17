@@ -1,6 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.core.validators import EmailValidator
+from django.contrib.auth.models import (
+    AbstractBaseUser, BaseUserManager, PermissionsMixin)
+
+from django.utils import timezone
 
 from django.utils.translation import gettext_lazy as _
 
@@ -28,18 +30,16 @@ class UserManager(BaseUserManager):
         return user
 
 
+<<<<<<< Updated upstream
 class User(AbstractUser):
 
+=======
+class Authentication(AbstractBaseUser, PermissionsMixin):
+>>>>>>> Stashed changes
     # Overrides Base User Model
     email = models.EmailField(
         _('email address'),
-        unique=True,
-        validators=[EmailValidator()],
-    )
-    username = models.CharField(
-        _('username'),
-        max_length=255,
-        null=True
+        unique=True
     )
 
     USERNAME_FIELD = 'email'
@@ -47,17 +47,77 @@ class User(AbstractUser):
 
     objects = UserManager()
 
-    class Meta(AbstractUser.Meta):
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
+    class Meta(AbstractBaseUser.Meta):
+        abstract = False
+        verbose_name = _('Nutzer')
+        verbose_name_plural = _('Nutzer')
         swappable = 'AUTH_USER_MODEL'
 
+<<<<<<< Updated upstream
     # Custom Fields for potential in-app use
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=30, blank=True)
+=======
+    # custom User-Fields
+    is_company = models.BooleanField(
+        default=False
+    )
+
+    is_staff = models.BooleanField(
+        _('staff status'),
+        default=False,
+        help_text=_('Designates whether the user can log into this admin site.'),
+    )
+    is_active = models.BooleanField(
+        _('active'),
+        default=True,
+        help_text=_(
+            'Designates whether this user should be treated as active. '
+            'Unselect this instead of deleting accounts.'
+        ),
+    )
+    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+
+
+class UserData(models.Model):
+    belongs_to = models.ForeignKey(Authentication, on_delete=models.CASCADE)
+
+    first_name = models.CharField(_('first name'), max_length=150, blank=True)
+    last_name = models.CharField(_('last name'), max_length=150, blank=True)
+
+    phone_number = models.CharField(_('phone number'),max_length=21, blank=True)
+
+    short_bio = models.TextField(max_length=500, blank=True)
+
+    # TODO: Grades ?
+    # TODO: Graduation ?
+
+    profile_picture = models.ImageField(upload_to='images/')
+    # can't use boolean as we'll define gender as (m/w/d)
+    gender = models.TextField(max_length=20)
+
+    # TODO: Soft Skills?
+    # TODO: Geo-Locations?
+
+    location = models.CharField(max_length=50, blank=True)
+>>>>>>> Stashed changes
     birth_date = models.DateField(null=True, blank=True)
 
 
 
+<<<<<<< Updated upstream
+=======
+    company_name = models.TextField(max_length=255)
+    description = models.TextField(max_length=2000, blank=True)
+
+    # TODO: Geo-Location ?
+
+    phone_number = models.CharField(_('phone number'), max_length=21, blank=True)
+    company_picture = models.ImageField(upload_to='images/')
+    meisterbrief = models.ImageField(upload_to='images/')
+
+
+
+>>>>>>> Stashed changes
 
 
