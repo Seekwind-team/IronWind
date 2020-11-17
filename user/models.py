@@ -71,7 +71,7 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
 
 
 class UserData(models.Model):
-    belongs_to = models.ForeignKey(Authentication, on_delete=models.CASCADE)
+    belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True)
@@ -93,9 +93,9 @@ class UserData(models.Model):
     location = models.CharField(max_length=50, blank=True)
     birth_date = models.DateField(null=True, blank=True)
 
+
 class CompanyData(models.Model):
-    belongs_to = models.ForeignKey(
-        Authentication,
+    belongs_to = models.OneToOneField(
         on_delete=models.CASCADE
     )
 
