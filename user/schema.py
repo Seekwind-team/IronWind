@@ -1,6 +1,8 @@
+
 from django.contrib.auth import get_user_model
 
 import graphene
+import graphql_jwt
 from graphql_jwt.decorators import login_required, user_passes_test
 from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
@@ -29,6 +31,26 @@ class CompanyDataType(DjangoObjectType):
         model = CompanyData
 
 
+# deletes Logged in User, Requires password conformation
+class DeleteUser(graphene.Mutation):
+    # returns simple Boolean whether deletion was executed successfully
+    ok = graphene.Boolean()
+
+    class Arguments:
+        password = graphene.String(require=True)
+
+    @login_required
+    def mutate(self, root, info, password):
+        user = info.context.user
+        if user.check_password(raw_password=password):
+            user.delete()
+            return self(ok=True)
+        else:
+            raise Exception("wrong password provided")
+            return self(ok=False)
+
+
+# creates new User profile
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType)
 
@@ -51,6 +73,8 @@ class CreateUser(graphene.Mutation):
             return CreateUser(user=user)
 
 
+# Updates Profile with non-sensitive content (eg. password and email is left out on purpose as they demand password
+# verification and are therefore handled separately)
 class UpdatedProfile(graphene.Mutation):
     updated_profile = graphene.Field(UserDataType)
 
@@ -66,8 +90,8 @@ class UpdatedProfile(graphene.Mutation):
     @login_required  # requires login
     @user_passes_test(lambda user: not is_company(user))  # only applicable for non-company accounts
     def mutate(self, info,
-               first_name=None,
-               last_name=None,
+               first_name=None,  # setting default values to none
+               last_name=None,  # they will be replaced through input and won't overwrite actual userdata
                phone_number=None,
                short_bio=None,
                gender=None,
@@ -95,9 +119,48 @@ class UpdatedProfile(graphene.Mutation):
         return UpdatedProfile(updated_profile=data_object)
 
 
+# Used to Update Company Profiles
+class UpdatedCompany(graphene.Mutation):
+
+    updated_profile = graphene.Field(CompanyDataType)
+
+    class Arguments:
+        company_name = graphene.String()
+        description = graphene.String()
+        phone_number = graphene.String()
+        # company_picture = #TODO Picture??
+        # meisterbrief #TODO Picture??
+
+    @login_required  # requires login
+    @user_passes_test(lambda user: is_company(user))
+    def mutate(self, info,
+               comapny_name=None,
+               description=None,
+               phone_number=None):
+
+        # creates new Database entry, if none exists
+        if not CompanyData.objects.filter(belongs_to=info.context.user):
+            company_data = CompanyData(
+                belongs_to=info.context.user
+            )
+            company_data.save()
+
+        # Grabs the entry from the Database belonging to current User
+        data_object = CompanyData.objects.filter(belongs_to=info.context.user).get()
+        data_object.phone_number = phone_number or data_object.data_object
+        data_object.description = description or data_object.description
+        data_object.company_name = comapny_name or data_object.company_name
+        data_object.save()
+
+        return UpdatedCompany(updated_profile=data_object)
+
+
+# Create - Update - Delete for all User-Profiles
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     update_profile = UpdatedProfile.Field()
+    update_company = UpdatedCompany.Field()
+    delete_user = DeleteUser.Field()
 
 
 class Query(graphene.AbstractType):
