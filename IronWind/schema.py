@@ -9,7 +9,7 @@ class Query(user.schema.Query, graphene.ObjectType):
     ping = graphene.String(default_value="Pong")
     hallo = graphene.String(name=graphene.String(default_value="Fremder"))
 
-    def resolve_hallo(root, info, name):
+    def resolve_hallo(self, info, name):
         return f'Guten Morgen, {name}!'
 
 
