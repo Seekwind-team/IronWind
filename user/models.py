@@ -29,7 +29,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-class User(AbstractUser):
+class Authentication(AbstractUser):
 
     # Overrides Base User Model
     email = models.EmailField(
@@ -53,12 +53,19 @@ class User(AbstractUser):
         verbose_name_plural = _('users')
         swappable = 'AUTH_USER_MODEL'
 
-    # Custom Fields for potential in-app use
+
+class UserData(models.Model):
+    belongs_to = models.ForeignKey(Authentication, on_delete=models.CASCADE)
+
     bio = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=30, blank=True)
+    location = models.CharField(max_length=50, blank=True)
     birth_date = models.DateField(null=True, blank=True)
 
 
+class CompanyData(models.Model):
+    belongs_to = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE
+    )
 
-
-
+    description = models.TextField(max_length=500, blank=True)
