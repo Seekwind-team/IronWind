@@ -30,12 +30,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-<<<<<<< Updated upstream
-class User(AbstractUser):
-
-=======
 class Authentication(AbstractBaseUser, PermissionsMixin):
->>>>>>> Stashed changes
     # Overrides Base User Model
     email = models.EmailField(
         _('email address'),
@@ -53,11 +48,6 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = _('Nutzer')
         swappable = 'AUTH_USER_MODEL'
 
-<<<<<<< Updated upstream
-    # Custom Fields for potential in-app use
-    bio = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=30, blank=True)
-=======
     # custom User-Fields
     is_company = models.BooleanField(
         default=False
@@ -100,13 +90,15 @@ class UserData(models.Model):
     # TODO: Geo-Locations?
 
     location = models.CharField(max_length=50, blank=True)
->>>>>>> Stashed changes
     birth_date = models.DateField(null=True, blank=True)
 
 
+class CompanyData(models.Model):
+    belongs_to = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE
+    )
 
-<<<<<<< Updated upstream
-=======
     company_name = models.TextField(max_length=255)
     description = models.TextField(max_length=2000, blank=True)
 
@@ -118,6 +110,5 @@ class UserData(models.Model):
 
 
 
->>>>>>> Stashed changes
 
 
