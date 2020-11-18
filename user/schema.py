@@ -30,17 +30,20 @@ class CompanyDataType(DjangoObjectType):
     class Meta:
         model = CompanyData
 
-
+# Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
 
+    # returns boolean indicating success of the operation
     ok = graphene.Boolean()
 
     class Arguments:
+        # requires password authentification for the process
         password = graphene.String(required=True)
 
     @login_required
     def mutate(self, info, **kwargs):
         user = info.context.user
+        # checks whether provided password is correct
         if user.check_password(raw_password=kwargs["password"]):
             user.delete()
             return DeleteUser(ok=True)
