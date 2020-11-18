@@ -31,23 +31,22 @@ class CompanyDataType(DjangoObjectType):
         model = CompanyData
 
 
-# deletes Logged in User, Requires password conformation
 class DeleteUser(graphene.Mutation):
-    # returns simple Boolean whether deletion was executed successfully
+
     ok = graphene.Boolean()
 
     class Arguments:
-        password = graphene.String(require=True)
+        password = graphene.String(required=True)
 
     @login_required
-    def mutate(self, root, info, password):
+    def mutate(self, info, **kwargs):
         user = info.context.user
-        if user.check_password(raw_password=password):
+        if user.check_password(raw_password=kwargs["password"]):
             user.delete()
-            return self(ok=True)
+            return DeleteUser(ok=True)
         else:
             raise Exception("wrong password provided")
-            return self(ok=False)
+        return DeleteUser(ok=False)
 
 
 # creates new User profile
@@ -134,7 +133,7 @@ class UpdatedCompany(graphene.Mutation):
     @login_required  # requires login
     @user_passes_test(lambda user: is_company(user))
     def mutate(self, info,
-               comapny_name=None,
+               company_name=None,
                description=None,
                phone_number=None):
 
@@ -149,7 +148,7 @@ class UpdatedCompany(graphene.Mutation):
         data_object = CompanyData.objects.filter(belongs_to=info.context.user).get()
         data_object.phone_number = phone_number or data_object.data_object
         data_object.description = description or data_object.description
-        data_object.company_name = comapny_name or data_object.company_name
+        data_object.company_name = company_name or data_object.company_name
         data_object.save()
 
         return UpdatedCompany(updated_profile=data_object)
