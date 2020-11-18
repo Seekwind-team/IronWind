@@ -11,24 +11,28 @@ from django.core.validators import validate_email
 from user.models import UserData, CompanyData
 
 
-# To Check whether a user is on a company accout or not
+# To Check whether a user is on a company account or not
 def is_company(user):
     return user.is_company is True
 
 
+# Imports User Profile from Models
 class UserType(DjangoObjectType):
     class Meta:
         model = get_user_model()
 
 
+# Imports UserData from Models
 class UserDataType(DjangoObjectType):
     class Meta:
         model = UserData
 
 
+# Imports ComapnyData from Models
 class CompanyDataType(DjangoObjectType):
     class Meta:
         model = CompanyData
+
 
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
@@ -37,7 +41,7 @@ class DeleteUser(graphene.Mutation):
     ok = graphene.Boolean()
 
     class Arguments:
-        # requires password authentification for the process
+        # requires password authentication for the process
         password = graphene.String(required=True)
 
     @login_required
@@ -171,19 +175,36 @@ class Mutation(graphene.ObjectType):
     delete_user = DeleteUser.Field()
 
 
+# Read functions for all Profiles
 class Query(graphene.AbstractType):
     me = graphene.Field(UserType)
-    users = graphene.List(UserType)
-    users_by_id = graphene.Field(UserType, id=graphene.Int())
+    my_company = graphene.Field(CompanyDataType)
+    my_user = graphene.Field(UserDataType)
 
-    @login_required
-    def resolve_users(self, info):
-        return get_user_model().objects.all()
-
+    #returns auth data
     @login_required
     def resolve_me(self, info):
         return info.context.user
 
+    # return company profile (requires company boolean to be set 'true')
     @login_required
-    def resolve_users_by_id(self, info, id):
-        return get_user_model().objects.get(pk=id)
+    @user_passes_test(lambda user: is_company(user))
+    def resolve_my_company(self, info):
+        if not CompanyData.objects.filter(belongs_to=info.context.user):
+            user_data = CompanyData(
+                belongs_to=info.context.user
+            )
+            user_data.save()
+        return CompanyData.objects.filter(belongs_to=info.context.user).get()
+
+    # return company profile (requires company boolean to be set 'false')
+    @login_required
+    @user_passes_test(lambda user: not is_company(user))
+    def resolve_my_user(self, info):
+        if not UserData.objects.filter(belongs_to=info.context.user):
+            user_data = UserData(
+                belongs_to=info.context.user
+            )
+            user_data.save()
+        return UserData.objects.filter(belongs_to=info.context.user).get()
+
