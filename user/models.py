@@ -105,6 +105,9 @@ class CompanyData(models.Model):
     company_name = models.TextField(max_length=255)
     description = models.TextField(max_length=2000, blank=True)
 
+    first_name = models.CharField(max_length=40)
+    last_name = models.CharField(max_length=40)
+
     # TODO: Geo-Location ?
 
     phone_number = models.CharField(_('phone number'), max_length=21, blank=True)

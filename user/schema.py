@@ -130,6 +130,8 @@ class UpdatedCompany(graphene.Mutation):
         company_name = graphene.String()
         description = graphene.String()
         phone_number = graphene.String()
+        last_name = graphene.String()
+        first_name = graphene.String()
         # company_picture = #TODO Picture??
         # meisterbrief #TODO Picture??
 
@@ -138,7 +140,9 @@ class UpdatedCompany(graphene.Mutation):
     def mutate(self, info,
                company_name=None,
                description=None,
-               phone_number=None):
+               phone_number=None,
+               first_name=None,
+               last_name=None):
 
         # creates new Database entry, if none exists
         if not CompanyData.objects.filter(belongs_to=info.context.user):
@@ -152,6 +156,8 @@ class UpdatedCompany(graphene.Mutation):
         data_object.phone_number = phone_number or data_object.data_object
         data_object.description = description or data_object.description
         data_object.company_name = company_name or data_object.company_name
+        data_object.last_name = last_name or data_object.last_name
+        data_object.first_name = first_name or data_object.first_name
         data_object.save()
 
         return UpdatedCompany(updated_profile=data_object)
