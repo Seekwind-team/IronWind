@@ -170,7 +170,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": "defines is the account used is a company account or a user account",
+              "description": "defines whether the account used is a company account or a user account",
               "isDeprecated": false,
               "name": "isCompany",
               "type": {

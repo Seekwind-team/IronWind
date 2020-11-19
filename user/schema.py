@@ -132,9 +132,9 @@ class UpdatedCompany(graphene.Mutation):
     class Arguments:
         company_name = graphene.String(description="name of company")
         description = graphene.String(description="description of company, max. 5000 characters")
-        phone_number = graphene.String(description="phone number of ")
-        last_name = graphene.String(description="last name of whoever")
-        first_name = graphene.String(description="first name of whoever")
+        phone_number = graphene.String(description="phone number of the HR manager E.165-Format")
+        last_name = graphene.String(description="last name of HR manager")
+        first_name = graphene.String(description="first name of HR manager")
         # company_picture = #TODO Picture??
         # meisterbrief #TODO Picture??
 
