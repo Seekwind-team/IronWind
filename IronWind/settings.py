@@ -16,7 +16,7 @@ DEBUG = False
 
 AUTH_USER_MODEL = 'user.Authentication'
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['141.19.142.7']
 
 
 # Application definition
