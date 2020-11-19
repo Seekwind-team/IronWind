@@ -53,7 +53,8 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
 
     # custom User-Fields
     is_company = models.BooleanField(
-        default=False
+        default=False,
+        help_text=_('defines whether the account used is a company account or a user account'),
     )
 
     is_staff = models.BooleanField(
