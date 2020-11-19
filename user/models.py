@@ -6,6 +6,8 @@ from django.utils import timezone
 
 from django.utils.translation import gettext_lazy as _
 
+from IronWind import settings
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password):
@@ -96,11 +98,15 @@ class UserData(models.Model):
 
 class CompanyData(models.Model):
     belongs_to = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
 
     company_name = models.TextField(max_length=255)
     description = models.TextField(max_length=2000, blank=True)
+
+    first_name = models.CharField(max_length=40)
+    last_name = models.CharField(max_length=40)
 
     # TODO: Geo-Location ?
 
