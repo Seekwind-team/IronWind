@@ -44,11 +44,6 @@ class AI:
         # prepare all job data the same way it was prepared for training
 
 
-
-
-
-
-
 path = os.path.dirname(__file__)
 with open(path + "\\user.json") as user_file, open (path + "\\jobs.json") as jobs_file:
     ai = AI()

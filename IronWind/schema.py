@@ -2,6 +2,7 @@ import graphene
 import graphql_jwt
 import user.schema
 
+from django.contrib.auth import get_user_model
 
 # put here any Queries to inherit them
 class Query(user.schema.Query, graphene.ObjectType):
