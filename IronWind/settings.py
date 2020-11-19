@@ -1,8 +1,3 @@
-"""
-SETTINGS FOR USE IN IN-DEV ONLY!
-DO NOT USE THIS IN PRODUCTION!
-"""
-
 from pathlib import Path
 import os
 
@@ -21,7 +16,7 @@ DEBUG = False
 
 AUTH_USER_MODEL = 'user.Authentication'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -90,7 +85,7 @@ WSGI_APPLICATION = 'IronWind.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'django-backend',
+        'NAME': 'djangobackend',
         'USER': 'django',
         'PASSWORD': os.environ['DB_PASSWORD'],
         'HOST': 'localhost',
@@ -123,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'CET'
 
 USE_I18N = True
 
