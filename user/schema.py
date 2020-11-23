@@ -20,6 +20,7 @@ def is_company(user):
 class UserType(DjangoObjectType):
     class Meta:
         model = get_user_model()
+        exclude = ('password',)
 
 
 # Imports UserData from Models
@@ -219,33 +220,9 @@ class Mutation(graphene.ObjectType):
 # Read functions for all Profiles
 class Query(graphene.AbstractType):
     me = graphene.Field(UserType)
-    my_company = graphene.Field(CompanyDataType)
-    my_user = graphene.Field(UserDataType)
 
     #returns auth data
     @login_required
     def resolve_me(self, info):
         return info.context.user
-
-    # return company profile (requires company boolean to be set 'true')
-    @login_required
-    @user_passes_test(lambda user: is_company(user))
-    def resolve_my_company(self, info):
-        if not CompanyData.objects.filter(belongs_to=info.context.user):
-            user_data = CompanyData(
-                belongs_to=info.context.user
-            )
-            user_data.save()
-        return CompanyData.objects.filter(belongs_to=info.context.user).get()
-
-    # return company profile (requires company boolean to be set 'false')
-    @login_required
-    @user_passes_test(lambda user: not is_company(user))
-    def resolve_my_user(self, info):
-        if not UserData.objects.filter(belongs_to=info.context.user):
-            user_data = UserData(
-                belongs_to=info.context.user
-            )
-            user_data.save()
-        return UserData.objects.filter(belongs_to=info.context.user).get()
 

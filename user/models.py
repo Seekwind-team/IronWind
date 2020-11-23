@@ -78,7 +78,7 @@ class UserData(models.Model):
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True)
 
-    phone_number = models.CharField(_('phone number'),max_length=21, blank=True)
+    phone_number = models.CharField(_('phone number'), max_length=21, blank=True)
 
     short_bio = models.TextField(max_length=500, blank=True)
 
