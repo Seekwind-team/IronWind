@@ -8,10 +8,10 @@ class JobOffer(models.Model):
         Authentication,
         on_delete=models.CASCADE,
     )
-    hashtags = models.TextField()
-    job_cats = models.TextField()
-    filled = models.TextField()
-    is_deleted = models.TextField()
+    # hashtags = models.TextField()
+    # job_cats = models.TextField()
+    filled = models.BooleanField()
+    is_deleted = models.BooleanField()
 
     JOBTYPE_CHOICES = [
         ('Vollzeit', 'Vollzeit'),
@@ -48,13 +48,16 @@ class JobOffer(models.Model):
         max_length=1000,
     )
     public_email = models.EmailField(
-
+        null=False
     )
-    company_logo = models.ImageField()
+    company_logo = models.ImageField(upload_to='images/')
     created_at = models.DateTimeField(
-        editable=False
+        editable=False,
+        default=timezone.now
     )
-    last_modified = models.DateTimeField()
+    last_modified = models.DateTimeField(
+        default=timezone.now
+    )
 
     def save(self, *args, **kwargs):
         # On save, update timestamps
