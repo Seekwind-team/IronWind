@@ -43,8 +43,7 @@ class DeleteUser(graphene.Mutation):
 
     class Arguments:
         # requires password authentication for the process
-        password = graphene.String(required=True, description="Must provide valid password for user to delete own "
-                                                              "account")
+        password = graphene.String(required=True, description="Must provide valid password for user to delete own account")
 
     @login_required
     def mutate(self, info, **kwargs):
