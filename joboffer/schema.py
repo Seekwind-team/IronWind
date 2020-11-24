@@ -102,6 +102,7 @@ class DeleteJobOffer(graphene.mutation):
         else:
             raise Exception("User has no Job with id: ", kwargs['job_id'])
 
+
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field()
     alter_job_offer = AlterJobOffer.Field()
@@ -112,8 +113,10 @@ class Query(graphene.AbstractType):
     job_offers = graphene.List(JobOfferType)
     job_offer = graphene.Field(JobOfferType, job_id=graphene.Int())
 
+    @user_passes_test(lambda u: u.isCompany)
     def resolve_job_offers(self, info):
         return JobOffer.objects.filter(owner=info.context.user).get()
 
+    @login_required
     def resolve_job_offer(self, info, job_id):
         return JobOffer.objects.filter(pk=job_id).get()
