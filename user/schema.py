@@ -1,4 +1,3 @@
-
 from django.contrib.auth import get_user_model
 
 import graphene
@@ -36,7 +35,8 @@ def is_company(user):
 class UserType(DjangoObjectType):
     class Meta:
         model = get_user_model()
-        exclude = ('password',)
+        description = 'Returns auth data data'
+        exclude_fields = ('password', 'is_superuser')
 
 
 # Imports UserData from Models
@@ -53,7 +53,6 @@ class CompanyDataType(DjangoObjectType):
 
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
-
     # returns boolean indicating success of the operation
     ok = graphene.Boolean()
 
@@ -78,9 +77,10 @@ class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType)
 
     class Arguments:
-        email = graphene.String(required=True)
-        password = graphene.String(required=True)
-        is_company = graphene.Boolean(required=True)
+        email = graphene.String(required=True, description="EMail Used to authenticate user, must be unique")
+        password = graphene.String(required=True, description="Password on account creation")
+        is_company = graphene.Boolean(required=True, description="Set to True, if account created is for a company, "
+                                                                 "set to false otherwise")
 
     def mutate(self, info, email, password, is_company=False):
         try:
@@ -103,13 +103,13 @@ class UpdatedProfile(graphene.Mutation):
 
     # accepted arguments from mutation
     class Arguments:
-        first_name = graphene.String()
-        last_name = graphene.String()
-        phone_number = graphene.String()
-        short_bio = graphene.String()
-        gender = graphene.String()
-        birth_date = graphene.Date()
-        profile_picture = Upload()
+        first_name = graphene.String(description="first name")
+        last_name = graphene.String(description="last name")
+        phone_number = graphene.String(description="phone number of user, uses E.165-Format")
+        short_bio = graphene.String(description="short bio (self description) of user, 5000 characters maximum")
+        gender = graphene.String(description="gender of user")
+        birth_date = graphene.Date(description="birthdate of user, uses iso8601-Format (eg. 2006-01-02)")
+  #     profile_picture = Upload(description="Uploaded File") #
 
     @login_required  # requires login
     @user_passes_test(lambda user: not is_company(user))  # only applicable for non-company accounts
@@ -120,7 +120,6 @@ class UpdatedProfile(graphene.Mutation):
                short_bio=None,
                gender=None,
                birth_date=None):
-
         # creates new Database entry, if none exists
         if not UserData.objects.filter(belongs_to=info.context.user):
             user_data = UserData(
@@ -183,15 +182,14 @@ class ChangeEmail(graphene.Mutation):
 
 # Used to Update Company Profiles
 class UpdatedCompany(graphene.Mutation):
-
     updated_profile = graphene.Field(CompanyDataType)
 
     class Arguments:
-        company_name = graphene.String()
-        description = graphene.String()
-        phone_number = graphene.String()
-        last_name = graphene.String()
-        first_name = graphene.String()
+        company_name = graphene.String(description="name of company")
+        description = graphene.String(description="description of company, max. 5000 characters")
+        phone_number = graphene.String(description="phone number of the HR manager E.165-Format")
+        last_name = graphene.String(description="last name of HR manager")
+        first_name = graphene.String(description="first name of HR manager")
         # company_picture = #TODO Picture??
         # meisterbrief #TODO Picture??
 
@@ -203,7 +201,6 @@ class UpdatedCompany(graphene.Mutation):
                phone_number=None,
                first_name=None,
                last_name=None):
-
         # creates new Database entry, if none exists
         if not CompanyData.objects.filter(belongs_to=info.context.user):
             company_data = CompanyData(
@@ -225,7 +222,7 @@ class UpdatedCompany(graphene.Mutation):
 
 class UploadUserPicture(graphene.Mutation):
     class Arguments:
-        file_in = Upload(required=True)
+        file_in = Upload(required=True, description="Uploaded File")
 
     ok = graphene.Boolean()
 
@@ -253,7 +250,7 @@ class UploadUserPicture(graphene.Mutation):
 
 class UploadMeisterbrief(graphene.Mutation):
     class Arguments:
-        file_in = Upload(required=True)
+        file_in = Upload(required=True, description="Uploaded File")
 
     ok = graphene.Boolean()
 
@@ -289,8 +286,38 @@ class Mutation(graphene.ObjectType):
 class Query(graphene.AbstractType):
     me = graphene.Field(UserType)
 
-    #returns auth data
-    @login_required
+    # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
+    # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
+
+    # returns auth data
+    @login_required # would return an error on 'Anonymous user', so restricting this to authenticated users
     def resolve_me(self, info):
         return info.context.user
 
+'''
+    # those functions below aren't actually used because I figured they are are unnecessary as all information they
+    # provide can already be acquired though other means using the 'me'-Query, yet I am leaving this code in there for
+    # now as they provide a reference on how things could be implemented
+
+    # return company profile (requires company boolean to be set 'true')
+    @login_required
+    @user_passes_test(lambda user: is_company(user))
+    def resolve_my_company(self, info):
+        if not CompanyData.objects.filter(belongs_to=info.context.user):
+            user_data = CompanyData(
+                belongs_to=info.context.user
+            )
+            user_data.save()
+        return CompanyData.objects.filter(belongs_to=info.context.user).get()
+
+    # return company profile (requires company boolean to be set 'false')
+    @login_required
+    @user_passes_test(lambda user: not is_company(user))
+    def resolve_my_user(self, info):
+        if not UserData.objects.filter(belongs_to=info.context.user):
+            user_data = UserData(
+                belongs_to=info.context.user
+            )
+            user_data.save()
+        return UserData.objects.filter(belongs_to=info.context.user).get()
+'''
