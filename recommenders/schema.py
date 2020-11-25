@@ -1,8 +1,12 @@
 #Recommender interface
 import graphene
 import user.schema
+from joboffer.models import JobOffer
+from joboffer.schema import JobOfferType
 
 class Query(graphene.ObjectType):
-    def resolve_get_recommentations(self, user, jobs):
-        #call function with user and jobs
-        user = user
+    my_recommendations = graphene.List(JobOfferType)
+
+    def resolve_my_recommendations(self, info):
+        # temp return value for frontend testing
+        return JobOffer.objects.all()
