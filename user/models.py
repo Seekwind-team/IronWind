@@ -124,7 +124,7 @@ class CompanyData(models.Model):
 
     phone_number = models.CharField(_('phone number'), max_length=21, null=True, help_text=_('Phone number of the '
                                                                                               'company, '
-                                                                                              'uses E.165-Format')))
+                                                                                              'uses E.165-Format'))
     company_picture = models.ImageField(upload_to='images/', null=True, help_text=_('eg. Picture of the company Logo'))
     meisterbrief = models.ImageField(upload_to='images/', null=True, help_text=_('Picture to validate the company as legally '
                                                                       'permitted '
