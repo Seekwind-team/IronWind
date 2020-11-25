@@ -23,4 +23,4 @@ class Mutation(joboffer.schema.Mutation, user.schema.Mutation, graphene.ObjectTy
     delete_token = graphql_jwt.DeleteJSONWebTokenCookie()
 
 
-schema = graphene.Schema(query=Query, mutation=Mutation)
+schema = graphene.Schema(query=Query, mutation=Mutation, types=[])

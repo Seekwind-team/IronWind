@@ -82,14 +82,15 @@ class AlterJobOffer(graphene.Mutation):
             raise Exception('User does not own this JobOffer, aborting')
         return AlterJobOffer(job_object=job_object, ok=True)
 
-class DeleteJobOffer(graphene.mutation):
+
+class DeleteJobOffer(graphene.Mutation):
 
     ok = graphene.Boolean()
 
     class Arguments:
         # frontendseitige bestätigung reicht?
         #assured = graphene.Boolean(required = True, description = "Must provide assurance to delete Joboffer")
-        job_id = graphene.Integer(required = True)
+        job_id = graphene.Int(required=True)
 
     @login_required
     def mutate(self, info, **kwargs):

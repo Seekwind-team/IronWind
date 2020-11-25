@@ -2,13 +2,29 @@
 from django.contrib.auth import get_user_model
 
 import graphene
-import graphql_jwt
 from graphql_jwt.decorators import login_required, user_passes_test
 from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
 from user.models import UserData, CompanyData
+
+
+class Upload(graphene.types.Scalar):
+    """Create scalar that ignores normal serialization/deserialization, since
+    that will be handled by the multipart request spec"""
+
+    @staticmethod
+    def serialize(value):
+        return value
+
+    @staticmethod
+    def parse_literal(node):
+        return node
+
+    @staticmethod
+    def parse_value(value):
+        return value
 
 
 # To Check whether a user is on a company account or not
@@ -29,7 +45,7 @@ class UserDataType(DjangoObjectType):
         model = UserData
 
 
-# Imports ComapnyData from Models
+# Imports CompanyData from Models
 class CompanyDataType(DjangoObjectType):
     class Meta:
         model = CompanyData
@@ -93,10 +109,11 @@ class UpdatedProfile(graphene.Mutation):
         short_bio = graphene.String()
         gender = graphene.String()
         birth_date = graphene.Date()
+        profile_picture = Upload()
 
     @login_required  # requires login
     @user_passes_test(lambda user: not is_company(user))  # only applicable for non-company accounts
-    def mutate(self, info,
+    def mutate(self, info, file,
                first_name=None,  # setting default values to none
                last_name=None,  # they will be replaced through input and won't overwrite actual userdata
                phone_number=None,
@@ -196,7 +213,7 @@ class UpdatedCompany(graphene.Mutation):
 
         # Grabs the entry from the Database belonging to current User
         data_object = CompanyData.objects.filter(belongs_to=info.context.user).get()
-        data_object.phone_number = phone_number or data_object.data_object
+        data_object.phone_number = phone_number or data_object.phone_number
         data_object.description = description or data_object.description
         data_object.company_name = company_name or data_object.company_name
         data_object.last_name = last_name or data_object.last_name
@@ -204,6 +221,57 @@ class UpdatedCompany(graphene.Mutation):
         data_object.save()
 
         return UpdatedCompany(updated_profile=data_object)
+
+
+class UploadUserPicture(graphene.Mutation):
+    class Arguments:
+        file_in = Upload(required=True)
+
+    ok = graphene.Boolean()
+
+    @login_required
+    def mutate(self, info, file_in, **kwargs):
+        # do something with your file
+        c_user = info.context.user
+
+        if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png"]:
+            raise Exception("Provided invalid file format")
+
+        if c_user.is_company:
+            data = CompanyData.objects.filter(belongs_to=c_user).get()
+            data.company_picture.storage.delete(data.company_picture.name)
+            data.company_picture = file_in
+            data.save()
+        else:
+            data = UserData.objects.filter(belongs_to=c_user).get
+            data.profile_picture.storage.delete(data.profile_picture.name)
+            data.profile_picture = file_in
+            data.save()
+
+        return UploadUserPicture(ok=True)
+
+
+class UploadMeisterbrief(graphene.Mutation):
+    class Arguments:
+        file_in = Upload(required=True)
+
+    ok = graphene.Boolean()
+
+    @user_passes_test(lambda u: u.is_company and u.is_authenticated)
+    def mutate(self, info, file_in, **kwargs):
+        # do something with your file
+        c_user = info.context.user
+        print(file_in.content_type)
+
+        if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png", "application/pdf"]:
+            raise Exception("Provided invalid file format")
+
+        data = CompanyData.objects.filter(belongs_to=c_user).get
+        data.meisterbrief.storage.delete(data.meisterbrief.name)
+        data.meisterbrief = file_in
+        data.save()
+
+        return UploadMeisterbrief(ok=True)
 
 
 # Create - Update - Delete for all User-Profiles
@@ -214,6 +282,7 @@ class Mutation(graphene.ObjectType):
     delete_user = DeleteUser.Field()
     change_password = ChangePassword.Field()
     change_email = ChangeEmail.Field()
+    upload_file = UploadUserPicture.Field()
 
 
 # Read functions for all Profiles

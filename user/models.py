@@ -75,25 +75,33 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
 class UserData(models.Model):
     belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
-    first_name = models.CharField(_('first name'), max_length=150, blank=True)
-    last_name = models.CharField(_('last name'), max_length=150, blank=True)
+    first_name = models.CharField(_('first name'), max_length=150, null=True)
+    last_name = models.CharField(_('last name'), max_length=150, null=True)
 
-    phone_number = models.CharField(_('phone number'), max_length=21, blank=True)
+    phone_number = models.CharField(_('phone number'), max_length=21, null=True)
 
-    short_bio = models.TextField(max_length=500, blank=True)
+    short_bio = models.TextField(max_length=500, null=True)
 
     # TODO: Grades ?
     # TODO: Graduation ?
 
-    profile_picture = models.ImageField(upload_to='images/', blank=True)
+    profile_picture = models.ImageField(upload_to='images/', null=True)
+
+    def get_profile_picture(self):
+        return self.profile_picture.url
+
     # can't use boolean as we'll define gender as (m/w/d)
-    gender = models.CharField(max_length=20, blank=True)
+    gender = models.CharField(max_length=20, null=True)
 
     # TODO: Soft Skills?
     # TODO: Geo-Locations?
 
-    location = models.CharField(max_length=50, blank=True)
-    birth_date = models.DateField(null=True, blank=True)
+    location = models.CharField(max_length=50, null=True)
+    birth_date = models.DateField(null=True)
+
+    def delete(self, using=None, keep_parents=False):
+        self.profile_picture.storage.delete(self.song.name)
+        super().delete()
 
 
 class CompanyData(models.Model):
@@ -102,15 +110,36 @@ class CompanyData(models.Model):
         on_delete=models.CASCADE
     )
 
-    company_name = models.TextField(max_length=255)
-    description = models.TextField(max_length=2000, blank=True)
+    company_name = models.TextField(max_length=255, null=True)
+    description = models.TextField(max_length=2000, null=True)
 
-    first_name = models.CharField(max_length=40)
-    last_name = models.CharField(max_length=40)
+    first_name = models.CharField(max_length=40, null=True)
+    last_name = models.CharField(max_length=40, null=True)
 
     # TODO: Geo-Location ?
 
-    phone_number = models.CharField(_('phone number'), max_length=21, blank=True)
-    company_picture = models.ImageField(upload_to='images/')
-    meisterbrief = models.ImageField(upload_to='images/')
+    phone_number = models.CharField(_('phone number'), max_length=21, null=True)
+    company_picture = models.ImageField(upload_to='images/', null=True)
+    meisterbrief = models.ImageField(upload_to='images/', null=True)
 
+    def get_company_picture(self):
+        return self.company_picture.url
+
+    def delete(self, using=None, keep_parents=False):
+        self.company_picture.storage.delete(self.song.name)
+        self.meisterbrief.storage.delete(self.song.name)
+        super().delete()
+
+
+'''
+# class Image(models.Model):
+    """ProfileImage"""
+    user = models.ForeignKey(Authentication, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="profileimages")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        """Return profile image"""
+        return self.image.url
+'''
