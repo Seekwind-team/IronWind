@@ -29,11 +29,11 @@ class CreateJobOffer(graphene.Mutation):
         description = graphene.String()
         highlights = graphene.String()
         must_have = graphene.String()
-        public_email = graphene.String()
+        public_email = graphene.String(required=True)
 
     @login_required
     @user_passes_test(lambda user: user.is_company)  # only applicable for company accounts
-    def mutate(self, info = None,
+    def mutate(self, info,
                 job_type = None,
                 job_title = None, 
                 location = None, 
@@ -43,7 +43,6 @@ class CreateJobOffer(graphene.Mutation):
                 public_email = None):
         job_offer = JobOffer(owner=info.context.user)
         job_offer.created_at = timezone.now()
-
         job_offer.job_type = job_type
         job_offer.job_title = job_title
         job_offer.public_email = public_email
@@ -87,7 +86,6 @@ class AlterJobOffer(graphene.Mutation):
             raise Exception('User does not own this JobOffer, aborting')
         return AlterJobOffer(job_object=job_object, ok=True)
 
-
 class DeleteJobOffer(graphene.Mutation):
 
     ok = graphene.Boolean()
@@ -105,9 +103,10 @@ class DeleteJobOffer(graphene.Mutation):
         
         if job_offer in user_job_offers:
             job_offer.delete()
+            return DeleteJobOffer(ok=True)
         else:
             raise Exception("User has no Job with id: ", kwargs['job_id'])
-
+        return DeleteJobOffer(ok=False)
 
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field()
@@ -119,7 +118,7 @@ class Query(graphene.AbstractType):
     job_offers = graphene.List(JobOfferType)
     job_offer = graphene.Field(JobOfferType, job_id=graphene.Int())
 
-    @user_passes_test(lambda u: u.isCompany)
+    @user_passes_test(lambda user: user.is_company)
     def resolve_job_offers(self, info):
         return JobOffer.objects.filter(owner=info.context.user).get()
 
