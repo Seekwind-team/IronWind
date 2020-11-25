@@ -34,12 +34,12 @@ class AI:
 
 
     def prepare_user_data(self, user_data):
-        empty
+        pass
         # ^^ placeholder because python doesnt allow empty functions
         # prepare all user data the same way it was prepared for training
 
     def prepare_job_data(self, job_data):
-        empty
+        pass
         # ^^ placeholder because python doesnt allow empty functions
         # prepare all job data the same way it was prepared for training
 
