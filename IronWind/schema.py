@@ -1,10 +1,14 @@
 import graphene
 import graphql_jwt
-import user.schema
 
+import joboffer.schema
+import user.schema
+import recommenders.schema
+
+from django.contrib.auth import get_user_model
 
 # put here any Queries to inherit them
-class Query(user.schema.Query, graphene.ObjectType):
+class Query(recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
     # Demo- Shit
     ping = graphene.String(default_value="Pong")
     hallo = graphene.String(name=graphene.String(default_value="Fremder"))
@@ -14,7 +18,7 @@ class Query(user.schema.Query, graphene.ObjectType):
 
 
 # put here any Mutations to inherit them
-class Mutation(user.schema.Mutation, graphene.ObjectType):
+class Mutation(joboffer.schema.Mutation, user.schema.Mutation, graphene.ObjectType):
     token_auth = graphql_jwt.ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()

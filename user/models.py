@@ -78,16 +78,16 @@ class UserData(models.Model):
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True)
 
-    phone_number = models.CharField(_('phone number'),max_length=21, blank=True)
+    phone_number = models.CharField(_('phone number'), max_length=21, blank=True)
 
     short_bio = models.TextField(max_length=500, blank=True)
 
     # TODO: Grades ?
     # TODO: Graduation ?
 
-    profile_picture = models.ImageField(upload_to='images/')
+    profile_picture = models.ImageField(upload_to='images/', blank=True)
     # can't use boolean as we'll define gender as (m/w/d)
-    gender = models.TextField(max_length=20)
+    gender = models.CharField(max_length=20, blank=True)
 
     # TODO: Soft Skills?
     # TODO: Geo-Locations?

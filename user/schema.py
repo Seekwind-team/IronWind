@@ -20,6 +20,7 @@ def is_company(user):
 class UserType(DjangoObjectType):
     class Meta:
         model = get_user_model()
+        exclude = ('password',)
 
 
 # Imports UserData from Models
@@ -42,7 +43,7 @@ class DeleteUser(graphene.Mutation):
 
     class Arguments:
         # requires password authentication for the process
-        password = graphene.String(required=True)
+        password = graphene.String(required=True, description="Must provide valid password for user to delete own account")
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -125,6 +126,44 @@ class UpdatedProfile(graphene.Mutation):
         return UpdatedProfile(updated_profile=data_object)
 
 
+class ChangePassword(graphene.Mutation):
+
+    ok = graphene.Boolean()
+
+    class Arguments:
+        old_password = graphene.String(description='Requires valid (old) password')
+        new_password = graphene.String(description='new password to be set')
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        if info.context.user.check_password(kwargs['old_password']):
+            info.context.user.set_password(kwargs['new_password'])
+            info.context.user.save()
+            return ChangePassword(ok=True)
+        raise Exception('wrong password submitted!')
+
+
+class ChangeEmail(graphene.Mutation):
+
+    ok = graphene.Boolean()
+
+    class Arguments:
+        password = graphene.String(description='Requires valid user-password')
+        new_email = graphene.String(description='new email, must be provided in valid format')
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        if info.context.user.check_password(kwargs['password']):
+            try:
+                validate_email(kwargs['new_email'])
+            except ValidationError as e:
+                raise Exception("must provide valid email address, ", e)
+            info.context.user.email = kwargs['new_email']
+            info.context.user.save()
+            return ChangeEmail(ok=True)
+        raise Exception('wrong password submitted!')
+
+
 # Used to Update Company Profiles
 class UpdatedCompany(graphene.Mutation):
 
@@ -173,38 +212,16 @@ class Mutation(graphene.ObjectType):
     update_profile = UpdatedProfile.Field()
     update_company = UpdatedCompany.Field()
     delete_user = DeleteUser.Field()
+    change_password = ChangePassword.Field()
+    change_email = ChangeEmail.Field()
 
 
 # Read functions for all Profiles
 class Query(graphene.AbstractType):
     me = graphene.Field(UserType)
-    my_company = graphene.Field(CompanyDataType)
-    my_user = graphene.Field(UserDataType)
 
     #returns auth data
     @login_required
     def resolve_me(self, info):
         return info.context.user
-
-    # return company profile (requires company boolean to be set 'true')
-    @login_required
-    @user_passes_test(lambda user: is_company(user))
-    def resolve_my_company(self, info):
-        if not CompanyData.objects.filter(belongs_to=info.context.user):
-            user_data = CompanyData(
-                belongs_to=info.context.user
-            )
-            user_data.save()
-        return CompanyData.objects.filter(belongs_to=info.context.user).get()
-
-    # return company profile (requires company boolean to be set 'false')
-    @login_required
-    @user_passes_test(lambda user: not is_company(user))
-    def resolve_my_user(self, info):
-        if not UserData.objects.filter(belongs_to=info.context.user):
-            user_data = UserData(
-                belongs_to=info.context.user
-            )
-            user_data.save()
-        return UserData.objects.filter(belongs_to=info.context.user).get()
 
