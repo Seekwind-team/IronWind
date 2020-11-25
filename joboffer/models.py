@@ -10,8 +10,8 @@ class JobOffer(models.Model):
     )
     # hashtags = models.TextField()
     # job_cats = models.TextField()
-    filled = models.BooleanField()
-    is_deleted = models.BooleanField()
+    filled = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
 
     JOBTYPE_CHOICES = [
         ('Vollzeit', 'Vollzeit'),
@@ -29,42 +29,37 @@ class JobOffer(models.Model):
 
     job_title = models.CharField(
         max_length=255,
-        blank=False
+        null=True
     )
 
     # Hier sollte sich überlegt werden, wie mit Geo-Locations umgegangen wird
     location = models.CharField(
         max_length=100,
+        null=True
     )
 
     description = models.TextField(
-        max_length=4000
+        max_length=4000,
+        null=True
     )
 
     highlights = models.TextField(
-        max_length=1000
+        max_length=1000,
+        null=True
     )
     must_have = models.TextField(
         max_length=1000,
+        null=True
     )
     public_email = models.EmailField(
-        null=False
     )
     company_logo = models.ImageField(upload_to='images/')
     created_at = models.DateTimeField(
-        editable=False,
         default=timezone.now
     )
     last_modified = models.DateTimeField(
         default=timezone.now
     )
-
-    def save(self, *args, **kwargs):
-        # On save, update timestamps
-        if not self.id:
-            self.created_at = timezone.now()
-        self.last_modified = timezone.now()
-        return super(Authentication, self).save(*args, **kwargs)
 
 
 # used to store Images for Joboffers

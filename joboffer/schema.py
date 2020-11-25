@@ -1,5 +1,6 @@
 # define all Job-Offer related Queries and Mutations here
 import graphene
+from django.utils import timezone
 from graphql_jwt.decorators import user_passes_test, login_required
 from graphene_django import DjangoObjectType
 
@@ -29,7 +30,8 @@ class CreateJobOffer(graphene.Mutation):
         highlights = graphene.String()
         must_have = graphene.String()
         public_email = graphene.String()
-        
+
+    @login_required
     @user_passes_test(lambda user: user.is_company)  # only applicable for company accounts
     def mutate(self, info = None,
                 job_type = None,
@@ -40,6 +42,8 @@ class CreateJobOffer(graphene.Mutation):
                 must_have = None, 
                 public_email = None):
         job_offer = JobOffer(owner=info.context.user)
+        job_offer.created_at = timezone.now()
+
         job_offer.job_type = job_type
         job_offer.job_title = job_title
         job_offer.public_email = public_email
@@ -77,19 +81,21 @@ class AlterJobOffer(graphene.Mutation):
             job_object.must_have = kwargs['must_have'] or job_object.must_have
             job_object.public_email = kwargs['public_email'] or job_object.public_email
             job_object.is_active = kwargs['is_active'] or job_object.is_active
+            job_object.last_modified = timezone.now()
             job_object.save()
         else:
             raise Exception('User does not own this JobOffer, aborting')
         return AlterJobOffer(job_object=job_object, ok=True)
 
-class DeleteJobOffer(graphene.mutation):
+
+class DeleteJobOffer(graphene.Mutation):
 
     ok = graphene.Boolean()
 
     class Arguments:
         # frontendseitige bestätigung reicht?
         #assured = graphene.Boolean(required = True, description = "Must provide assurance to delete Joboffer")
-        job_id = graphene.Integer(required = True)
+        job_id = graphene.Int(required = True)
 
     @login_required
     def mutate(self, info, **kwargs):
