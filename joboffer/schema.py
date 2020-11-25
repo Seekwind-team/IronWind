@@ -120,7 +120,7 @@ class Query(graphene.AbstractType):
 
     @user_passes_test(lambda user: user.is_company)
     def resolve_job_offers(self, info):
-        return JobOffer.objects.filter(owner=info.context.user).get()
+        return list(JobOffer.objects.filter(owner=info.context.user))
 
     @login_required
     def resolve_job_offer(self, info, job_id):
