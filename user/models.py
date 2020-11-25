@@ -71,19 +71,20 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
             'Unselect this instead of deleting accounts.'
         ),
     )
-    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+    date_joined = models.DateTimeField(_('date joined'), default=timezone.now, help_text=_('User creation DateTime'))
 
 
-    belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+class UserData(models.Model):
+    belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, help_text=_('User Reference'))
 
     first_name = models.CharField(_('first name'), max_length=150, null=True, help_text=_('First name of User'))
     last_name = models.CharField(_('last name'), max_length=150, null=True, help_text=_('Last name of User'))
 
     phone_number = models.CharField(_('phone number'), max_length=21, null=True, help_text=_('Telephone number of '
-                                                                                              'User, uses E.165-Format'))
+                                                                                             'User, uses E.165-Format'))
 
     short_bio = models.TextField(max_length=500, null=True, help_text=_('Short self-description of user, 2000 '
-                                                                          'characters maximum'))
+                                                                        'characters maximum'))
 
     # TODO: Grades ?
     # TODO: Graduation ?
@@ -101,7 +102,8 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
 
     location = models.CharField(max_length=50, null=True, help_text=_('location of user in String (eg. Name of City)'))
     birth_date = models.DateField(null=True, help_text=_('Birth date of user, uses iso8601-Format (eg. '
-                                                                     '2006-01-02)'))
+                                                         '2006-01-02)'))
+
     def delete(self, using=None, keep_parents=False):
         self.profile_picture.storage.delete(self.profile_picture.name)
         super().delete()
@@ -110,12 +112,13 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
 class CompanyData(models.Model):
     belongs_to = models.OneToOneField(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        help_text=_('User Reference')
     )
 
     company_name = models.TextField(max_length=255, null=True, help_text=_('name of company'))
     description = models.TextField(max_length=2000, null=True, help_text=_('short description of the company, 2000 '
-                                                                            'characters maximum'))
+                                                                           'characters maximum'))
 
     first_name = models.CharField(max_length=40, null=True, help_text=_('Fist name of the responsible HR manager'))
     last_name = models.CharField(max_length=40, null=True, help_text=_('last name of the responsible HR Manager'))
@@ -123,12 +126,13 @@ class CompanyData(models.Model):
     # TODO: Geo-Location ?
 
     phone_number = models.CharField(_('phone number'), max_length=21, null=True, help_text=_('Phone number of the '
-                                                                                              'company, '
-                                                                                              'uses E.165-Format'))
+                                                                                             'company, '
+                                                                                             'uses E.165-Format'))
     company_picture = models.ImageField(upload_to='images/', null=True, help_text=_('eg. Picture of the company Logo'))
-    meisterbrief = models.ImageField(upload_to='images/', null=True, help_text=_('Picture to validate the company as legally '
-                                                                      'permitted '
-                                                                      'to accept apprentices'))
+    meisterbrief = models.ImageField(upload_to='images/', null=True,
+                                     help_text=_('Picture to validate the company as legally '
+                                                 'permitted '
+                                                 'to accept apprentices'))
 
     def get_company_picture(self):
         return self.company_picture.url
@@ -151,4 +155,3 @@ class CompanyData(models.Model):
         """Return profile image"""
         return self.image.url
 '''
-

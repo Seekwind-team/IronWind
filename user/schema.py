@@ -190,7 +190,7 @@ class UpdatedCompany(graphene.Mutation):
         phone_number = graphene.String(description="phone number of the HR manager E.165-Format")
         last_name = graphene.String(description="last name of HR manager")
         first_name = graphene.String(description="first name of HR manager")
-        # company_picture = #TODO Picture??
+        # company_picture =
         # meisterbrief #TODO Picture??
 
     @login_required  # requires login
@@ -293,6 +293,7 @@ class Query(graphene.AbstractType):
     @login_required # would return an error on 'Anonymous user', so restricting this to authenticated users
     def resolve_me(self, info):
         return info.context.user
+
 
 '''
     # those functions below aren't actually used because I figured they are are unnecessary as all information they
