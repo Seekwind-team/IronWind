@@ -18,7 +18,7 @@ SECRET_KEY = '+l*(t@ö#4vgu=nuoulf7p4xgrtdz@p+%2(t-(f0r-3lj7n4tj$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-AUTH_USER_MODEL = 'user.User'
+AUTH_USER_MODEL = 'user.Authentication'
 
 
 ALLOWED_HOSTS = []
@@ -28,6 +28,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'user',
+    'joboffer',
 
     'django.contrib.admin',
     'django.contrib.auth',
