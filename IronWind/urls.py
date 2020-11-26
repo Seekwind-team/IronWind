@@ -25,5 +25,5 @@ from graphql_jwt.decorators import jwt_cookie
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url(r'^graphql', csrf_exempt(FileUploadGraphQLView.as_view(graphiql=True))),
+    url(r'', csrf_exempt(FileUploadGraphQLView.as_view(graphiql=True))),
 ]

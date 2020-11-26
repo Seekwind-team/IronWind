@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth import get_user_model
 
 import graphene
@@ -58,13 +60,23 @@ class DeleteUser(graphene.Mutation):
 
     class Arguments:
         # requires password authentication for the process
-        password = graphene.String(required=True, description="Must provide valid password for user to delete own account")
+        password = graphene.String(required=True,
+                                   description="Must provide valid password for user to delete own account")
 
     @login_required
     def mutate(self, info, **kwargs):
         user = info.context.user
         # checks whether provided password is correct
         if user.check_password(raw_password=kwargs["password"]):
+            if user.is_company:
+                data = CompanyData.objects.filter(belongs_to=user).get()
+                if data.company_picture:
+                    data.company_picture.storage.delete(data.company_picture.name)
+            else:
+                data = UserData.objects.filter(belongs_to=user).get
+                if data.profile_picture:
+                    data.profile_picture.storage.delete(data.profile_picture.name)
+
             user.delete()
             return DeleteUser(ok=True)
         else:
@@ -109,7 +121,7 @@ class UpdatedProfile(graphene.Mutation):
         short_bio = graphene.String(description="short bio (self description) of user, 5000 characters maximum")
         gender = graphene.String(description="gender of user")
         birth_date = graphene.Date(description="birthdate of user, uses iso8601-Format (eg. 2006-01-02)")
-  #     profile_picture = Upload(description="Uploaded File") #
+        #  profile_picture = Upload(description="Uploaded File") #
 
     @login_required  # requires login
     @user_passes_test(lambda user: not is_company(user))  # only applicable for non-company accounts
@@ -143,7 +155,6 @@ class UpdatedProfile(graphene.Mutation):
 
 
 class ChangePassword(graphene.Mutation):
-
     ok = graphene.Boolean()
 
     class Arguments:
@@ -160,7 +171,6 @@ class ChangePassword(graphene.Mutation):
 
 
 class ChangeEmail(graphene.Mutation):
-
     ok = graphene.Boolean()
 
     class Arguments:
@@ -234,14 +244,19 @@ class UploadUserPicture(graphene.Mutation):
         if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png"]:
             raise Exception("Provided invalid file format")
 
+        extension = os.path.splitext(file_in.name)[1]
+        file_in.name = "" + str(c_user.pk) + "_profilePicture" + extension
+
         if c_user.is_company:
             data = CompanyData.objects.filter(belongs_to=c_user).get()
-            data.company_picture.storage.delete(data.company_picture.name)
+            if data.company_picture:
+                data.company_picture.storage.delete(data.company_picture.name)
             data.company_picture = file_in
             data.save()
         else:
             data = UserData.objects.filter(belongs_to=c_user).get
-            data.profile_picture.storage.delete(data.profile_picture.name)
+            if data.profile_picture:
+                data.profile_picture.storage.delete(data.profile_picture.name)
             data.profile_picture = file_in
             data.save()
 
@@ -264,7 +279,8 @@ class UploadMeisterbrief(graphene.Mutation):
             raise Exception("Provided invalid file format")
 
         data = CompanyData.objects.filter(belongs_to=c_user).get
-        data.meisterbrief.storage.delete(data.meisterbrief.name)
+        if data.meisterbrief:
+            data.meisterbrief.storage.delete(data.meisterbrief.name)
         data.meisterbrief = file_in
         data.save()
 
@@ -290,7 +306,7 @@ class Query(graphene.AbstractType):
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
 
     # returns auth data
-    @login_required # would return an error on 'Anonymous user', so restricting this to authenticated users
+    @login_required  # would return an error on 'Anonymous user', so restricting this to authenticated users
     def resolve_me(self, info):
         return info.context.user
 
