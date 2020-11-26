@@ -6,13 +6,19 @@ from graphene_django import DjangoObjectType
 
 from django.core.validators import validate_email
 
-from joboffer.models import JobOffer
+from joboffer.models import JobOffer, Image
 from user.models import CompanyData
 from user.schema import is_company
 
 
-class JobOfferType(DjangoObjectType):
+class ImageType(DjangoObjectType):
+    class Meta:
+        model = Image
+        description = 'Meta Object to hold Information for Image-Objects attached to Job Offers'
+        exclude_fields = ('model',)
 
+
+class JobOfferType(DjangoObjectType):
     class Meta:
         model = JobOffer
         description = 'This Type contains a singular Joboffer posted'
@@ -20,16 +26,24 @@ class JobOfferType(DjangoObjectType):
     created_at = graphene.DateTime(name='created_at')
     must_have = graphene.String(name='must_have')
     company_logo = graphene.String()
+    images = graphene.List(graphene.String)
 
     # nice_have = graphene.String(name='nice_have') # not implemented!
 
     def resolve_company_logo(self, info):
         return CompanyData.objects.filter(belongs_to=self.owner).get().company_picture.url
 
+    def resolve_images(self, info):
+        values = []
+        try:
+            Image.objects.filter(model=self.owner).all().each(lambda o: values.append(o.image.url))
+            return values
+        except:
+            return None
+
 
 # creates new Job offer
 class CreateJobOffer(graphene.Mutation):
-
     ok = graphene.Boolean()
     job_offer = graphene.Field(JobOfferType)
 
@@ -45,13 +59,13 @@ class CreateJobOffer(graphene.Mutation):
     @login_required
     @user_passes_test(lambda user: user.is_company)  # only applicable for company accounts
     def mutate(self, info,
-                job_type = None,
-                job_title = None, 
-                location = None, 
-                description = None, 
-                highlights = None, 
-                must_have = None, 
-                public_email = None):
+               job_type=None,
+               job_title=None,
+               location=None,
+               description=None,
+               highlights=None,
+               must_have=None,
+               public_email=None):
         job_offer = JobOffer(owner=info.context.user)
         job_offer.created_at = timezone.now()
         job_offer.job_type = job_type
@@ -65,7 +79,6 @@ class CreateJobOffer(graphene.Mutation):
 
 
 class AlterJobOffer(graphene.Mutation):
-
     ok = graphene.Boolean()
     job_offer = graphene.Field(JobOfferType)
 
@@ -99,21 +112,19 @@ class AlterJobOffer(graphene.Mutation):
 
 
 class DeleteJobOffer(graphene.Mutation):
-
     ok = graphene.Boolean()
 
     class Arguments:
         # frontendseitige bestätigung reicht?
-        #assured = graphene.Boolean(required = True, description = "Must provide assurance to delete Joboffer")
+        # assured = graphene.Boolean(required = True, description = "Must provide assurance to delete Joboffer")
         job_id = graphene.Int(required=True)
-
 
     @login_required
     def mutate(self, info, **kwargs):
         # checks if user owns joboffer
         user_job_offers = JobOffer.objects.filter(owner=info.context.user).get()
         job_offer = JobOffer.objects.filter(pk=kwargs['job_id']).get()
-        
+
         if job_offer in user_job_offers:
             job_offer.delete()
             return DeleteJobOffer(ok=True)

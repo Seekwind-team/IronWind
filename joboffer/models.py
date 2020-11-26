@@ -79,7 +79,7 @@ class JobOffer(models.Model):
 class Image(models.Model):
     name = models.CharField(max_length=255)
     model = models.ForeignKey(JobOffer, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='images/')
+    image = models.ImageField(upload_to='static/JobImages/', null=True, help_text=_('JobOffer Image'))
     default = models.BooleanField(default=False)
     width = models.FloatField(default=100)
     length = models.FloatField(default=100)
