@@ -45,12 +45,14 @@ class UserType(DjangoObjectType):
 class UserDataType(DjangoObjectType):
     class Meta:
         model = UserData
+        description = 'This Type contains a singular set of User-Data'
 
 
 # Imports CompanyData from Models
 class CompanyDataType(DjangoObjectType):
     class Meta:
         model = CompanyData
+        description = 'This Type contains a singular set of Company-Data'
 
 
 # Deletes currently logged in account

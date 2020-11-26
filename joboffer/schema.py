@@ -14,6 +14,11 @@ class JobOfferType(DjangoObjectType):
 
     class Meta:
         model = JobOffer
+        description = 'This Type contains a singular Joboffer posted'
+
+    created_at = graphene.DateTime(name='created_at')
+    must_have = graphene.String(name='must_have')
+    # nice_have = graphene.String(name='nice_have') # not implemented!
 
 
 # creates new Job offer
