@@ -278,6 +278,9 @@ class UploadMeisterbrief(graphene.Mutation):
         if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png", "application/pdf"]:
             raise Exception("Provided invalid file format")
 
+        extension = os.path.splitext(file_in.name)[1]
+        file_in.name = "" + str(c_user.pk) + "_meisterbrief" + extension
+
         data = CompanyData.objects.filter(belongs_to=c_user).get
         if data.meisterbrief:
             data.meisterbrief.storage.delete(data.meisterbrief.name)
