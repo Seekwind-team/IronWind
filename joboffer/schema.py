@@ -7,6 +7,7 @@ from graphene_django import DjangoObjectType
 from django.core.validators import validate_email
 
 from joboffer.models import JobOffer
+from user.models import CompanyData
 from user.schema import is_company
 
 
@@ -18,7 +19,12 @@ class JobOfferType(DjangoObjectType):
 
     created_at = graphene.DateTime(name='created_at')
     must_have = graphene.String(name='must_have')
+    company_logo = graphene.String()
+
     # nice_have = graphene.String(name='nice_have') # not implemented!
+
+    def resolve_company_logo(self, info):
+        return CompanyData.objects.filter(belongs_to=self.owner).get().company_picture.url
 
 
 # creates new Job offer

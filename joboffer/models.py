@@ -65,7 +65,6 @@ class JobOffer(models.Model):
         help_text=_('Öffentlich sichtbare EMail-Adresse')
     )
 
-    #  company_logo = models.ImageField(upload_to='images/')
     created_at = models.DateTimeField(
         default=timezone.now,
         help_text=_('Erstellungs Datum und Zeit')
