@@ -10,7 +10,7 @@ Backend section for WhiteWater
 
 required imports (pip):
 ```py
-$ pip install -U pip Django django-graphql-jwt graphene-django 
+$ pip install -U pip Django django-graphql-jwt graphene-django graphene-file-upload 
 ```
 getting started:
 ```py
