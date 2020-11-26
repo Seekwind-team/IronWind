@@ -89,7 +89,7 @@ class UserData(models.Model):
     # TODO: Grades ?
     # TODO: Graduation ?
 
-    profile_picture = models.ImageField(upload_to='images/', null=True, help_text=_('profile picture of user'))
+    profile_picture = models.ImageField(upload_to='static/images/', null=True, help_text=_('profile picture of user'))
 
     def get_profile_picture(self):
         return self.profile_picture.url
@@ -128,8 +128,9 @@ class CompanyData(models.Model):
     phone_number = models.CharField(_('phone number'), max_length=21, null=True, help_text=_('Phone number of the '
                                                                                              'company, '
                                                                                              'uses E.165-Format'))
-    company_picture = models.ImageField(upload_to='images/', null=True, help_text=_('eg. Picture of the company Logo'))
-    meisterbrief = models.ImageField(upload_to='images/', null=True,
+    company_picture = models.ImageField(upload_to='static/images/', null=True, help_text=_('eg. Picture of the '
+                                                                                           'company Logo'))
+    meisterbrief = models.ImageField(upload_to='static/images/', null=True,
                                      help_text=_('Picture to validate the company as legally '
                                                  'permitted '
                                                  'to accept apprentices'))
