@@ -23,13 +23,13 @@ class CreateJobOffer(graphene.Mutation):
     job_offer = graphene.Field(JobOfferType)
 
     class Arguments:
-        job_type = graphene.String()
-        job_title = graphene.String(required=True)
-        location = graphene.String()
-        description = graphene.String()
-        highlights = graphene.String()
-        must_have = graphene.String()
-        public_email = graphene.String(required=True)
+        job_type = graphene.String(description="'Vollzeit','Teilzeit','Ausbildung'")
+        job_title = graphene.String(required=True, description="Name (Title) of the Job offered")
+        location = graphene.String(description="Location of Job offer")
+        description = graphene.String(description="description of the Job offered")
+        highlights = graphene.String(description="Highlights of the Job Offered (eg. Homeoffice)")
+        must_have = graphene.String(description="Must-haves for the job offered, eg Drivers License")
+        public_email = graphene.String(required=True, description="publicly visible email address")
 
     @login_required
     @user_passes_test(lambda user: user.is_company)  # only applicable for company accounts
@@ -59,14 +59,14 @@ class AlterJobOffer(graphene.Mutation):
     job_offer = graphene.Field(JobOfferType)
 
     class Arguments:
-        job_type = graphene.String()
-        job_title = graphene.String()
-        location = graphene.String()
-        description = graphene.String()
-        highlights = graphene.String()
-        must_have = graphene.String()
-        public_email = graphene.String()
-        is_active = graphene.Boolean()
+        job_type = graphene.String(description="'Vollzeit','Teilzeit','Ausbildung'")
+        job_title = graphene.String(description="Name (Title) of the Job offered")
+        location = graphene.String(description="Location of Job offer")
+        description = graphene.String(description="description of the Job offered")
+        highlights = graphene.String(description="Highlights of the Job Offered (eg. Homeoffice)")
+        must_have = graphene.String(description="Must-haves for the job offered, eg Drivers License")
+        public_email = graphene.String(description="publicly visible email address")
+        is_active = graphene.Boolean(description="Boolean, set to true will deactivate the public job offer")
 
     @user_passes_test(lambda user: user.is_company)
     def mutate(self, info, **kwargs):

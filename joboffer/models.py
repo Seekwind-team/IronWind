@@ -51,9 +51,12 @@ class JobOffer(models.Model):
         max_length=1000,
         null=True
     )
+
     public_email = models.EmailField(
+        null=True
     )
-  #  company_logo = models.ImageField(upload_to='images/')
+
+    #  company_logo = models.ImageField(upload_to='images/')
     created_at = models.DateTimeField(
         default=timezone.now
     )
