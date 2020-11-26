@@ -13,7 +13,7 @@ import joboffer.schema
 import user.schema
 import recommenders.schema
 
-
+# Overwrites tokenAuth decorator to always interpret given username as lowercase
 def token_auth(f):
     @wraps(f)
     @setup_jwt_cookie
@@ -60,7 +60,7 @@ class ObtainJSONWebToken(graphql_jwt.ObtainJSONWebToken):
 
 # put here any Queries to inherit them
 class Query(recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
-    # Method that Simply returns 'Pong'"""
+    # Method that Simply returns 'Pong'
     ping = graphene.String(default_value="Pong")
     # Returns current Server Time
     get_server_time = graphene.DateTime()
