@@ -110,6 +110,7 @@ class DeleteJobOffer(graphene.Mutation):
             raise Exception("User has no Job with id: ", kwargs['job_id'])
         return DeleteJobOffer(ok=False)
 
+
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field()
     alter_job_offer = AlterJobOffer.Field()
