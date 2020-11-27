@@ -133,6 +133,18 @@ class DeleteJobOffer(graphene.Mutation):
         return DeleteJobOffer(ok=False)
 
 
+class AddImage(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    class Arguments:
+        pass
+
+    @login_required
+    @user_passes_test(lambda user: user.is_company)
+    def mutate(self, info, ):
+        pass
+
+
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field()
     alter_job_offer = AlterJobOffer.Field()
