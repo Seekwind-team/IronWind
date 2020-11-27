@@ -1,5 +1,5 @@
-#Porudction things
-src/settings.py
+#Production specific
+#src/settings.py
 
 # PyCharm things
 idea/
