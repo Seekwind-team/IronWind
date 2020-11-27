@@ -125,7 +125,7 @@ class UpdatedProfile(graphene.Mutation):
 
     @login_required  # requires login
     @user_passes_test(lambda user: not is_company(user))  # only applicable for non-company accounts
-    def mutate(self, info, file,
+    def mutate(self, info,
                first_name=None,  # setting default values to none
                last_name=None,  # they will be replaced through input and won't overwrite actual userdata
                phone_number=None,
