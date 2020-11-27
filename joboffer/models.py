@@ -3,17 +3,27 @@ from user.models import Authentication
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+# used for storing hashtags non-redundant
+class Tag(models.Model):
+    name = models.CharField(max_length=100, unique = True)
+
 
 class JobOffer(models.Model):
     owner = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE,
     )
-    # hashtags = models.TextField()
-    # job_cats = models.TextField()
-    filled = models.BooleanField(default=False,
-                                 help_text=_('Definmiert, ob ein Jobangebot besetzt ist'))
+    hashtags = models.ManyToManyField(Tag)
+
+    filled = models.BooleanField(default=False, help_text=_('Definmiert, ob ein Jobangebot besetzt ist'))
+
     is_deleted = models.BooleanField(default=False, help_text=_('definiert, ob ein Jobangebot "gelöscht" ist'))
+
+    #job_cats = models.TextField()
+    
+    filled = models.BooleanField(default=False)
+    
+    is_deleted = models.BooleanField(default=False)
 
     JOBTYPE_CHOICES = [
         ('Vollzeit', 'Vollzeit'),
@@ -54,21 +64,21 @@ class JobOffer(models.Model):
         null=True,
         help_text=_('Highlights des Jobangebots')
     )
+    
     must_have = models.TextField(
         max_length=1000,
         null=True,
         help_text=_('Must Haves des Jobangebots (z.B. Führerschein)')
     )
-
     public_email = models.EmailField(
         null=True,
         help_text=_('Öffentlich sichtbare EMail-Adresse')
     )
-
     created_at = models.DateTimeField(
         default=timezone.now,
         help_text=_('Erstellungs Datum und Zeit')
     )
+    
     last_modified = models.DateTimeField(
         default=timezone.now,
         help_text=_('Zeitpunkt der letzten Änderung')

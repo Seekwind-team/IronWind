@@ -6,9 +6,8 @@ from graphene_django import DjangoObjectType
 
 from django.core.validators import validate_email
 
-from joboffer.models import JobOffer, Image
+from joboffer.models import JobOffer, Tag, Image
 from user.models import CompanyData
-from user.schema import is_company
 
 
 class ImageType(DjangoObjectType):
@@ -56,16 +55,20 @@ class CreateJobOffer(graphene.Mutation):
         must_have = graphene.String(description="Must-haves for the job offered, eg Drivers License")
         public_email = graphene.String(required=True, description="publicly visible email address")
 
+        hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
+
+
     @login_required
     @user_passes_test(lambda user: user.is_company)  # only applicable for company accounts
     def mutate(self, info,
-               job_type=None,
-               job_title=None,
-               location=None,
-               description=None,
-               highlights=None,
-               must_have=None,
-               public_email=None):
+                job_type = None,
+                job_title = None, 
+                location = None, 
+                description = None, 
+                highlights = None, 
+                must_have = None, 
+                public_email = None,
+                hashtags = None):
         job_offer = JobOffer(owner=info.context.user)
         job_offer.created_at = timezone.now()
         job_offer.job_type = job_type
@@ -75,6 +78,16 @@ class CreateJobOffer(graphene.Mutation):
         job_offer.highlights = highlights
         job_offer.must_have = must_have
         job_offer.save()
+        
+        # add existing Tag or create and add new one 
+        for tag in hashtags:
+            if Tag.objects.filter(name=tag).exists():
+                new_tag = Tag.objects.filter(name=tag).first()
+            else:
+                new_tag = Tag(name=tag).save()
+
+            job_offer.hashtags.add(new_tag)   
+
         return CreateJobOffer(job_offer=job_offer, ok=True)
 
 
