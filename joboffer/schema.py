@@ -96,6 +96,7 @@ class AlterJobOffer(graphene.Mutation):
     job_offer = graphene.Field(JobOfferType)
 
     class Arguments:
+        job_id = graphene.Int(required=True)
         job_type = graphene.String(description="'Vollzeit','Teilzeit','Ausbildung'")
         job_title = graphene.String(description="Name (Title) of the Job offered")
         location = graphene.String(description="Location of Job offer")
@@ -104,10 +105,12 @@ class AlterJobOffer(graphene.Mutation):
         must_have = graphene.String(description="Must-haves for the job offered, eg Drivers License")
         public_email = graphene.String(description="publicly visible email address")
         is_active = graphene.Boolean(description="Boolean, set to true will deactivate the public job offer")
+        add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
+        remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
 
     @user_passes_test(lambda user: user.is_company)
     def mutate(self, info, **kwargs):
-        job_object = JobOffer.objects.filter(pk=id).get()
+        job_object = JobOffer.objects.filter(pk=kwargs['job_id']).get()
         if job_object.owner is info.context.user:
             job_object.job_type = kwargs['job_type'] or job_object.job_type
             job_object.job_title = kwargs['job_title'] or job_object.job_title
@@ -118,6 +121,21 @@ class AlterJobOffer(graphene.Mutation):
             job_object.public_email = kwargs['public_email'] or job_object.public_email
             job_object.is_active = kwargs['is_active'] or job_object.is_active
             job_object.last_modified = timezone.now()
+            
+            # add existing Tag or create and add new one 
+            for tag in add_hashtags:
+                if Tag.objects.filter(name=tag).exists():
+                    new_tag = Tag.objects.filter(name=tag).first()
+                else:
+                    new_tag = Tag(name=tag).save()
+
+                job_offer.hashtags.add(new_tag)  
+            
+            # delete Tag
+            for tag in remove_hashtags:
+                if Tag.objects.filter(name=tag).exists():
+                    job_object.hashtags.remove(name=tag)
+                
             job_object.save()
         else:
             raise Exception('User does not own this JobOffer, aborting')
