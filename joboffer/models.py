@@ -70,7 +70,7 @@ class JobOffer(models.Model):
         null=True,
         help_text=_('Must Haves des Jobangebots (z.B. Führerschein)')
     )
-    public_email = models.EmailField(
+    public_email = models.TextField(
         null=True,
         help_text=_('Öffentlich sichtbare EMail-Adresse')
     )

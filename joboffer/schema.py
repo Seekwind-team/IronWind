@@ -47,13 +47,13 @@ class CreateJobOffer(graphene.Mutation):
     job_offer = graphene.Field(JobOfferType)
 
     class Arguments:
-        job_type = graphene.String(description="'Vollzeit','Teilzeit','Ausbildung'")
-        job_title = graphene.String(required=True, description="Name (Title) of the Job offered")
+        job_type = graphene.String(required=True, description="'Vollzeit','Teilzeit','Ausbildung'")
+        job_title = graphene.String(description="Name (Title) of the Job offered")
         location = graphene.String(description="Location of Job offer")
         description = graphene.String(description="description of the Job offered")
         highlights = graphene.String(description="Highlights of the Job Offered (eg. Homeoffice)")
         must_have = graphene.String(description="Must-haves for the job offered, eg Drivers License")
-        public_email = graphene.String(required=True, description="publicly visible email address")
+        public_email = graphene.String(description="publicly visible email address")
 
         hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
 
@@ -68,7 +68,7 @@ class CreateJobOffer(graphene.Mutation):
                 highlights = None, 
                 must_have = None, 
                 public_email = None,
-                hashtags = None):
+                hashtags = []):
         job_offer = JobOffer(owner=info.context.user)
         job_offer.created_at = timezone.now()
         job_offer.job_type = job_type
