@@ -99,6 +99,7 @@ class JobOffer(models.Model):
                 allow_negative=False)],
         max_length = 100,
         blank = True,
+        null = True,
         help_text=_('Lohn pro Ausbildungsjahr')
     )
 
