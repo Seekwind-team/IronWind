@@ -6,6 +6,7 @@ from graphene_django import DjangoObjectType
 
 from django.core.validators import validate_email
 
+
 from joboffer.models import JobOffer
 from user.models import CompanyData
 from user.schema import is_company
