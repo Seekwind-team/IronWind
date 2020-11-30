@@ -3,6 +3,7 @@ import os
 from django.contrib.auth import get_user_model
 
 import graphene
+from graphql import GraphQLError
 from graphql_jwt.decorators import login_required, user_passes_test
 from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
@@ -81,7 +82,7 @@ class DeleteUser(graphene.Mutation):
             user.delete()
             return DeleteUser(ok=True)
         else:
-            raise Exception("wrong password provided")
+            raise GraphQLError("wrong password provided")
         return DeleteUser(ok=False)
 
 
@@ -98,7 +99,7 @@ class CreateUser(graphene.Mutation):
         try:
             validate_email(email)
         except ValidationError as e:
-            raise Exception("invalid email address, ", e)
+            raise GraphQLError("invalid email address, ", e)
         else:
             user = get_user_model()(email=email.lower())
             user.set_password(password)
@@ -167,7 +168,7 @@ class ChangePassword(graphene.Mutation):
             info.context.user.set_password(kwargs['new_password'])
             info.context.user.save()
             return ChangePassword(ok=True)
-        raise Exception('wrong password submitted!')
+        raise GraphQLError('wrong password submitted!')
 
 
 class ChangeEmail(graphene.Mutation):
@@ -183,11 +184,11 @@ class ChangeEmail(graphene.Mutation):
             try:
                 validate_email(kwargs['new_email'])
             except ValidationError as e:
-                raise Exception("must provide valid email address, ", e)
+                raise GraphQLError("must provide valid email address, ", e)
             info.context.user.email = kwargs['new_email']
             info.context.user.save()
             return ChangeEmail(ok=True)
-        raise Exception('wrong password submitted!')
+        raise GraphQLError('wrong password submitted!')
 
 
 # Used to Update Company Profiles
@@ -242,7 +243,7 @@ class UploadUserPicture(graphene.Mutation):
         c_user = info.context.user
 
         if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png"]:
-            raise Exception("Provided invalid file format")
+            raise GraphQLError("Provided invalid file format")
 
         extension = os.path.splitext(file_in.name)[1]
         file_in.name = "" + str(c_user.pk) + "_profilePicture" + extension
@@ -276,7 +277,7 @@ class UploadMeisterbrief(graphene.Mutation):
         print(file_in.content_type)
 
         if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png", "application/pdf"]:
-            raise Exception("Provided invalid file format")
+            raise GraphQLError("Provided invalid file format")
 
         extension = os.path.splitext(file_in.name)[1]
         file_in.name = "" + str(c_user.pk) + "_meisterbrief" + extension
