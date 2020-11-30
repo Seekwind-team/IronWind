@@ -10,6 +10,8 @@ user/migrations/
 .user/migrations/
 joboffer/migrations/
 .joboffer/migrations/
+carespace/migrations/
+.carespace/migrations/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -140,3 +142,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+static/images/*.jpg
+static/images/*.png
+static/images/*.jpeg
+
