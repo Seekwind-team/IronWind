@@ -9,9 +9,12 @@ from graphene.utils.thenables import maybe_thenable
 from graphql_jwt import exceptions, signals
 from django.contrib.auth import get_user_model
 
+
+import carespace.schema
 import joboffer.schema
 import user.schema
 import recommenders.schema
+
 
 # Overwrites tokenAuth decorator to always interpret given username as lowercase
 def token_auth(f):
@@ -59,7 +62,7 @@ class ObtainJSONWebToken(graphql_jwt.ObtainJSONWebToken):
 
 
 # put here any Queries to inherit them
-class Query(recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
+class Query(carespace.schema.Query, recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
     # Method that Simply returns 'Pong'
     ping = graphene.String(default_value="Pong")
     # Returns current Server Time

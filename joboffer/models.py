@@ -17,9 +17,16 @@ class JobOffer(models.Model):
 
     hashtags = models.ManyToManyField(Tag)
 
-    filled = models.BooleanField(default=False, help_text=_('Definmiert, ob ein Jobangebot besetzt ist'))
+    # job_cats = models.TextField()
+    filled = models.BooleanField(
+        default=False,
+        help_text=_('Definmiert, ob ein Jobangebot besetzt ist')
+    )
 
-    is_deleted = models.BooleanField(default=False, help_text=_('definiert, ob ein Jobangebot "gelöscht" ist'))
+    is_deleted = models.BooleanField(
+        default=False,
+        help_text=_('definiert, ob ein Jobangebot "gelöscht" ist')
+    )
 
     #job_cats = models.TextField()
     
@@ -117,12 +124,23 @@ class JobOffer(models.Model):
         help_text=_('Zeitpunkt der letzten Änderung')
     )
 
+    def __str__(self):
+        return 'Joboffer (' + str(self.id) + ') "' + self.job_title + '"'
+
 
 # used to store Images for Joboffers
 class Image(models.Model):
     name = models.CharField(max_length=255)
     model = models.ForeignKey(JobOffer, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='static/JobImages/', null=True, help_text=_('JobOffer Image'))
+   
+    image = models.ImageField(
+        upload_to='images/',
+        null=True
+    )
+   
     default = models.BooleanField(default=False)
     width = models.FloatField(default=100)
     length = models.FloatField(default=100)
+
+    def __str__(self):
+        return 'Job-ID (' + str(self.model.pk) + ') images'
