@@ -26,8 +26,7 @@ class JobOfferType(DjangoObjectType):
     must_have = graphene.String(name='must_have')
     company_logo = graphene.String()
     images = graphene.List(graphene.String)
-
-    # nice_have = graphene.String(name='nice_have') # not implemented!
+    nice_have = graphene.String(name='nice_have')
 
     def resolve_company_logo(self, info):
         return CompanyData.objects.filter(belongs_to=self.owner).get().company_picture.url
@@ -53,10 +52,16 @@ class CreateJobOffer(graphene.Mutation):
         description = graphene.String(description="description of the Job offered")
         highlights = graphene.String(description="Highlights of the Job Offered (eg. Homeoffice)")
         must_have = graphene.String(description="Must-haves for the job offered, eg Drivers License")
+        nice_have = graphene.String(description="Conditions that arent required but would be nice to have")
         public_email = graphene.String(description="publicly visible email address")
-
         hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
 
+        # not relevant for Recommenders
+        pay_per_year = graphene.List(graphene.String)
+        pay_per_hour = graphene.Int(description="Stundenlohn")
+        city = graphene.String(graphene.String, description="Ort des Jobangebots")
+        start_date = graphene.String(description="Datum des ersten Arbeitstages")
+        trade = graphene.String(description="Jobkategorie")
 
     @login_required
     @user_passes_test(lambda user: user.is_company)  # only applicable for company accounts
@@ -67,18 +72,34 @@ class CreateJobOffer(graphene.Mutation):
                 description = None, 
                 highlights = None, 
                 must_have = None, 
+                nice_have = None,
                 public_email = None,
-                hashtags = []):
+                hashtags = [],
+                pay_per_year = None,
+                pay_per_hour = None,
+                city = None,
+                start_date = None,
+                trade = None,
+                ):
         job_offer = JobOffer(owner=info.context.user)
         job_offer.created_at = timezone.now()
         job_offer.job_type = job_type
         job_offer.job_title = job_title
-        job_offer.public_email = public_email
+        job_offer.location = location
         job_offer.description = description
         job_offer.highlights = highlights
         job_offer.must_have = must_have
-        job_offer.save()
+        job_offer.nice_have = nice_have
+        job_offer.public_email = public_email
         
+        job_offer.pay_per_year = pay_per_year
+        job_offer.pay_per_hour = pay_per_hour
+        job_offer.city = city
+        job_offer.start_date = start_date
+        job_offer.trade = trade
+
+        job_offer.save()
+
         # add existing Tag or create and add new one 
         for tag in hashtags:
             if Tag.objects.filter(name=tag).exists():
@@ -103,10 +124,17 @@ class AlterJobOffer(graphene.Mutation):
         description = graphene.String(description="description of the Job offered")
         highlights = graphene.String(description="Highlights of the Job Offered (eg. Homeoffice)")
         must_have = graphene.String(description="Must-haves for the job offered, eg Drivers License")
+        nice_have = graphene.String(description="Conditions that arent required but would be nice to have")
         public_email = graphene.String(description="publicly visible email address")
         is_active = graphene.Boolean(description="Boolean, set to true will deactivate the public job offer")
         add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
         remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
+
+        pay_per_year = graphene.List(graphene.String)
+        pay_per_hour = graphene.Int(description="Stundenlohn")
+        city = graphene.String(graphene.String, description="Ort des Jobangebots")
+        start_date = graphene.String(description="Datum des ersten Arbeitstages")
+        trade = graphene.String(description="Jobkategorie")
 
     @user_passes_test(lambda user: user.is_company)
     def mutate(self, info, **kwargs):
@@ -118,12 +146,19 @@ class AlterJobOffer(graphene.Mutation):
             job_object.description = kwargs['description'] or job_object.description
             job_object.highlights = kwargs['highlights'] or job_object.highlights
             job_object.must_have = kwargs['must_have'] or job_object.must_have
+            job_object.nice_have = kwargs['nice_have'] or job_object.nice_have
             job_object.public_email = kwargs['public_email'] or job_object.public_email
             job_object.is_active = kwargs['is_active'] or job_object.is_active
             job_object.last_modified = timezone.now()
             
+            job_object.pay_per_year = kwargs['pay_per_year'] or job_object.pay_per_year
+            job_object.pay_per_hour = kwargs['pay_per_hour'] or job_object.pay_per_hour
+            job_object.city = kwargs['city'] or job_object.city
+            job_object.start_date = kwargs['start_date'] or job_object.start_date
+            job_object.trage = kwargs['trage'] or job_object.trade
+
             # add existing Tag or create and add new one 
-            for tag in add_hashtags:
+            for tag in kwargs['add_hashtags']:
                 if Tag.objects.filter(name=tag).exists():
                     new_tag = Tag.objects.filter(name=tag).first()
                 else:
@@ -132,7 +167,7 @@ class AlterJobOffer(graphene.Mutation):
                 job_offer.hashtags.add(new_tag)  
             
             # delete Tag
-            for tag in remove_hashtags:
+            for tag in kwargs['remove_hashtags']:
                 if Tag.objects.filter(name=tag).exists():
                     job_object.hashtags.remove(name=tag)
                 
@@ -146,8 +181,6 @@ class DeleteJobOffer(graphene.Mutation):
     ok = graphene.Boolean()
 
     class Arguments:
-        # frontendseitige bestätigung reicht?
-        # assured = graphene.Boolean(required = True, description = "Must provide assurance to delete Joboffer")
         job_id = graphene.Int(required=True)
 
     @login_required
@@ -185,6 +218,7 @@ class Mutation(graphene.ObjectType):
 class Query(graphene.AbstractType):
     job_offers = graphene.List(JobOfferType)
     job_offer = graphene.Field(JobOfferType, job_id=graphene.Int())
+    job_tags = graphene.List(Tag, job_id=graphene.Int())
 
     @user_passes_test(lambda user: user.is_company)
     def resolve_job_offers(self, info):
@@ -193,3 +227,7 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_job_offer(self, info, job_id):
         return JobOffer.objects.filter(pk=job_id).get()
+
+    @login_required
+    def resolve_job_tags(self, info, job_id):
+        pass
