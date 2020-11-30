@@ -1,5 +1,6 @@
 # define all Job-Offer related Queries and Mutations here
 import graphene
+from django.db.models import Model
 from django.utils import timezone
 from graphql_jwt.decorators import user_passes_test, login_required
 from graphene_django import DjangoObjectType
@@ -8,6 +9,7 @@ from django.core.validators import validate_email
 
 from joboffer.models import JobOffer, Tag, Image
 from user.models import CompanyData
+from user.schema import Upload
 
 
 class ImageType(DjangoObjectType):
@@ -199,20 +201,27 @@ class DeleteJobOffer(graphene.Mutation):
 
 class AddImage(graphene.Mutation):
     ok = graphene.Boolean()
+    exception = graphene.String()
 
     class Arguments:
-        pass
+        job_offer_id = graphene.Int(required=True, description="ID of Job-Offer Image is being applied to")
+        # file_in = Upload(required=True, description="Uploaded File")
 
-    @login_required
-    @user_passes_test(lambda user: user.is_company)
-    def mutate(self, info, ):
-        pass
+#    @login_required
+#    @user_passes_test(lambda user: user.is_company)
+    def mutate(self, info, **kwargs):
+        try:
+            JobOffer.objects.filter(pk=kwargs['job_offer_id'])
+        except Model.DoesNotExist as e:  # or Model.EmptyResultSet
+            return AddImage(ok=False, exception=e)
+        return AddImage(ok=True, exception='')
 
 
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field()
     alter_job_offer = AlterJobOffer.Field()
     delete_job_offer = DeleteJobOffer.Field()
+    add_image = AddImage.Field()
 
 
 class Query(graphene.AbstractType):
