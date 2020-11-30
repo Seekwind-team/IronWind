@@ -15,7 +15,11 @@ class JobOffer(models.Model):
         on_delete=models.CASCADE,
     )
 
-    hashtags = models.ManyToManyField(Tag)
+    hashtags = models.ManyToManyField(
+        Tag,
+        null=True,
+        blank=True
+    )
 
     # job_cats = models.TextField()
     filled = models.BooleanField(
@@ -46,7 +50,8 @@ class JobOffer(models.Model):
         max_length=100,
         choices=JOBTYPE_CHOICES,
         default='Vollzeit',
-        help_text=_('Typ des Jobangebotes, z.B. "Vollzeit"')
+        blank=True,
+        help_text=_('Typ des Jobangebotes, z.B. "Vollzeit"'),
     )
 
     job_title = models.CharField(
@@ -57,29 +62,29 @@ class JobOffer(models.Model):
 
     location = models.CharField(
         max_length=100,
-        null=True,
+        blank=True,
         help_text=_('Ort des Jobangebots')
     )
 
     description = models.TextField(
         max_length=4000,
-        null=True,
+        blank=True,
         help_text=_('Beschreibung des Jobangebots')
     )
 
     highlights = models.TextField(
         max_length=1000,
-        null=True,
+        blank=True,
         help_text=_('Highlights des Jobangebots')
     )
     
     must_have = models.TextField(
         max_length=1000,
-        null=True,
+        blank=True,
         help_text=_('Must Haves des Jobangebots (z.B. Führerschein)')
     )
     public_email = models.TextField(
-        null=True,
+        blank=True,
         help_text=_('Öffentlich sichtbare EMail-Adresse')
     )
 
@@ -89,28 +94,28 @@ class JobOffer(models.Model):
                 sep=',',
                 allow_negative=False)],
         max_length = 100,
-        null = True,
+        blank = True,
         help_text=_('Lohn pro Ausbildungsjahr')
     )
 
     pay_per_hour = models.IntegerField(
-        null = True,
+        blank = True,
         help_text=_('Stundenlohn')
     )
 
     city = models.TextField(
         max_length=100,
-        null = True,
+        blank = True,
         help_text=_('Ort des Jobangebots')
     )
 
     start_date = models.DateField(
-        null = True,
+        blank = True,
         help_text=_('Datum des ersten Arbeitstages')
     )
 
     trade = models.TextField(
-        null = True,
+        blank = True,
         help_text=_('Jobkategorie')
     )
     

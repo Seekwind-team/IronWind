@@ -2,6 +2,7 @@
 import graphene
 from django.db.models import Model
 from django.utils import timezone
+from graphql import GraphQLError
 from graphql_jwt.decorators import user_passes_test, login_required
 from graphene_django import DjangoObjectType
 
@@ -175,7 +176,7 @@ class AlterJobOffer(graphene.Mutation):
                 
             job_object.save()
         else:
-            raise Exception('User does not own this JobOffer, aborting')
+            raise GraphQLError('User does not own this JobOffer, aborting')
         return AlterJobOffer(job_object=job_object, ok=True)
 
 
@@ -195,13 +196,12 @@ class DeleteJobOffer(graphene.Mutation):
             job_offer.delete()
             return DeleteJobOffer(ok=True)
         else:
-            raise Exception("User has no Job with id: ", kwargs['job_id'])
+            raise GraphQLError("User has no Job with id: ", kwargs['job_id'])
         return DeleteJobOffer(ok=False)
 
 
 class AddImage(graphene.Mutation):
     ok = graphene.Boolean()
-    exception = graphene.String()
 
     class Arguments:
         job_offer_id = graphene.Int(required=True, description="ID of Job-Offer Image is being applied to")
@@ -211,10 +211,10 @@ class AddImage(graphene.Mutation):
 #    @user_passes_test(lambda user: user.is_company)
     def mutate(self, info, **kwargs):
         try:
-            JobOffer.objects.filter(pk=kwargs['job_offer_id'])
-        except Model.DoesNotExist as e:  # or Model.EmptyResultSet
-            return AddImage(ok=False, exception=e)
-        return AddImage(ok=True, exception='')
+            JobOffer.objects.filter(pk=kwargs['job_offer_id']).get()
+        except Exception as e:  # or
+            raise GraphQLError(e)
+        return AddImage(ok=True)
 
 
 class Mutation(graphene.ObjectType):
