@@ -166,7 +166,7 @@ class AlterJobOffer(graphene.Mutation):
                 else:
                     new_tag = Tag(name=tag).save()
 
-                job_offer.hashtags.add(new_tag)  
+                job_object.hashtags.add(new_tag)  
             
             # delete Tag
             for tag in kwargs['remove_hashtags']:
@@ -227,7 +227,7 @@ class Mutation(graphene.ObjectType):
 class Query(graphene.AbstractType):
     job_offers = graphene.List(JobOfferType)
     job_offer = graphene.Field(JobOfferType, job_id=graphene.Int())
-    job_tags = graphene.List(Tag, job_id=graphene.Int())
+    #job_tags = graphene.List(Tag, job_id=graphene.Int())
 
     @user_passes_test(lambda user: user.is_company)
     def resolve_job_offers(self, info):
@@ -236,7 +236,3 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_job_offer(self, info, job_id):
         return JobOffer.objects.filter(pk=job_id).get()
-
-    @login_required
-    def resolve_job_tags(self, info, job_id):
-        pass
