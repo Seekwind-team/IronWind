@@ -143,6 +143,9 @@ class UserData(models.Model):
         self.profile_picture.storage.delete(self.profile_picture.name)
         super().delete()
 
+    def __str__(self):
+        return "(" + str(self.pk) + "): " + self.belongs_to.email + " User data"
+
 
 class CompanyData(models.Model):
     belongs_to = models.OneToOneField(
@@ -203,6 +206,9 @@ class CompanyData(models.Model):
         self.company_picture.storage.delete(self.song.name)
         self.meisterbrief.storage.delete(self.song.name)
         super().delete()
+
+    def __str__(self):
+        return "(" + str(self.pk) + "): " + self.belongs_to.email + " company data"
 
 
 '''
