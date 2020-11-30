@@ -17,7 +17,6 @@ class JobOffer(models.Model):
 
     hashtags = models.ManyToManyField(
         Tag,
-        null=True,
         blank=True
     )
 
@@ -63,28 +62,33 @@ class JobOffer(models.Model):
     location = models.CharField(
         max_length=100,
         blank=True,
+        null=True,
         help_text=_('Ort des Jobangebots')
     )
 
     description = models.TextField(
         max_length=4000,
         blank=True,
+        null=True,
         help_text=_('Beschreibung des Jobangebots')
     )
 
     highlights = models.TextField(
         max_length=1000,
         blank=True,
+        null=True,
         help_text=_('Highlights des Jobangebots')
     )
     
     must_have = models.TextField(
         max_length=1000,
         blank=True,
+        null=True,
         help_text=_('Must Haves des Jobangebots (z.B. Führerschein)')
     )
     public_email = models.TextField(
         blank=True,
+        null=True,
         help_text=_('Öffentlich sichtbare EMail-Adresse')
     )
 
@@ -99,23 +103,27 @@ class JobOffer(models.Model):
     )
 
     pay_per_hour = models.IntegerField(
-        blank = True,
+        blank=True,
+        null=True,
         help_text=_('Stundenlohn')
     )
 
     city = models.TextField(
         max_length=100,
-        blank = True,
+        blank=True,
+        null=True,
         help_text=_('Ort des Jobangebots')
     )
 
     start_date = models.DateField(
-        blank = True,
+        blank=True,
+        null=True,
         help_text=_('Datum des ersten Arbeitstages')
     )
 
     trade = models.TextField(
-        blank = True,
+        blank=True,
+        null=True,
         help_text=_('Jobkategorie')
     )
     
