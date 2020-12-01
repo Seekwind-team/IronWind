@@ -169,7 +169,9 @@ class ChangePassword(graphene.Mutation):
             info.context.user.set_password(kwargs['new_password'])
             info.context.user.save()
             return ChangePassword(ok=True)
-        raise GraphQLError('wrong password submitted!')
+        else:
+            raise GraphQLError('wrong password submitted!')
+        return ChangePassword(ok=False)
 
 
 class ChangeEmail(graphene.Mutation):
@@ -189,7 +191,9 @@ class ChangeEmail(graphene.Mutation):
             info.context.user.email = kwargs['new_email']
             info.context.user.save()
             return ChangeEmail(ok=True)
-        raise GraphQLError('wrong password submitted!')
+        else:
+            raise GraphQLError('wrong password submitted!')
+        return ChangeEmail(ok=False)
 
 
 # Used to Update Company Profiles
