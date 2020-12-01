@@ -62,7 +62,7 @@ class CreateJobOffer(graphene.Mutation):
         # not relevant for Recommenders
         pay_per_year = graphene.List(graphene.String)
         pay_per_hour = graphene.Int(description="Stundenlohn")
-        city = graphene.String(graphene.String, description="Ort des Jobangebots")
+        city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.String(description="Datum des ersten Arbeitstages")
         trade = graphene.String(description="Jobkategorie")
 
