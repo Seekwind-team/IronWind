@@ -39,7 +39,7 @@ class JobOfferType(DjangoObjectType):
         try:
             Image.objects.filter(model=self.owner).all().each(lambda o: values.append(o.image.url))
             return values
-        except:
+        except Exception:
             return None
 
 
@@ -62,7 +62,7 @@ class CreateJobOffer(graphene.Mutation):
         # not relevant for Recommenders
         pay_per_year = graphene.List(graphene.String)
         pay_per_hour = graphene.Int(description="Stundenlohn")
-        city = graphene.String(graphene.String, description="Ort des Jobangebots")
+        city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.String(description="Datum des ersten Arbeitstages")
         trade = graphene.String(description="Jobkategorie")
 
@@ -82,26 +82,26 @@ class CreateJobOffer(graphene.Mutation):
                 pay_per_hour = None,
                 city = None,
                 start_date = None,
-                trade = None,
+                trade = None
                 ):
-        job_offer = JobOffer(owner=info.context.user)
-        job_offer.created_at = timezone.now()
-        job_offer.job_type = job_type
-        job_offer.job_title = job_title
-        job_offer.location = location
-        job_offer.description = description
-        job_offer.highlights = highlights
-        job_offer.must_have = must_have
-        job_offer.nice_have = nice_have
-        job_offer.public_email = public_email
+        job_object = JobOffer(owner=info.context.user)
+        job_object.created_at = timezone.now()
+        job_object.job_type = job_type
+        job_object.job_title = job_title
+        job_object.location = location
+        job_object.description = description
+        job_object.highlights = highlights
+        job_object.must_have = must_have
+        job_object.nice_have = nice_have
+        job_object.public_email = public_email
         
-        job_offer.pay_per_year = pay_per_year
-        job_offer.pay_per_hour = pay_per_hour
-        job_offer.city = city
-        job_offer.start_date = start_date
-        job_offer.trade = trade
+        job_object.pay_per_year = pay_per_year
+        job_object.pay_per_hour = pay_per_hour
+        job_object.city = city
+        job_object.start_date = start_date
+        job_object.trade = trade
 
-        job_offer.save()
+        job_object.save()
 
         # add existing Tag or create and add new one 
         for tag in hashtags:
@@ -110,9 +110,9 @@ class CreateJobOffer(graphene.Mutation):
             else:
                 new_tag = Tag(name=tag).save()
 
-            job_offer.hashtags.add(new_tag)   
+            job_object.hashtags.add(new_tag)
 
-        return CreateJobOffer(job_offer=job_offer, ok=True)
+        return CreateJobOffer(job_offer=job_object, ok=True)
 
 
 class AlterJobOffer(graphene.Mutation):
@@ -135,13 +135,16 @@ class AlterJobOffer(graphene.Mutation):
 
         pay_per_year = graphene.List(graphene.String)
         pay_per_hour = graphene.Int(description="Stundenlohn")
-        city = graphene.String(graphene.String, description="Ort des Jobangebots")
+        city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.String(description="Datum des ersten Arbeitstages")
         trade = graphene.String(description="Jobkategorie")
 
     @user_passes_test(lambda user: user.is_company)
     def mutate(self, info, **kwargs):
-        job_object = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+        try:
+            job_object = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+        except Exception:
+            raise GraphQLError('Cannot reference Object')
         if job_object.owner is info.context.user:
             job_object.job_type = kwargs['job_type'] or job_object.job_type
             job_object.job_title = kwargs['job_title'] or job_object.job_title
@@ -153,31 +156,31 @@ class AlterJobOffer(graphene.Mutation):
             job_object.public_email = kwargs['public_email'] or job_object.public_email
             job_object.is_active = kwargs['is_active'] or job_object.is_active
             job_object.last_modified = timezone.now()
-            
+
             job_object.pay_per_year = kwargs['pay_per_year'] or job_object.pay_per_year
             job_object.pay_per_hour = kwargs['pay_per_hour'] or job_object.pay_per_hour
             job_object.city = kwargs['city'] or job_object.city
             job_object.start_date = kwargs['start_date'] or job_object.start_date
-            job_object.trage = kwargs['trage'] or job_object.trade
+            job_object.trade = kwargs['trade'] or job_object.trade
 
-            # add existing Tag or create and add new one 
+            # add existing Tag or create and add new one
             for tag in kwargs['add_hashtags']:
                 if Tag.objects.filter(name=tag).exists():
                     new_tag = Tag.objects.filter(name=tag).first()
                 else:
                     new_tag = Tag(name=tag).save()
 
-                job_object.hashtags.add(new_tag)  
-            
+                job_object.hashtags.add(new_tag)
+
             # delete Tag
             for tag in kwargs['remove_hashtags']:
                 if Tag.objects.filter(name=tag).exists():
                     job_object.hashtags.remove(name=tag)
-                
+
             job_object.save()
         else:
             raise GraphQLError('User does not own this JobOffer, aborting')
-        return AlterJobOffer(job_object=job_object, ok=True)
+        return AlterJobOffer(job_offer=job_object, ok=True)
 
 
 class DeleteJobOffer(graphene.Mutation):
@@ -214,6 +217,7 @@ class AddImage(graphene.Mutation):
             JobOffer.objects.filter(pk=kwargs['job_offer_id']).get()
         except Exception as e:  # or
             raise GraphQLError(e)
+            return AddImage(ok=False)
         return AddImage(ok=True)
 
 
@@ -227,7 +231,7 @@ class Mutation(graphene.ObjectType):
 class Query(graphene.AbstractType):
     job_offers = graphene.List(JobOfferType)
     job_offer = graphene.Field(JobOfferType, job_id=graphene.Int())
-    #job_tags = graphene.List(Tag, job_id=graphene.Int())
+    # job_tags = graphene.List(Tag, job_id=graphene.Int())
 
     @user_passes_test(lambda user: user.is_company)
     def resolve_job_offers(self, info):
