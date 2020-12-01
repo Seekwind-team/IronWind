@@ -1,6 +1,7 @@
 import graphene
 import graphql_jwt
-from django.utils import timezone
+from django.utils import timezone, asyncio
+from graphene.types import datetime
 from graphql_jwt.decorators import setup_jwt_cookie, csrf_rotation, refresh_expiration, on_token_auth_resolve
 from functools import wraps
 from django.contrib.auth import authenticate
@@ -11,6 +12,7 @@ from django.contrib.auth import get_user_model
 
 
 import carespace.schema
+import chat.schema
 import joboffer.schema
 import user.schema
 import recommenders.schema
@@ -79,4 +81,9 @@ class Mutation(joboffer.schema.Mutation, user.schema.Mutation, graphene.ObjectTy
     delete_token = graphql_jwt.DeleteJSONWebTokenCookie()
 
 
-schema = graphene.Schema(query=Query, mutation=Mutation, types=[])
+class Subscription(chat.schema.Subscription):
+    pass
+
+
+schema = graphene.Schema(query=Query, mutation=Mutation, subscription=Subscription, types=[])
+
