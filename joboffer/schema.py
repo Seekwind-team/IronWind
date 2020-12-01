@@ -158,7 +158,7 @@ class AlterJobOffer(graphene.Mutation):
             job_object.pay_per_hour = kwargs['pay_per_hour'] or job_object.pay_per_hour
             job_object.city = kwargs['city'] or job_object.city
             job_object.start_date = kwargs['start_date'] or job_object.start_date
-            job_object.trage = kwargs['trage'] or job_object.trade
+            job_object.trade = kwargs['trage'] or job_object.trade
 
             # add existing Tag or create and add new one 
             for tag in kwargs['add_hashtags']:
@@ -177,7 +177,7 @@ class AlterJobOffer(graphene.Mutation):
             job_object.save()
         else:
             raise GraphQLError('User does not own this JobOffer, aborting')
-        return AlterJobOffer(job_object=job_object, ok=True)
+        return AlterJobOffer(job_offer=job_object, ok=True)
 
 
 class DeleteJobOffer(graphene.Mutation):
