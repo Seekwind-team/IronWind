@@ -32,10 +32,6 @@ class JobOffer(models.Model):
     )
 
     #job_cats = models.TextField()
-    
-    filled = models.BooleanField(default=False)
-    
-    is_deleted = models.BooleanField(default=False)
 
     JOBTYPE_CHOICES = [
         ('Vollzeit', 'Vollzeit'),
