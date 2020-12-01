@@ -1,43 +1,117 @@
 import pytest
-## Create User
-## Get Token
-## Verify Token
-## Create Joboffers
-## Delete Joboffer
-## Delete User
 
-# upload jobs from file into database
 import requests
 import json
-headers = {"Autorization": "JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InB5dGhvbkBib3QuZ2ciLCJleHAiOjE2MDY3MzkzMzAsIm9yaWdJYXQiOjE2MDY3MzkwMzB9.e5w9l3bjdyUgNG5W9DRreAde-uYPr5zMtz_REt1KwvM"}
 
-# read file
-with open('IronWind/recommenders/jobs.json', 'r') as file:
-    data=file.read()
+# Helper functions
+def run_query(query, header=''): # A simple function to use requests.post to make the API call. Note the json= section.
+    response = requests.post('http://localhost:8000', json={'query':query}, headers=header)
+    return response
 
-# parse file
-jobs = json.loads(data)
 
-def run_query(query): # A simple function to use requests.post to make the API call. Note the json= section.
-    request = requests.post('http://localhost:8000/', json={'query':me}, headers=headers)
-    if request.status_code == 200:
-        return request.json()
-    else:
-        raise Exception("Query failed to run by returning code of {}. {}".format(request.status_code, query))
+def build_header(token):
+    return {'Authorization': 'JWT %s' %token}
 
-        
-# The GraphQL query (with a few aditional bits included) itself defined as a multi-line string.       
-query = """
-mutation{
-  createJobOffer(
-      jobType:"Vollzeit",
-      description:"test autojob 1",
-  )
-  {ok}
+
+## Create User
+query_create_user = """
+mutation {
+    createUser(
+        email:"api@test.xx"
+        isCompany:true
+        password:"123"
+    ){
+        user{id}
+    }
 }
 """
-me = "{me{id}}"
 
-#http://localhost:8000/#query=mutation%7B%0A%20%20createJobOffer(%0A%20%20%20%20%20%20jobType%3A%22Vollzeit%22%0A%20%20%20%20%20%20description%3A%22test%20autojob%201%22%0A%20%20)%20%7B%0A%20%20%20%20ok%0A%20%20%7D%0A%7DK
-result = run_query(query) # Execute the query
-print(result)
+## Request token for created User #TODO save token 
+query_token_auth = """
+mutation{
+    tokenAuth(
+        email:"api@test.xx"
+        password:"123"
+    ){
+        token
+    }
+}
+"""
+
+## Verify Token
+def build_verify_token(token):
+    query_verify_token = "mutation{verifyToken(token:%s){payload}}" %(token)
+    return query_verify_token
+
+## Create Joboffers #TODO save jobOffer id 
+query_create_job_offer = """
+mutation{
+    createJobOffer(
+        city:"Mannheim"
+        description:"ein guter Job"
+        highlights:"liste,aus,highlights"
+            jobTitle:"generischer job"
+            jobType:"Ausbildung"
+        mustHave:"Führerschein"
+        niceHave:"alle Sprachen"
+            payPerHour:12
+        publicEmail:"chef@gewerbe.mail"
+            startDate:"1.1.2222"
+        trade:"Gewerbe"
+    ){
+        jobOffer{id}
+    }
+}
+"""
+
+## Delete Joboffer
+def build_delete_job_offer(job_offer_id):
+    query_delete_job_offer = "mutation{deleteJobOffer(jobId: %s){ok}}" %(job_offer_id)
+
+
+## Delete User
+query_delete_user = """
+mutation{
+    deleteUser(
+        password:"123"
+    ){
+        ok
+    }
+}
+"""
+
+headers = {}
+token = ''
+
+#ping
+def test_ping():
+    response = run_query("{ping}")
+    #assert response.status_code == 200
+    assert response.json() == {'data': {'ping': 'Pong'}}
+
+def test_create_user():
+    response = run_query(query_create_user)
+    assert response.status_code == 200
+
+def test_token_auth():
+    response = run_query(query_token_auth)
+    assert response.status_code == 200
+    token_json = response.json()
+    token = token_json.get('data').get('tokenAuth').get('token')
+    print(token)
+
+# TODO fix
+def test_verify_token():
+    token = run_query(query_token_auth).json().get('data').get('tokenAuth').get('token')
+    query = build_verify_token(token)
+    response = run_query(query)
+    assert response.status_code == 200
+
+def test_create_job_offer():
+    pass
+
+def test_delete_job_offer():
+    pass
+
+def test_delete_user():
+    pass
