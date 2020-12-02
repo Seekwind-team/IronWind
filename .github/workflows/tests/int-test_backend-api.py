@@ -2,49 +2,59 @@ import pytest
 
 import requests
 import json
+from helper_functions import GraphQLHelper as helper
 
-# Helper functions
-def run_query(query, header=''): # A simple function to use requests.post to make the API call. Note the json= section.
-    response = requests.post('http://localhost:8000', json={'query':query}, headers=header)
-    return response
+EMAIL = "api@test.xx"
+PASSWORD = "123"
+
+# Querys and Mutations
+# Delete Joboffer
+def build_delete_job_offer(job_offer_id):
+    return "mutation{deleteJobOffer(jobId: %s){ok}}" %(job_offer_id)
 
 
-def build_header(token):
-    return {'Authorization': 'JWT %s' %token}
+## Verify Token
+def build_verify_token(token):
+    payload = """
+    mutation{
+        verifyToken(
+            token: "JWT %s"
+        ){
+            payload
+        }
+    }""" %(token)
+    return payload
 
 
-## Create User
-query_create_user = """
+# Create User
+payload_create_user = """
 mutation {
     createUser(
-        email:"api@test.xx"
+        email:"%s"
         isCompany:true
-        password:"123"
+        password:"%s"
     ){
         user{id}
     }
 }
-"""
+""" %(EMAIL, PASSWORD)
 
-## Request token for created User #TODO save token 
-query_token_auth = """
+
+# Request token for created User #TODO save token 
+payload_token_auth = """
 mutation{
     tokenAuth(
-        email:"api@test.xx"
-        password:"123"
+        email:"%s"
+        password:"%s"
     ){
         token
     }
 }
-"""
+""" %(EMAIL, PASSWORD)
 
-## Verify Token
-def build_verify_token(token):
-    query_verify_token = "mutation{verifyToken(token:%s){payload}}" %(token)
-    return query_verify_token
 
-## Create Joboffers #TODO save jobOffer id 
-query_create_job_offer = """
+# Create Joboffers #TODO save jobOffer id 
+payload_create_job_offer = """
 mutation{
     createJobOffer(
         city:"Mannheim"
@@ -56,7 +66,7 @@ mutation{
         niceHave:"alle Sprachen"
             payPerHour:12
         publicEmail:"chef@gewerbe.mail"
-            startDate:"1.1.2222"
+            startDate:"2022-11-11"
         trade:"Gewerbe"
     ){
         jobOffer{id}
@@ -64,54 +74,62 @@ mutation{
 }
 """
 
-## Delete Joboffer
-def build_delete_job_offer(job_offer_id):
-    query_delete_job_offer = "mutation{deleteJobOffer(jobId: %s){ok}}" %(job_offer_id)
 
-
-## Delete User
-query_delete_user = """
+# Delete User
+payload_delete_user = """
 mutation{
     deleteUser(
-        password:"123"
+        password:"%s"
     ){
         ok
     }
 }
-"""
+""" %(PASSWORD)
 
-headers = {}
-token = ''
+# job offer ids
+payload_job_offers = """
+{jobOffers{
+    id
+    }
+}"""
+
 
 #ping
 def test_ping():
-    response = run_query("{ping}")
-    #assert response.status_code == 200
+    response = helper.run_payload(helper, payload = "{ping}")
+    assert response.status_code == 200
     assert response.json() == {'data': {'ping': 'Pong'}}
 
 def test_create_user():
-    response = run_query(query_create_user)
+    response = helper.run_payload(helper, payload = payload_create_user)
     assert response.status_code == 200
 
 def test_token_auth():
-    response = run_query(query_token_auth)
+    response = helper.run_payload(helper, payload = payload_token_auth)
     assert response.status_code == 200
-    token_json = response.json()
-    token = token_json.get('data').get('tokenAuth').get('token')
-    print(token)
 
-# TODO fix
 def test_verify_token():
-    token = run_query(query_token_auth).json().get('data').get('tokenAuth').get('token')
-    query = build_verify_token(token)
-    response = run_query(query)
+    token = helper.request_token(helper, payload = payload_token_auth)
+    payload = build_verify_token(token = token)
+    response = helper.run_payload(helper, payload = payload)
     assert response.status_code == 200
 
 def test_create_job_offer():
-    pass
+    token = helper.request_token(helper, payload = payload_token_auth)
+    header = helper.build_header(helper, token = token)
+    response = helper.run_payload(helper, payload = payload_create_job_offer, header = header)
+    assert response.status_code == 200
 
 def test_delete_job_offer():
-    pass
+    token = helper.request_token(helper, payload = payload_token_auth)
+    header = helper.build_header(helper, token = token)
+    job_id = helper.request_job_id(helper, payload = payload_job_offers, header = header)
+    payload = build_delete_job_offer(job_offer_id = job_id)
+    response = helper.run_payload(helper, payload = payload, header = header)
+    assert response.status_code == 200
 
 def test_delete_user():
-    pass
+    token = helper.request_token(helper, payload = payload_token_auth)
+    header = helper.build_header(helper, token = token)
+    response = helper.run_payload(helper, payload = payload_delete_user, header = header)
+    assert response.status_code == 200
