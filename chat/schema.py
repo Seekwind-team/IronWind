@@ -76,16 +76,25 @@ class Mutation(graphene.ObjectType):
 
 
 class Query(graphene.ObjectType):
-    get_messages = graphene.List(MessageType, partner=graphene.Int())
-    get_chats = graphene.List(MessageType)
+    get_messages = graphene.List(MessageType, partner=graphene.Int(), n_from=graphene.Int(), n_to=graphene.Int())
+    # get_chats = graphene.List(MessageType)
+    get_chats = graphene.List(AuthType)
 
     @login_required
-    def resolve_get_messages(self, info, partner):
-        pass
+    def resolve_get_messages(self, info, partner, n_from=0, n_to=25):
+        return Message.objects\
+            .filter(Q(sender=info.context.user) | Q(receiver=info.context.user))\
+            .filter(Q(receiver=partner) | Q(sender=partner))\
+            .all().order_by('timestamp').reverse()[n_from:n_to]
 
     @login_required
     def resolve_get_chats(self, info):
-        return Message.objects.filter(Q(sender=info.context.user) | Q(sender=info.context.user))
-    #    a.append(Message.objects.filter(receiver=info.context.user).query.group_by('sender'))
-    #    return a
+        partners = set()
+        for e in Message.objects.filter(Q(sender=info.context.user) | Q(receiver=info.context.user)).all():
+            if e.receiver is not info.context.user:
+                partners.add(e.receiver)
+            if e.sender is not info.context.user:
+                partners.add(e.sender)
+        return partners
+
 
