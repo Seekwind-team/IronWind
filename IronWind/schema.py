@@ -63,7 +63,7 @@ class ObtainJSONWebToken(graphql_jwt.ObtainJSONWebToken):
 
 
 # put here any Queries to inherit them
-class Query(carespace.schema.Query, recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
+class Query(carespace.schema.Query,chat.schema.Query ,recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
     # Method that Simply returns 'Pong'
     ping = graphene.String(default_value="Pong")
     # Returns current Server Time

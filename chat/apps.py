@@ -5,4 +5,4 @@ class ChatConfig(AppConfig):
     name = 'chat'
 
     def ready(self):
-        import chat.signals
+        from chat.signals import *

@@ -7,15 +7,17 @@ from user.models import Authentication
 
 
 class Message(models.Model):
-    sender = models.OneToOneField(
+    sender = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE,
+        unique=False,
         related_name='%(class)s_sender',
         help_text=_('sender')
     )
-    receiver = models.OneToOneField(
+    receiver = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE,
+        unique=False,
         related_name='%(class)s_receiver',
         help_text=_('receiver')
     )
@@ -23,7 +25,8 @@ class Message(models.Model):
     message = models.CharField(
         null=False,
         blank=False,
-        max_length=1999,
+        unique=False,
+        max_length=255,
         help_text=_('Headline of this Care-Space Entry')
     )
 
