@@ -28,6 +28,6 @@ from graphql_jwt.decorators import jwt_cookie
 
 
 urlpatterns = [
-    url('admin/', admin.site.urls),
-    url('graphql/', csrf_exempt(FileUploadGraphQLView.as_view(graphiql=True))),
+    path('admin/', admin.site.urls),
+    path('', csrf_exempt(FileUploadGraphQLView.as_view(graphiql=True))),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
