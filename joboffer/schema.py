@@ -103,14 +103,15 @@ class CreateJobOffer(graphene.Mutation):
 
         job_object.save()
 
-        # add existing Tag or create and add new one 
-        for tag in hashtags:
-            if Tag.objects.filter(name=tag).exists():
-                new_tag = Tag.objects.filter(name=tag).first()
-            else:
-                new_tag = Tag(name=tag).save()
+        # add existing Tag or create and add new one if hashtags is not empty
+        if hashtags:
+            for tag in hashtags:
+                if Tag.objects.filter(name=tag).exists():
+                    new_tag = Tag.objects.filter(name=tag).first()
+                else:
+                    new_tag = Tag(name=tag).save()
 
-            job_object.hashtags.add(new_tag)
+                job_object.hashtags.add(new_tag)
 
         return CreateJobOffer(job_offer=job_object, ok=True)
 
