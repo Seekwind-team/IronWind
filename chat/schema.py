@@ -64,10 +64,10 @@ class SendMessage(graphene.Mutation):
             receiver=receiver_obj,
             message=message
         )
-        message.save()
         post_save.connect(
-            post_save_subscription, sender=Message, dispatch_uid="some_model_post_save"
+            post_save_subscription, sender=Message, dispatch_uid="message_post_save"
         )
+        message.save()
         return SendMessage(ok=True)
 
 
