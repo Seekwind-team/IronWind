@@ -1,30 +1,23 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from user.models import Authentication
 
 
-class Chatroom(models.Model):
-    participants = ArrayField(
-            models.ForeignKey(
-                Authentication,
-                on_delete=models.CASCADE
-            ),
-            size=2
-    )
-
-
 class Message(models.Model):
     sender = models.OneToOneField(
         Authentication,
+        on_delete=models.CASCADE,
         related_name='%(class)s_sender',
-        on_delete=models.CASCADE
+        help_text=_('sender')
     )
     receiver = models.OneToOneField(
         Authentication,
         on_delete=models.CASCADE,
-        related_name='%(class)s_receiver'
+        related_name='%(class)s_receiver',
+        help_text=_('receiver')
     )
 
     message = models.CharField(
@@ -34,6 +27,6 @@ class Message(models.Model):
         help_text=_('Headline of this Care-Space Entry')
     )
 
-    chatroom = models.OneToOneField(Chatroom, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)
 
 

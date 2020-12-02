@@ -27,9 +27,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'user',
-    'joboffer',
-    'carespace',
+    # Websockets and Chatting
+    'channels',
+
+    # Required for GraphiQL
+    "django.contrib.staticfiles",
+    "graphene_django",
+    'graphene_subscriptions',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,13 +41,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
 
-    # Websockets and Chatting
-    'channels',
-    'graphene_subscriptions',
+    # Database applications
+    'user',
+    'joboffer',
+    'carespace',
     'chat',
-
-    "django.contrib.staticfiles",  # Required for GraphiQL
-    "graphene_django",
 ]
 
 '''
@@ -56,6 +58,7 @@ CHANNEL_LAYERS = {
     },
 }
 '''
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"

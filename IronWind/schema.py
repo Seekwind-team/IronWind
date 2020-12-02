@@ -74,7 +74,7 @@ class Query(carespace.schema.Query, recommenders.schema.Query, joboffer.schema.Q
 
 
 # put here any Mutations to inherit them
-class Mutation(joboffer.schema.Mutation, user.schema.Mutation, graphene.ObjectType):
+class Mutation(joboffer.schema.Mutation, user.schema.Mutation, chat.schema.Mutation):
     token_auth = ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
