@@ -158,7 +158,7 @@ class Image(models.Model):
    
     default = models.BooleanField(default=False)
     width = models.FloatField(default=100)
-    length = models.FloatField(default=100)
+    height = models.FloatField(default=100)
 
     def __str__(self):
         return 'Job-ID (' + str(self.model.pk) + ') images'
