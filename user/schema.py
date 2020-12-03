@@ -39,7 +39,7 @@ class UserType(DjangoObjectType):
     class Meta:
         model = get_user_model()
         description = 'Returns auth data'
-        exclude_fields = ('password', 'is_superuser')
+        exclude_fields = ('password', 'is_superuser', 'message_sender', 'message_receiver')
 
 
 # Imports UserData from Models

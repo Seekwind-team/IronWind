@@ -10,17 +10,12 @@ from rx import Observable
 
 from chat.models import Message
 from user.models import Authentication
+from user.schema import UserType
 
 
 class MessageType(DjangoObjectType):
     class Meta:
         model = Message
-
-
-class AuthType(DjangoObjectType):
-    class Meta:
-        model = Authentication
-        fields = ('id',)
 
 
 class Subscription(graphene.ObjectType):
@@ -78,7 +73,7 @@ class Mutation(graphene.ObjectType):
 class Query(graphene.ObjectType):
     get_messages = graphene.List(MessageType, partner=graphene.Int(), n_from=graphene.Int(), n_to=graphene.Int())
     # get_chats = graphene.List(MessageType)
-    get_chats = graphene.List(AuthType)
+    get_chats = graphene.List(UserType)
 
     @login_required
     def resolve_get_messages(self, info, partner, n_from=0, n_to=25):
