@@ -147,13 +147,14 @@ class JobOffer(models.Model):
 
 # used to store Images for Joboffers
 class Image(models.Model):
-    name = models.CharField(max_length=255)
     model = models.ForeignKey(JobOffer, on_delete=models.CASCADE)
    
     image = models.ImageField(
-        upload_to='images/',
-        null=True
+        upload_to='static/jobImages/',
+        null=False
     )
+
+    description = models.CharField(max_length=255, null=True, blank=True)
    
     default = models.BooleanField(default=False)
     width = models.FloatField(default=100)
