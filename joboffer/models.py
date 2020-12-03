@@ -7,7 +7,7 @@ from django.core.validators import int_list_validator
 # used for storing hashtags non-redundant
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique = True)
-
+    
 
 class JobOffer(models.Model):
     owner = models.ForeignKey(
@@ -32,10 +32,6 @@ class JobOffer(models.Model):
     )
 
     #job_cats = models.TextField()
-    
-    filled = models.BooleanField(default=False)
-    
-    is_deleted = models.BooleanField(default=False)
 
     JOBTYPE_CHOICES = [
         ('Vollzeit', 'Vollzeit'),
@@ -55,7 +51,6 @@ class JobOffer(models.Model):
 
     job_title = models.CharField(
         max_length=255,
-        null=True,
         help_text=_('Titel (Name) des Jobangebots')
     )
 
@@ -86,6 +81,14 @@ class JobOffer(models.Model):
         null=True,
         help_text=_('Must Haves des Jobangebots (z.B. Führerschein)')
     )
+
+    nice_have = models.TextField(
+        max_length=1000,
+        blank=True,
+        null=True,
+        help_text=_('Nice to Haves des Jobangebots (z.B. beherscht Englisch)')
+    )
+
     public_email = models.TextField(
         blank=True,
         null=True,

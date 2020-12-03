@@ -84,6 +84,7 @@ class UserData(models.Model):
         _('first name'),
         max_length=150,
         null=True,
+        blank=True,
         help_text=_('First name of User')
     )
 
@@ -91,6 +92,7 @@ class UserData(models.Model):
         _('last name'),
         max_length=150,
         null=True,
+        blank=True,
         help_text=_('Last name of User')
     )
 
@@ -98,12 +100,14 @@ class UserData(models.Model):
         _('phone number'),
         max_length=21,
         null=True,
+        blank=True,
         help_text=_('Telephone number of user, uses E.165-Format')
     )
 
     short_bio = models.TextField(
         max_length=500,
         null=True,
+        blank=True,
         help_text=_('Short self-description of user, 2000 characters maximum')
     )
 
@@ -113,6 +117,7 @@ class UserData(models.Model):
     profile_picture = models.ImageField(
         upload_to='static/images/',
         null=True,
+        blank=True,
         help_text=_('profile picture of user')
     )
 
@@ -122,6 +127,7 @@ class UserData(models.Model):
     # can't use boolean as we'll define gender as (m/w/d)
     gender = models.TextField(
         max_length=20,
+        blank=True,
         help_text=_('gender of User, uses string to allow all genders')
     )
 
@@ -131,11 +137,13 @@ class UserData(models.Model):
     location = models.CharField(
         max_length=50,
         null=True,
+        blank=True,
         help_text=_('location of user in String (eg. Name of City)')
     )
 
     birth_date = models.DateField(
         null=True,
+        blank=True,
         help_text=_('Birth date of user, uses iso8601-Format (eg. 2006-01-02)')
     )
 
@@ -156,25 +164,28 @@ class CompanyData(models.Model):
 
     company_name = models.TextField(
         max_length=255,
-        null=True,
+        null=False,
         help_text=_('name of company')
     )
 
     description = models.TextField(
         max_length=2000,
         null=True,
+        blank=True,
         help_text=_('short description of the company, 2000 characters maximum')
     )
 
     first_name = models.CharField(
         max_length=40,
         null=True,
+        blank=True,
         help_text=_('Fist name of the responsible HR manager')
     )
 
     last_name = models.CharField(
         max_length=40,
         null=True,
+        blank=True,
         help_text=_('last name of the responsible HR Manager')
     )
 
@@ -184,18 +195,21 @@ class CompanyData(models.Model):
         _('phone number'),
         max_length=21,
         null=True,
+        blank=True,
         help_text=_('Phone number of the company, uses E.165-Format')
     )
 
     company_picture = models.ImageField(
         upload_to='static/images/',
         null=True,
+        blank=True,
         help_text=_('eg. Picture of the company Logo')
     )
 
     meisterbrief = models.ImageField(
         upload_to='static/images/',
         null=True,
+        blank=True,
         help_text=_('Picture to validate the company as legally permitted to accept apprentices')
     )
 
