@@ -75,7 +75,7 @@ class DeleteUser(graphene.Mutation):
                 if data.company_picture:
                     data.company_picture.storage.delete(data.company_picture.name)
             else:
-                data = UserData.objects.filter(belongs_to=user).get
+                data = UserData.objects.filter(belongs_to=user).get()
                 if data.profile_picture:
                     data.profile_picture.storage.delete(data.profile_picture.name)
 
