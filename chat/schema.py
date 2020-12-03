@@ -1,9 +1,9 @@
+import django.db.models.signals
 import graphene
+import graphene_subscriptions.signals
 from graphene_django import DjangoObjectType
 from graphene_subscriptions.events import CREATED
 from django.db.models import Q
-from django.db.models.signals import post_save, post_delete
-from graphene_subscriptions.signals import post_save_subscription, post_delete_subscription
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 from rx import Observable
@@ -64,8 +64,8 @@ class SendMessage(graphene.Mutation):
             receiver=receiver_obj,
             message=message
         )
-        post_save.connect(
-            post_save_subscription, sender=Message, dispatch_uid="message_post_save"
+        django.db.models.signals.post_save.connect(
+            graphene_subscriptions.signals.post_save_subscription, sender=Message, dispatch_uid="message_post_save"
         )
         message.save()
         return SendMessage(ok=True)
