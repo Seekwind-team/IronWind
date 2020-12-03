@@ -22,7 +22,7 @@ $ python manage.py runserver
 ```
 
 Structure
-```
+```py
 IronWind/
 ├─ recommenders/ # Folder for connecting the ML-Framework
 ├─ static/ # Folder for static files (eg. Images)
