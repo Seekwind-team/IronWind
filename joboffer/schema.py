@@ -1,4 +1,7 @@
 # define all Job-Offer related Queries and Mutations here
+import os
+import uuid
+
 import graphene
 from django.db.models import Model
 from django.utils import timezone
@@ -35,10 +38,8 @@ class JobOfferType(DjangoObjectType):
         return CompanyData.objects.filter(belongs_to=self.owner).get().company_picture.url
 
     def resolve_images(self, info):
-        values = []
         try:
-            Image.objects.filter(model=self.owner).all().each(lambda o: values.append(o.image.url))
-            return values
+            return Image.objects.filter(model=self).all()
         except Exception:
             return None
 
@@ -224,20 +225,41 @@ class DeleteJobOffer(graphene.Mutation):
 
 class AddImage(graphene.Mutation):
     ok = graphene.Boolean()
+    image = graphene.Field(ImageType)
 
     class Arguments:
         job_offer_id = graphene.Int(required=True, description="ID of Job-Offer Image is being applied to")
-        # file_in = Upload(required=True, description="Uploaded File")
+        description = graphene.String(description="description for image")
+        file_in = Upload(required=True, description="Uploaded File")
 
-#    @login_required
-#    @user_passes_test(lambda user: user.is_company)
-    def mutate(self, info, **kwargs):
+    @user_passes_test(lambda user: user.is_company)
+    def mutate(self, info, file_in, description=None, **kwargs):
+        c_user = info.context.user
         try:
-            JobOffer.objects.filter(pk=kwargs['job_offer_id']).get()
+            job = JobOffer.objects.filter(pk=kwargs['job_offer_id']).get()
         except Exception as e:  # or
-            raise GraphQLError(e)
-            return AddImage(ok=False)
-        return AddImage(ok=True)
+            raise GraphQLError('Job does not Exist', e)
+        if job.owner.id is not c_user.id:
+            raise GraphQLError('User does not Own this Job')
+
+        if len(Image.objects.filter(model=job).all()) > 4:
+            raise GraphQLError("can't upload mora than 5 Images per JobOffer")
+
+        if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png"]:
+            raise GraphQLError("Provided invalid file format")
+
+        extension = os.path.splitext(file_in.name)[1]
+        file_in.name = "" + str(c_user.pk) + "_" + str(job.pk) + "_" + str(uuid.uuid4()) + extension
+
+        image = Image(image=file_in, model=job)
+        image.description = description
+        image.save()
+
+        image.width = image.image.width
+        image.height = image.image.height
+        image.save()
+
+        return AddImage(ok=True, image=image)
 
 
 class Mutation(graphene.ObjectType):
