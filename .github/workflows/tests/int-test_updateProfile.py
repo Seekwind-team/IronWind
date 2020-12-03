@@ -3,9 +3,12 @@ backend_tests = __import__('int-test_backend-api')
 import pytest
 import json
 
+
+# email and password used for test user
 EMAIL = "email@test.de"
 PASSWORD = "123"
 
+# mutation to get token for test user
 payload_token_auth = """
 mutation{{
     tokenAuth(
@@ -17,6 +20,7 @@ mutation{{
         }}
 }}""".format(e=EMAIL, p=PASSWORD)
 
+# adds the test user to the database and adds userdata
 def create_test_user():
 	print("creating test user")
 	helper.run_payload(helper, payload = """
@@ -60,6 +64,7 @@ def create_test_user():
                arguments["phoneNumber"]["valid"][0],
                arguments["shortBio"]["valid"][0]))
 
+# deletes the test user from the database
 def delete_test_user():
 	print("deleting test user")
 	token = helper.request_token(helper, payload = payload_token_auth)
@@ -75,7 +80,8 @@ def delete_test_user():
 	""".format(p=PASSWORD))
 
 
-
+# all arguments for the mutation updateProfile
+# includes equivalence classes valid and invalid that are filled with edge values
 arguments = {
 		"birthDate": {
 		    "valid":	["0001-01-01", "9999-12-31"],
@@ -110,31 +116,17 @@ arguments = {
 
 
 
+# builds the mutation with a given dictionary
+# the dictionary should contain all argument names of updateProfile as keys and argument values as values
+# also returns the response that is expected if the mutation is valid
+def build_mutation(value_dict):
 
-def build_mutation_and_response(value_dict):
-
-	request = """
-		mutation {{
-			updateProfile(
-				birthDate:"{}",
-				firstName:"{}",
-				gender:"{}",
-				lastName:"{}",
-				phoneNumber:"{}",
-				shortBio:"{}"
-			)
-			{{
-				updatedProfile{{
-						birthDate,
-						firstName,
-						gender,
-						lastName,
-						phoneNumber,
-						shortBio
-				}}
-			}}
-		}}
-	""".format(value_dict["birthDate"], value_dict["firstName"], value_dict["gender"], value_dict["lastName"], value_dict["phoneNumber"], value_dict["shortBio"])
+	request = helper.build_empty_mutation(list(arguments)).format(value_dict["birthDate"],
+                                                               value_dict["firstName"],
+                                                               value_dict["gender"],
+                                                               value_dict["lastName"],
+                                                               value_dict["phoneNumber"],
+                                                               value_dict["shortBio"])
 
 	response = """
 		{{
@@ -156,10 +148,11 @@ def build_mutation_and_response(value_dict):
 	return (request, response)
 
 
+# tests if all valid values of all arguments get the expected response
 def test_valids():
     print("testing positives")
 
-    valid_birthdates		= arguments["birthDate"]["valid"]
+    valid_birthdates	= arguments["birthDate"]["valid"]
     valid_firstnames	= arguments["firstName"]["valid"]
     valid_genders		= arguments["gender"]["valid"]
     valid_lastnames		= arguments["lastName"]["valid"]
@@ -174,7 +167,7 @@ def test_valids():
         len(valid_shortbios))
 
     for i in range(maxlength):
-        mutation, expected_response = (build_mutation_and_response(
+        mutation, expected_response = (build_mutation(
             {
 				"birthDate":	valid_birthdates		[min(i, len(valid_birthdates)-1)],
 				"firstName":	valid_firstnames	[min(i, len(valid_firstnames)-1)],
@@ -197,12 +190,13 @@ def test_valids():
             print(actual_response)
 
 
-
+# tests if all invalid arguments cause errors
 def test_all_invalids():
     print("testing all invalids")
     for a in list(arguments):
         test_invalid_cases_of(a)
 
+# tests all invalid values of one argument
 def test_invalid_cases_of(argument):
 
     cases = arguments[argument]["invalid"]
@@ -218,7 +212,7 @@ def test_invalid_cases_of(argument):
 
     for invalid_argument in cases:
         test_values[argument] = invalid_argument
-        mutation, _ = build_mutation_and_response(test_values)
+        mutation, _ = build_mutation(test_values)
 
         token = helper.request_token(helper, payload = payload_token_auth)
         header = helper.build_header(helper, token = token)
@@ -231,8 +225,8 @@ def test_invalid_cases_of(argument):
 
 
 
-create_test_user()
+# create_test_user()
 # test_valids()
-test_all_invalids()
-# test_invalid_cases_of("gender")
-delete_test_user()
+# test_all_invalids()
+# delete_test_user()
+print(helper.build_empty_mutation(list(arguments)))

@@ -1,7 +1,7 @@
 import requests
 
 class GraphQLHelper:
-    # runs Query or Mutation and returns response object 
+    # runs Query or Mutation and returns response object
     # payload: Query or Mutation in String format   eg. payoad = "{me{id}}""
     # header: request headers in JSON format        eg. haeder = {'Autorization':'JWT insert_token'}
     # host: string containing the Hostadress. Default is localhost
@@ -25,7 +25,7 @@ class GraphQLHelper:
         else:
             exc = "Recieved no token. Payload: {}Response: {}".format(payload, response.json())
             raise Exception(exc)
-    
+
     # requests ids for all job offers belonging to user token and returns first id
     # payload: jobOffers query
     # header: Autorization header
@@ -33,3 +33,24 @@ class GraphQLHelper:
         response = self.run_payload(self, payload = payload, header = header)
         if response.status_code == 200:
             return response.json().get('data').get('jobOffers')[0].get('id')
+
+
+    def build_empty_mutation(args):
+        mutation = """
+mutation {{
+    updateProfile(
+"""
+        for arg in args:
+            mutation += "		" + arg + ":\"{}\",\n"
+        mutation += """	)
+    {{
+        updatedProfile{{
+"""
+        for arg in args:
+            mutation += "			" + arg + ",\n"
+        mutation += """
+		}}
+	}}
+}}
+        """
+        return mutation
