@@ -161,4 +161,4 @@ class Image(models.Model):
     height = models.FloatField(default=100)
 
     def __str__(self):
-        return 'Job-ID (' + str(self.model.pk) + ') images'
+        return self.image.url

@@ -38,10 +38,8 @@ class JobOfferType(DjangoObjectType):
         return CompanyData.objects.filter(belongs_to=self.owner).get().company_picture.url
 
     def resolve_images(self, info):
-        values = []
         try:
-            Image.objects.filter(model=self.owner).all().each(lambda o: values.append(o.image.url))
-            return values
+            return Image.objects.filter(model=self).all()
         except Exception:
             return None
 
