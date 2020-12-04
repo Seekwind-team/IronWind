@@ -34,23 +34,27 @@ class GraphQLHelper:
         if response.status_code == 200:
             return response.json().get('data').get('jobOffers')[0].get('id')
 
-
-    def build_empty_mutation(args):
-        mutation = """
-mutation {{
-    updateProfile(
-"""
+	# builds an empty query or mutation with the given arguments
+	# args: a list of the arguments of the query/mutation
+	# name: the name of the mutation
+	# mutation: wether to return a mutation or not (default: False)
+    def build_empty_query(args, name, mutation=False):
+        query = ""
+        if mutation:
+            query += "mutation"
+        query += """{{
+    {}(
+""".format(name)
         for arg in args:
-            mutation += "		" + arg + ":\"{}\",\n"
-        mutation += """	)
+            query += "		" + arg + ":\"{}\",\n"
+        query += """	)
     {{
-        updatedProfile{{
-"""
+        {}{{
+""".format(name)
         for arg in args:
-            mutation += "			" + arg + ",\n"
-        mutation += """
+            query += "			" + arg + ",\n"
+        query += """
 		}}
 	}}
-}}
-        """
-        return mutation
+}}"""
+        return query
