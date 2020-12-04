@@ -32,12 +32,19 @@ class Subscription(graphene.ObjectType):
 
     message_created = graphene.Field(MessageType)
 
-    def resolve_message_created(root, info):
-        return root.filter(
+    @login_required
+    def resolve_message_created(self, info, *args, **kwargs):
+        receiver = info.context.user
+        return self.filter(
             lambda event:
             event.operation == CREATED and
-            isinstance(event.instance, Message)
+            isinstance(event.instance, Message) and (receiver.pk is event.instance.receiver.id)
         ).map(lambda event: event.instance)
+
+    test = graphene.Field(UserType, token=graphene.String(required=True))
+
+    def resolve_test(self, info, *args, **kwargs):
+        return Observable.interval(1000).map(lambda t: info.context.user)
 
 
 class SendMessage(graphene.Mutation):

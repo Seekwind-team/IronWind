@@ -63,7 +63,7 @@ class ObtainJSONWebToken(graphql_jwt.ObtainJSONWebToken):
 
 
 # put here any Queries to inherit them
-class Query(carespace.schema.Query,chat.schema.Query ,recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
+class Query(carespace.schema.Query, chat.schema.Query,recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
     # Method that Simply returns 'Pong'
     ping = graphene.String(default_value="Pong")
     # Returns current Server Time
@@ -81,9 +81,9 @@ class Mutation(joboffer.schema.Mutation, user.schema.Mutation, chat.schema.Mutat
     delete_token = graphql_jwt.DeleteJSONWebTokenCookie()
 
 
-class Subscription(chat.schema.Subscription):
+class Subscription(chat.schema.Subscription, graphene.ObjectType):
     pass
 
 
-schema = graphene.Schema(query=Query, mutation=Mutation, subscription=Subscription, types=[])
+schema = graphene.Schema(query=Query, mutation=Mutation, types=[], subscription=Subscription,)
 
