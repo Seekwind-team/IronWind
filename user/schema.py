@@ -259,7 +259,7 @@ class UploadUserPicture(graphene.Mutation):
             data.company_picture = file_in
             data.save()
         else:
-            data = UserData.objects.filter(belongs_to=c_user).get
+            data = UserData.objects.filter(belongs_to=c_user).get()
             if data.profile_picture:
                 data.profile_picture.storage.delete(data.profile_picture.name)
             data.profile_picture = file_in
