@@ -285,7 +285,7 @@ class DeleteImage(graphene.Mutation):
             raise GraphQLError("can't Query Picture-ID '" + str(kwargs['picture_ID']) + " on job " + str(job))
 
         try:
-            picture.image.storage.delete(picture.name)
+            picture.image.storage.delete(picture.image.name)
         except Exception:
             print("WARNING: COULD NOT DELETE REFERENCED IMAGE FROM LOCAL STORAGE")
         # finally delete picture from database
