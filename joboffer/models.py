@@ -157,8 +157,8 @@ class Image(models.Model):
     description = models.CharField(max_length=255, null=True, blank=True)
    
     default = models.BooleanField(default=False)
-    width = models.FloatField(default=100)
-    height = models.FloatField(default=100)
+    width = models.FloatField(default=0)
+    height = models.FloatField(default=0)
 
     def __str__(self):
         return self.image.url
