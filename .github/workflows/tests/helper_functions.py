@@ -34,27 +34,59 @@ class GraphQLHelper:
         if response.status_code == 200:
             return response.json().get('data').get('jobOffers')[0].get('id')
 
-	# builds an empty query or mutation with the given arguments
-	# args: a list of the arguments of the query/mutation
-	# name: the name of the mutation
-	# mutation: wether to return a mutation or not (default: False)
-    def build_empty_query(args, name, mutation=False):
-        query = ""
-        if mutation:
-            query += "mutation"
-        query += """{{
-    {}(
-""".format(name)
-        for arg in args:
-            query += "		" + arg + ":\"{}\",\n"
-        query += """	)
-    {{
-        {}{{
-""".format(name)
-        for arg in args:
-            query += "			" + arg + ",\n"
-        query += """
-		}}
-	}}
-}}"""
+
+
+class Query:
+
+    def __init__(self, name, arguments= {}):
+        self.name = name
+        self.arguments = arguments
+
+
+
+    def fill(self, values: dict = {}) -> str:
+        query = "{" + self.name
+        if self.arguments:
+            query += "{"
+
+            for arg in self.arguments:
+                query += arg + ":\"" + values[arg] + "\","
+
+            query += "}"
+        query += "}"
+
         return query
+
+
+
+class Mutation(Query):
+
+    response_query = None
+
+    def __init__(self, name, arguments, response_query):
+        super().__init__(name, arguments=arguments)
+        self.response_query = response_query
+
+    def fill(self, values: dict) -> str:
+        mutation = "mutation"
+
+        mutation += "{" + self.name
+
+        if self.arguments:
+            mutation += "("
+
+            for arg in self.arguments:
+                if self.arguments[arg]:
+                    mutation += arg + ":\"" + values[arg] + "\","
+                else:
+                    mutation += arg + ":" + values[arg] + ","
+
+            mutation += ")"
+
+        mutation += self.response_query
+
+        mutation += "}"
+
+
+
+        return mutation
