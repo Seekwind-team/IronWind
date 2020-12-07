@@ -312,7 +312,7 @@ class Mutation(graphene.ObjectType):
 
 # Read functions for all Profiles
 class Query(graphene.AbstractType):
-    me = graphene.Field(UserType, description="returns user model of logge in user")
+    me = graphene.Field(UserType, description="returns user model of logged in user")
 
     # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
