@@ -62,7 +62,8 @@ class CreateJobOffer(graphene.Mutation):
         hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
 
         # not relevant for Recommenders
-        pay_per_year = graphene.List(graphene.String)
+        pay_per_year = graphene.List(graphene.String,
+                                     description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.String(description="Datum des ersten Arbeitstages")
@@ -208,7 +209,7 @@ class DeleteJobOffer(graphene.Mutation):
     ok = graphene.Boolean(description="Returns True on successful operation")
 
     class Arguments:
-        job_id = graphene.Int(required=True)
+        job_id = graphene.Int(required=True,description="ID of Job to be deleted")
 
     @login_required
     def mutate(self, info, **kwargs):
