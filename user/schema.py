@@ -260,7 +260,7 @@ class UploadUserPicture(graphene.Mutation):
             data.company_picture = file_in
             data.save()
         else:
-            data = UserData.objects.filter(belongs_to=c_user).get
+            data = UserData.objects.filter(belongs_to=c_user).get()
             if data.profile_picture:
                 data.profile_picture.storage.delete(data.profile_picture.name)
             data.profile_picture = file_in
@@ -287,7 +287,7 @@ class UploadMeisterbrief(graphene.Mutation):
         extension = os.path.splitext(file_in.name)[1]
         file_in.name = "" + str(c_user.pk) + "_meisterbrief" + extension
 
-        data = CompanyData.objects.filter(belongs_to=c_user).get
+        data = CompanyData.objects.filter(belongs_to=c_user).get()
         if data.meisterbrief:
             data.meisterbrief.storage.delete(data.meisterbrief.name)
         data.meisterbrief = file_in
