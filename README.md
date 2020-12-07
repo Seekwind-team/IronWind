@@ -66,4 +66,8 @@ IronWind/
 │  ├─ settings.py # project settings file
 │  ├─ urls.py # file for defining all (HTTP-) URL-Routes
 │  ├─ wsgi.py # definition file for wsgi application
+├─ tests/
+│  ├─ helper.py # Helper functions
+│  ├─ int_*.py # integrationtest. * defines what will be tested (eg. ironwind-api)
+│  ├─ mod_*.py # moduletest. * defines what will be tested (eg. ironwind-user)
 ```
