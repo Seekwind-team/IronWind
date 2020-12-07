@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 import graphene
 from graphql import GraphQLError
-from graphql_jwt.decorators import login_required, user_passes_test
+from graphql_jwt.decorators import login_required, user_passes_test, token_auth
 from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -39,7 +39,7 @@ class UserType(DjangoObjectType):
     class Meta:
         model = get_user_model()
         description = 'Returns auth data'
-        exclude_fields = ('password', 'is_superuser')
+        exclude_fields = ('password', 'is_superuser', 'message_sender', 'message_receiver')
 
 
 # Imports UserData from Models
@@ -94,6 +94,7 @@ class CreateUser(graphene.Mutation):
         email = graphene.String(required=True, description="EMail Used to authenticate user, must be unique")
         password = graphene.String(required=True, description="Password on account creation")
         is_company = graphene.Boolean(required=True, description="Set to True, if account created is for a company, set to false otherwise")
+
 
     def mutate(self, info, email, password, is_company=False):
         try:

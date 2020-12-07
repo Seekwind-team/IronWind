@@ -23,9 +23,13 @@ ALLOWED_HOSTS = ['141.19.142.7']
 # Application definition
 
 INSTALLED_APPS = [
-    'user',
-    'joboffer',
-    'carespace',
+    # Websockets and Chatting
+    'channels',
+
+    # Required for GraphiQL
+    "django.contrib.staticfiles",
+    "graphene_django",
+    'graphene_subscriptions',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,7 +39,34 @@ INSTALLED_APPS = [
 
     'django.contrib.staticfiles',  # Required for GraphiQL
     'graphene_django',
+    
+    # Database applications
+    'user',
+    'joboffer',
+    'carespace',
+    'chat',
 ]
+
+'''
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
+    },
+}
+
+'''
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
+
+ASGI_APPLICATION = 'IronWind.routing.application'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -54,12 +85,17 @@ GRAPHENE = {
     ],
 }
 
+
 AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
 ROOT_URLCONF = 'src.urls'
+
+GRAPHQL_JWT = {
+    'JWT_ALLOW_ARGUMENT': True,
+}
 
 TEMPLATES = [
     {
