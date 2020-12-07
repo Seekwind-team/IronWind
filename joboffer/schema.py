@@ -69,22 +69,22 @@ class CreateJobOffer(graphene.Mutation):
 
     @login_required
     @user_passes_test(lambda user: user.is_company)  # only applicable for company accounts
-    def mutate(self, info, 
-                job_title,
-                job_type = None, 
-                location = None, 
-                description = None, 
-                highlights = None, 
-                must_have = None, 
-                nice_have = None,
-                public_email = None,
-                hashtags = [],
-                pay_per_year = None,
-                pay_per_hour = None,
-                city = None,
-                start_date = None,
-                trade = None
-                ):
+    def mutate(self, info,
+               job_title,
+               job_type=None,
+               location=None,
+               description=None,
+               highlights=None,
+               must_have=None,
+               nice_have=None,
+               public_email=None,
+               hashtags=[],
+               pay_per_year=None,
+               pay_per_hour=None,
+               city=None,
+               start_date=None,
+               trade=None
+               ):
         job_object = JobOffer(owner=info.context.user)
         job_object.created_at = timezone.now()
         job_object.job_type = job_type
@@ -95,7 +95,7 @@ class CreateJobOffer(graphene.Mutation):
         job_object.must_have = must_have
         job_object.nice_have = nice_have
         job_object.public_email = public_email
-        
+
         job_object.pay_per_year = pay_per_year
         job_object.pay_per_hour = pay_per_hour
         job_object.city = city
@@ -143,23 +143,23 @@ class AlterJobOffer(graphene.Mutation):
 
     @user_passes_test(lambda user: user.is_company)
     def mutate(self, info, job_id,
-                job_title = None,
-                job_type = None, 
-                location = None, 
-                description = None, 
-                highlights = None, 
-                must_have = None, 
-                nice_have = None,
-                public_email = None,
-                is_active = True,
-                add_hashtags = [],
-                remove_hashtags = [],
-                pay_per_year = None,
-                pay_per_hour = None,
-                city = None,
-                start_date = None,
-                trade = None
-                ):
+               job_title=None,
+               job_type=None,
+               location=None,
+               description=None,
+               highlights=None,
+               must_have=None,
+               nice_have=None,
+               public_email=None,
+               is_active=True,
+               add_hashtags=[],
+               remove_hashtags=[],
+               pay_per_year=None,
+               pay_per_hour=None,
+               city=None,
+               start_date=None,
+               trade=None
+               ):
         try:
             job_object = JobOffer.objects.filter(pk=job_id).get()
         except Exception:
@@ -262,16 +262,50 @@ class AddImage(graphene.Mutation):
         return AddImage(ok=True, image=image)
 
 
+class DeleteImage(graphene.Mutation):
+    ok = graphene.Boolean()
+    joboffer = graphene.Field(JobOfferType)
+
+    class Arguments:
+        picture_ID = graphene.Int(required=True, description="ID of Picture to be deleted")
+        job_ID = graphene.Int(required=True, description="ID of Picture to be deleted")
+
+    @login_required
+    def mutate(self, info, **kwargs):
+        try:
+            job = JobOffer.objects.filter(pk=kwargs['job_ID']).get()
+        except Exception:
+            raise GraphQLError('can\'t find Job with ID' + str(kwargs['job_ID']))
+        # check ownership
+        if job.owner.id is not info.context.user.pk:
+            raise GraphQLError('Current user doesn\'t match ' + str(job) + '\'s owner')
+        try:
+            picture = job.image_set.filter(pk=kwargs['picture_ID']).get()
+        except Exception:
+            raise GraphQLError("can't Query Picture-ID '" + str(kwargs['picture_ID']) + " on job " + str(job))
+
+        try:
+            picture.image.storage.delete(picture.image.name)
+        except Exception:
+            print("WARNING: COULD NOT DELETE REFERENCED IMAGE FROM LOCAL STORAGE")
+        # finally delete picture from database
+        picture.delete()
+
+        return DeleteImage(ok=True, joboffer=job)
+
+
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field()
     alter_job_offer = AlterJobOffer.Field()
     delete_job_offer = DeleteJobOffer.Field()
     add_image = AddImage.Field()
+    delete_image = DeleteImage.Field()
 
 
 class Query(graphene.AbstractType):
     job_offers = graphene.List(JobOfferType)
     job_offer = graphene.Field(JobOfferType, job_id=graphene.Int())
+
     # job_tags = graphene.List(Tag, job_id=graphene.Int())
 
     @user_passes_test(lambda user: user.is_company)

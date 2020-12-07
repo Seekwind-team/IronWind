@@ -48,17 +48,30 @@ class CareSpace(models.Model):
 
     paid = models.BooleanField(
         default=False,
-        help_text=_('is this paid item?')
+        help_text=_('Check this box is it is a paid item.')
     )
 
     rich_text = models.BooleanField(
         default=False,
-        help_text=_('Rich text item?')
+        help_text=_('Check this box is this is a Rich text item.')
     )
 
     creation_date = models.DateTimeField(
         default=timezone.now,
         help_text=_('User creation DateTime')
+    )
+
+    img_description = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text=_('Description field for image provided')
+    )
+
+    introduction = models.TextField(
+        null=True,
+        blank=True,
+        help_text=_('Short Abstract for this article')
     )
 
     def __str__(self):

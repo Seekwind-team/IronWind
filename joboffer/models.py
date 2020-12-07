@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import int_list_validator
 
+
 # used for storing hashtags non-redundant
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique = True)
@@ -157,8 +158,8 @@ class Image(models.Model):
     description = models.CharField(max_length=255, null=True, blank=True)
    
     default = models.BooleanField(default=False)
-    width = models.FloatField(default=100)
-    height = models.FloatField(default=100)
+    width = models.FloatField(default=0)
+    height = models.FloatField(default=0)
 
     def __str__(self):
         return self.image.url
