@@ -59,7 +59,7 @@ class CompanyDataType(DjangoObjectType):
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
     # returns boolean indicating success of the operation
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
 
     class Arguments:
         # requires password authentication for the process
@@ -88,7 +88,7 @@ class DeleteUser(graphene.Mutation):
 
 # creates new User profile
 class CreateUser(graphene.Mutation):
-    user = graphene.Field(UserType)
+    user = graphene.Field(UserType, description="returns user created")
 
     class Arguments:
         email = graphene.String(required=True, description="EMail Used to authenticate user, must be unique")
@@ -113,7 +113,7 @@ class CreateUser(graphene.Mutation):
 # Updates Profile with non-sensitive content (eg. password and email is left out on purpose as they demand password
 # verification and are therefore handled separately)
 class UpdatedProfile(graphene.Mutation):
-    updated_profile = graphene.Field(UserDataType)
+    updated_profile = graphene.Field(UserDataType, description="returns updated user profile")
 
     # accepted arguments from mutation
     class Arguments:
@@ -157,7 +157,7 @@ class UpdatedProfile(graphene.Mutation):
 
 
 class ChangePassword(graphene.Mutation):
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
 
     class Arguments:
         old_password = graphene.String(description='Requires valid (old) password')
@@ -175,7 +175,7 @@ class ChangePassword(graphene.Mutation):
 
 
 class ChangeEmail(graphene.Mutation):
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
 
     class Arguments:
         password = graphene.String(description='Requires valid user-password')
@@ -198,7 +198,7 @@ class ChangeEmail(graphene.Mutation):
 
 # Used to Update Company Profiles
 class UpdatedCompany(graphene.Mutation):
-    updated_profile = graphene.Field(CompanyDataType)
+    updated_profile = graphene.Field(CompanyDataType, description="returns updated company profile")
 
     class Arguments:
         company_name = graphene.String(description="name of company")
@@ -240,7 +240,7 @@ class UploadUserPicture(graphene.Mutation):
     class Arguments:
         file_in = Upload(required=True, description="Uploaded File")
 
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
 
     @login_required
     def mutate(self, info, file_in, **kwargs):
@@ -273,7 +273,7 @@ class UploadMeisterbrief(graphene.Mutation):
     class Arguments:
         file_in = Upload(required=True, description="Uploaded File")
 
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
 
     @user_passes_test(lambda u: u.is_company and u.is_authenticated)
     def mutate(self, info, file_in, **kwargs):
@@ -309,7 +309,7 @@ class Mutation(graphene.ObjectType):
 
 # Read functions for all Profiles
 class Query(graphene.AbstractType):
-    me = graphene.Field(UserType)
+    me = graphene.Field(UserType, description="returns user model of logge in user")
 
     # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
