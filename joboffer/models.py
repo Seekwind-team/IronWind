@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import int_list_validator
 
+
 # used for storing hashtags non-redundant
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique = True)
@@ -147,17 +148,18 @@ class JobOffer(models.Model):
 
 # used to store Images for Joboffers
 class Image(models.Model):
-    name = models.CharField(max_length=255)
     model = models.ForeignKey(JobOffer, on_delete=models.CASCADE)
    
     image = models.ImageField(
-        upload_to='images/',
-        null=True
+        upload_to='static/jobImages/',
+        null=False
     )
+
+    description = models.CharField(max_length=255, null=True, blank=True)
    
     default = models.BooleanField(default=False)
-    width = models.FloatField(default=100)
-    length = models.FloatField(default=100)
+    width = models.FloatField(default=0)
+    height = models.FloatField(default=0)
 
     def __str__(self):
-        return 'Job-ID (' + str(self.model.pk) + ') images'
+        return self.image.url

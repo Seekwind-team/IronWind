@@ -1,4 +1,7 @@
 # define all Job-Offer related Queries and Mutations here
+import os
+import uuid
+
 import graphene
 from django.db.models import Model
 from django.utils import timezone
@@ -17,6 +20,7 @@ class ImageType(DjangoObjectType):
     class Meta:
         model = Image
         description = 'Meta Object to hold Information for Image-Objects attached to Job Offers'
+        # excludes model to avoid recursive query sets
         exclude_fields = ('model',)
 
 
@@ -35,18 +39,16 @@ class JobOfferType(DjangoObjectType):
         return CompanyData.objects.filter(belongs_to=self.owner).get().company_picture.url
 
     def resolve_images(self, info):
-        values = []
         try:
-            Image.objects.filter(model=self.owner).all().each(lambda o: values.append(o.image.url))
-            return values
+            return Image.objects.filter(model=self).all()
         except Exception:
             return None
 
 
 # creates new Job offer
 class CreateJobOffer(graphene.Mutation):
-    ok = graphene.Boolean()
-    job_offer = graphene.Field(JobOfferType)
+    ok = graphene.Boolean(description="Will return on successful creation")
+    job_offer = graphene.Field(JobOfferType, description="returns created joboffer")
 
     class Arguments:
         job_type = graphene.String(required=True, description="'Vollzeit','Teilzeit','Ausbildung'")
@@ -68,22 +70,22 @@ class CreateJobOffer(graphene.Mutation):
 
     @login_required
     @user_passes_test(lambda user: user.is_company)  # only applicable for company accounts
-    def mutate(self, info, 
-                job_title,
-                job_type = None, 
-                location = None, 
-                description = None, 
-                highlights = None, 
-                must_have = None, 
-                nice_have = None,
-                public_email = None,
-                hashtags = [],
-                pay_per_year = None,
-                pay_per_hour = None,
-                city = None,
-                start_date = None,
-                trade = None
-                ):
+    def mutate(self, info,
+               job_title,
+               job_type=None,
+               location=None,
+               description=None,
+               highlights=None,
+               must_have=None,
+               nice_have=None,
+               public_email=None,
+               hashtags=[],
+               pay_per_year=None,
+               pay_per_hour=None,
+               city=None,
+               start_date=None,
+               trade=None
+               ):
         job_object = JobOffer(owner=info.context.user)
         job_object.created_at = timezone.now()
         job_object.job_type = job_type
@@ -94,7 +96,7 @@ class CreateJobOffer(graphene.Mutation):
         job_object.must_have = must_have
         job_object.nice_have = nice_have
         job_object.public_email = public_email
-        
+
         job_object.pay_per_year = pay_per_year
         job_object.pay_per_hour = pay_per_hour
         job_object.city = city
@@ -117,11 +119,11 @@ class CreateJobOffer(graphene.Mutation):
 
 
 class AlterJobOffer(graphene.Mutation):
-    ok = graphene.Boolean()
-    job_offer = graphene.Field(JobOfferType)
+    ok = graphene.Boolean(description="returns true on successful creation")
+    job_offer = graphene.Field(JobOfferType, description="returns altered job offer object")
 
     class Arguments:
-        job_id = graphene.Int(required=True)
+        job_id = graphene.Int(required=True, description="ID of Job to be altered")
         job_type = graphene.String(description="'Vollzeit','Teilzeit','Ausbildung'")
         job_title = graphene.String(description="Name (Title) of the Job offered")
         location = graphene.String(description="Location of Job offer")
@@ -134,7 +136,7 @@ class AlterJobOffer(graphene.Mutation):
         add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
         remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
 
-        pay_per_year = graphene.List(graphene.String)
+        pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.String(description="Datum des ersten Arbeitstages")
@@ -142,23 +144,23 @@ class AlterJobOffer(graphene.Mutation):
 
     @user_passes_test(lambda user: user.is_company)
     def mutate(self, info, job_id,
-                job_title = None,
-                job_type = None, 
-                location = None, 
-                description = None, 
-                highlights = None, 
-                must_have = None, 
-                nice_have = None,
-                public_email = None,
-                is_active = True,
-                add_hashtags = [],
-                remove_hashtags = [],
-                pay_per_year = None,
-                pay_per_hour = None,
-                city = None,
-                start_date = None,
-                trade = None
-                ):
+               job_title=None,
+               job_type=None,
+               location=None,
+               description=None,
+               highlights=None,
+               must_have=None,
+               nice_have=None,
+               public_email=None,
+               is_active=True,
+               add_hashtags=[],
+               remove_hashtags=[],
+               pay_per_year=None,
+               pay_per_hour=None,
+               city=None,
+               start_date=None,
+               trade=None
+               ):
         try:
             job_object = JobOffer.objects.filter(pk=job_id).get()
         except Exception:
@@ -203,7 +205,7 @@ class AlterJobOffer(graphene.Mutation):
 
 
 class DeleteJobOffer(graphene.Mutation):
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="Returns True on successful operation")
 
     class Arguments:
         job_id = graphene.Int(required=True)
@@ -223,21 +225,74 @@ class DeleteJobOffer(graphene.Mutation):
 
 
 class AddImage(graphene.Mutation):
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
+    image = graphene.Field(ImageType, description="Returns Image Object with metadata")
 
     class Arguments:
         job_offer_id = graphene.Int(required=True, description="ID of Job-Offer Image is being applied to")
-        # file_in = Upload(required=True, description="Uploaded File")
+        description = graphene.String(description="description for image")
+        file_in = Upload(required=True, description="Uploaded File")
 
-#    @login_required
-#    @user_passes_test(lambda user: user.is_company)
+    @user_passes_test(lambda user: user.is_company)
+    def mutate(self, info, file_in, description=None, **kwargs):
+        c_user = info.context.user
+        try:
+            job = JobOffer.objects.filter(pk=kwargs['job_offer_id']).get()
+        except Exception as e:  # or
+            raise GraphQLError('Job does not Exist', e)
+        if job.owner.id is not c_user.id:
+            raise GraphQLError('User does not Own this Job')
+
+        if len(Image.objects.filter(model=job).all()) > 4:
+            raise GraphQLError("can't upload mora than 5 Images per JobOffer")
+
+        if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png"]:
+            raise GraphQLError("Provided invalid file format")
+
+        extension = os.path.splitext(file_in.name)[1]
+        file_in.name = "" + str(c_user.pk) + "_" + str(job.pk) + "_" + str(uuid.uuid4()) + extension
+
+        image = Image(image=file_in, model=job)
+        image.description = description
+        image.save()
+
+        image.width = image.image.width
+        image.height = image.image.height
+        image.save()
+
+        return AddImage(ok=True, image=image)
+
+
+class DeleteImage(graphene.Mutation):
+    ok = graphene.Boolean(description="returns true on successful operation")
+    joboffer = graphene.Field(JobOfferType, description="returns altered job-offer object")
+
+    class Arguments:
+        picture_ID = graphene.Int(required=True, description="ID of Picture to be deleted")
+        job_ID = graphene.Int(required=True, description="ID of Picture to be deleted")
+
+    @login_required
     def mutate(self, info, **kwargs):
         try:
-            JobOffer.objects.filter(pk=kwargs['job_offer_id']).get()
-        except Exception as e:  # or
-            raise GraphQLError(e)
-            return AddImage(ok=False)
-        return AddImage(ok=True)
+            job = JobOffer.objects.filter(pk=kwargs['job_ID']).get()
+        except Exception:
+            raise GraphQLError('can\'t find Job with ID' + str(kwargs['job_ID']))
+        # check ownership
+        if job.owner.id is not info.context.user.pk:
+            raise GraphQLError('Current user doesn\'t match ' + str(job) + '\'s owner')
+        try:
+            picture = job.image_set.filter(pk=kwargs['picture_ID']).get()
+        except Exception:
+            raise GraphQLError("can't Query Picture-ID '" + str(kwargs['picture_ID']) + " on job " + str(job))
+
+        try:
+            picture.image.storage.delete(picture.image.name)
+        except Exception:
+            print("WARNING: COULD NOT DELETE REFERENCED IMAGE FROM LOCAL STORAGE")
+        # finally delete picture from database
+        picture.delete()
+
+        return DeleteImage(ok=True, joboffer=job)
 
 
 class Mutation(graphene.ObjectType):
@@ -245,11 +300,22 @@ class Mutation(graphene.ObjectType):
     alter_job_offer = AlterJobOffer.Field()
     delete_job_offer = DeleteJobOffer.Field()
     add_image = AddImage.Field()
+    delete_image = DeleteImage.Field()
 
 
 class Query(graphene.AbstractType):
-    job_offers = graphene.List(JobOfferType)
-    job_offer = graphene.Field(JobOfferType, job_id=graphene.Int())
+    job_offers = graphene.List(
+        JobOfferType,
+        description="returns list of all job-offers created by logged in company-user"
+    )
+    job_offer = graphene.Field(
+        JobOfferType,
+        job_id=graphene.Int(
+            description="ID of Job offer to be returned with this request"
+        ),
+        description="returns job offer with given ID"
+    )
+
     # job_tags = graphene.List(Tag, job_id=graphene.Int())
 
     @user_passes_test(lambda user: user.is_company)
