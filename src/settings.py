@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 AUTH_USER_MODEL = 'user.Authentication'
 
@@ -37,9 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
 
-    'django.contrib.staticfiles',  # Required for GraphiQL
-    'graphene_django',
-    
     # Database applications
     'user',
     'joboffer',
@@ -65,7 +62,7 @@ CHANNEL_LAYERS = {
 }
 
 
-ASGI_APPLICATION = 'IronWind.routing.application'
+ASGI_APPLICATION = 'src.routing.application'
 
 
 MIDDLEWARE = [
