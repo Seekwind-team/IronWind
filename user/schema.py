@@ -70,14 +70,17 @@ class DeleteUser(graphene.Mutation):
         user = info.context.user
         # checks whether provided password is correct
         if user.check_password(raw_password=kwargs["password"]):
-            if user.is_company:
-                data = CompanyData.objects.filter(belongs_to=user).get()
-                if data.company_picture:
-                    data.company_picture.storage.delete(data.company_picture.name)
-            else:
-                data = UserData.objects.filter(belongs_to=user).get()
-                if data.profile_picture:
-                    data.profile_picture.storage.delete(data.profile_picture.name)
+            try:
+                if user.is_company:
+                    data = CompanyData.objects.filter(belongs_to=user).get()
+                    if data.company_picture:
+                        data.company_picture.storage.delete(data.company_picture.name)
+                else:
+                    data = UserData.objects.filter(belongs_to=user).get()
+                    if data.profile_picture:
+                       data.profile_picture.storage.delete(data.profile_picture.name)
+            except Exception:
+                None
 
             user.delete()
             return DeleteUser(ok=True)
