@@ -1,5 +1,5 @@
-from .github.workflows.tests.helper_functions import GraphQLHelper as helper
-from tests.helper_functions import Mutation
+from helper_functions import GraphQLHelper as helper
+from helper_functions import Mutation
 
 
 ################################################## TEST USER ##################################################
@@ -20,8 +20,10 @@ mutation{{
         }}
 }}""".format(EMAIL, PASSWORD)
 
-# adds the test user to the database and adds userdata
+
 def create_test_user():
+    '''adds the test user to the database and adds userdata'''
+
     print("creating test user")
     helper.run_payload(helper, payload = """
     mutation {{
@@ -64,8 +66,10 @@ def create_test_user():
                arguments["phoneNumber"]["valid"][0],
                arguments["shortBio"]["valid"][0]))
 
-# deletes the test user from the database
+
 def delete_test_user():
+    '''deletes the test user from the database'''
+
     print("deleting test user")
     token = helper.request_token(helper, payload = payload_token_auth)
     header = helper.build_header(helper, token = token)
@@ -81,8 +85,10 @@ def delete_test_user():
 
 
 ################################################## TEST CASE ARGUMENTS ##################################################
+
 # all arguments for the mutation updateProfile
 # includes equivalence classes valid and invalid that are filled with edge values
+
 arguments = {
         "birthDate": {
         # dates according to iso 8601
@@ -143,6 +149,11 @@ mutation = Mutation("updateProfile",
 
 # tests if all valid values of all arguments get the expected response
 def test_valids():
+    '''
+    tests the mutation with all valid argument values
+    fails if the any mutation fails
+    '''
+
     print("testing all valids")
 
     valid_birthdates    = arguments["birthDate"]["valid"]
@@ -178,14 +189,20 @@ def test_valids():
         assert list(response)[0] == 'data'
 
 
-# tests if all invalid arguments cause errors
 def test_all_invalids():
+    '''
+    tests all invalid argument values
+    fails if any mutations do not fail
+    '''
     print("testing all invalids")
     for a in list(arguments):
         test_invalid_cases_of(a)
 
-# tests all invalid values of one argument
 def test_invalid_cases_of(invalid_argument):
+    '''
+    tests all invalid values for one argument
+    fails if any mutations do not fail
+    '''
 
     print("testing invalids of " + invalid_argument)
 
@@ -216,6 +233,9 @@ def test_invalid_cases_of(invalid_argument):
 
 
 def test():
+    '''
+    creates a user and tests the mutation updateProfile on that user. deletes the user after
+    '''
     create_test_user()
     test_valids()
     test_all_invalids()
