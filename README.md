@@ -21,7 +21,7 @@ $ python manage.py createsuperuser
 $ python manage.py runserver
 ```
 
-Structure
+## Structure
 ```py
 IronWind/
 ├─ recommenders/ # Folder for connecting the ML-Framework
@@ -71,3 +71,14 @@ IronWind/
 │  ├─ int_*.py # integrationtest. * defines what will be tested (eg. ironwind-api)
 │  ├─ mod_*.py # moduletest. * defines what will be tested (eg. ironwind-user)
 ```
+
+
+## Abgabeumfang
+
+Im Abgabeumfang an den Kunden sind alle Dateien außer
+- `test`-Ordner
+- `static`-Ordner
+- `.github`-Ordner
+- `.gitignore`-Datei
+
+enthalten.
