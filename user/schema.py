@@ -63,7 +63,8 @@ class DeleteUser(graphene.Mutation):
 
     class Arguments:
         # requires password authentication for the process
-        password = graphene.String(required=True, description="Must provide valid password for user to delete own account")
+        password = graphene.String(required=True,
+                                   description="Must provide valid password for user to delete own account")
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -78,7 +79,8 @@ class DeleteUser(graphene.Mutation):
                 else:
                     data = UserData.objects.filter(belongs_to=user).get()
                     if data.profile_picture:
-                       data.profile_picture.storage.delete(data.profile_picture.name)
+                        data.profile_picture.storage.delete(data.profile_picture.name)
+            # Not a real error, only means user hasn't updated profile with any information yet
             except Exception:
                 None
 
@@ -96,8 +98,8 @@ class CreateUser(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True, description="EMail Used to authenticate user, must be unique")
         password = graphene.String(required=True, description="Password on account creation")
-        is_company = graphene.Boolean(required=True, description="Set to True, if account created is for a company, set to false otherwise")
-
+        is_company = graphene.Boolean(required=True,
+                                      description="Set to True, if account created is for a company, set to false otherwise")
 
     def mutate(self, info, email, password, is_company=False):
         try:
@@ -257,12 +259,23 @@ class UploadUserPicture(graphene.Mutation):
         file_in.name = "" + str(c_user.pk) + "_profilePicture" + extension
 
         if c_user.is_company:
+            if not CompanyData.objects.filter(belongs_to=info.context.user):
+                company_data = CompanyData(
+                    belongs_to=info.context.user
+                )
+                company_data.save()
+
             data = CompanyData.objects.filter(belongs_to=c_user).get()
             if data.company_picture:
                 data.company_picture.storage.delete(data.company_picture.name)
             data.company_picture = file_in
             data.save()
         else:
+            if not UserData.objects.filter(belongs_to=info.context.user):
+                user_data = UserData(
+                    belongs_to=info.context.user
+                )
+                user_data.save()
             data = UserData.objects.filter(belongs_to=c_user).get()
             if data.profile_picture:
                 data.profile_picture.storage.delete(data.profile_picture.name)
