@@ -37,6 +37,9 @@ mutation = Mutation("createUser",
 ################################################## HELPER FUNCTIONS ##################################################
 
 def delete_user(email, password):
+    '''
+    deletes a user with the given email and password
+    '''
     payload_token_auth = """mutation{{
 							    tokenAuth(
 							        email:"{}",
@@ -65,6 +68,10 @@ def delete_user(email, password):
 
 
 def test_valids():
+    '''
+    tests the mutation with all valid argument values
+    fails if the any mutation fails
+    '''
     print("testing all valids")
 
     valid_emails = arguments["email"]["valid"]
@@ -94,12 +101,20 @@ def test_valids():
 
 
 def test_all_invalids():
+    '''
+    tests all invalid argument values
+    fails if any mutations do not fail
+    '''
     print("testing all invalids")
     for a in list(arguments):
         test_invalid_cases_of(a)
 
 
 def test_invalid_cases_of(invalid_argument):
+    '''
+    tests all invalid values for one argument
+    fails if any mutations do not fail
+    '''
     print("testing invalids of " + invalid_argument)
 
     cases = arguments[invalid_argument]["invalid"]
