@@ -1,5 +1,5 @@
 from django.db import models
-from user.models import Authentication
+from user.models import Authentication, UserData
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import int_list_validator
@@ -13,6 +13,16 @@ class JobOffer(models.Model):
     owner = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE,
+    )
+
+    candidates = models.ManyToManyField(
+        UserData,
+        
+    )
+
+    dislikes = models.ManyToManyField(
+        UserData,
+        
     )
 
     hashtags = models.ManyToManyField(

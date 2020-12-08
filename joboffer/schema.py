@@ -47,9 +47,10 @@ class JobOfferType(DjangoObjectType):
 # creates new Job offer
 class CreateJobOffer(graphene.Mutation):
     ok = graphene.Boolean()
-    job_offer = graphene.Field(JobOfferType)
+    #job_offer = graphene.Field(JobOfferType) # useless?
 
     class Arguments:
+        # cohooyo requirements
         job_type = graphene.String(required=True, description="'Vollzeit','Teilzeit','Ausbildung'")
         job_title = graphene.String(required=True, description="Name (Title) of the Job offered")
         location = graphene.String(description="Location of Job offer")
@@ -60,7 +61,7 @@ class CreateJobOffer(graphene.Mutation):
         public_email = graphene.String(description="publicly visible email address")
         hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
 
-        # not relevant for Recommenders
+        # seekwind additions
         pay_per_year = graphene.List(graphene.String)
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
@@ -119,7 +120,7 @@ class CreateJobOffer(graphene.Mutation):
 
 class AlterJobOffer(graphene.Mutation):
     ok = graphene.Boolean()
-    job_offer = graphene.Field(JobOfferType)
+    #job_offer = graphene.Field(JobOfferType) # useless?
 
     class Arguments:
         job_id = graphene.Int(required=True)
@@ -293,6 +294,31 @@ class DeleteImage(graphene.Mutation):
 
         return DeleteImage(ok=True, joboffer=job)
 
+class RightSwipe():
+    ok = graphene.Boolean()
+    #joboffer = graphene.Field(JobOfferType) # useless?
+
+    class Arguments:
+        job_id = graphene.Int(required=True, description="ID of Picture to be deleted")
+
+    @login_required
+    def mutatate(self, info, **kwargs):
+        if not info.context.user.is_company():
+            job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+            job.candidates.add(info.context.user.get())
+
+class LeftSwipe():
+    ok = graphene.Boolean()
+    #joboffer = graphene.Field(JobOfferType) # useless?
+
+    class Arguments:
+        job_id = graphene.Int(required=True, description="ID of Picture to be deleted")
+
+    @login_required
+    def mutatate(self, info, **kwargs):
+        if not info.context.user.is_company():
+            job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+            job.candidates.add(info.context.user.get())
 
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field()
@@ -300,7 +326,8 @@ class Mutation(graphene.ObjectType):
     delete_job_offer = DeleteJobOffer.Field()
     add_image = AddImage.Field()
     delete_image = DeleteImage.Field()
-
+    right_swipe = RightSwipe.Field()
+    left_swipe = LeftSwipe.Field()
 
 class Query(graphene.AbstractType):
     job_offers = graphene.List(JobOfferType)
