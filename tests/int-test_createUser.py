@@ -1,5 +1,5 @@
-from helper_functions import GraphQLHelper as helper
-from helper_functions import Mutation
+from helper import GraphQLHelper as helper
+from helper import Mutation
 # from testhub import Testcase, testhub
 import pytest
 
@@ -53,7 +53,7 @@ def delete_user(email, password):
 
     token = helper.request_token(helper, payload = payload_token_auth)
     header = helper.build_header(helper, token = token)
-    response = helper.run_payload(helper, header = header, payload = """
+    helper.run_payload(helper, header = header, payload = """
 													    mutation {{
 													        deleteUser(
 													            password:"{}"
@@ -84,20 +84,31 @@ def test_valids():
         len(valid_passwords))
 
     for i in range(maxlength):
-        filled_mutation = mutation.fill({"email":		valid_emails[min(i, len(valid_emails)-1)],
-                                  		 "isCompany":	valid_isCompanies[min(i, len(valid_isCompanies)-1)],
-                                  		 "password":	valid_passwords[min(i, len(valid_passwords)-1)]})
+
+        current_values = {"email":		valid_emails[min(i, len(valid_emails)-1)],
+	              		  "isCompany":	valid_isCompanies[min(i, len(valid_isCompanies)-1)],
+	              		  "password":	valid_passwords[min(i, len(valid_passwords)-1)]}
+
+        filled_mutation = mutation.fill(current_values)
 
 
-        response = helper.run_payload(helper, payload = filled_mutation).json()
+        response = helper.run_payload(helper, payload = filled_mutation)
 
-        if list(response)[0] == 'data':
-            delete_user(valid_emails[min(i, len(valid_emails)-1)], valid_passwords[min(i, len(valid_passwords)-1)])
+
+
+        if response.status_code == 200:
+            delete_user(current_values["email"], current_values["password"])
+            response_values = response.json()["data"]["createUser"]["user"]
+            for arg_name in list(response_values):
+                if response_values[arg_name] != current_values[arg_name]:
+                    print(filled_mutation)
+                    print(response.json())
+                assert response_values[arg_name] == current_values[arg_name]
         else:
-            print(filled_mutation)
-            print(response)
+            raise AssertionError
 
-        # assert list(response)[0] == 'data'
+
+
 
 
 def test_all_invalids():

@@ -38,11 +38,14 @@ class GraphQLHelper:
 
 class Query:
 
-    def __init__(self, name, arguments= {}):
+
+
+    def __init__(self, name: str, arguments: dict):
         '''
         parameters:
 			name:		the name of query
-			arguments:	the names of all the arguments the query takes
+			arguments:	the names of all the arguments the query takes as keys
+						a boolean as the values of the dict to tell if an argument's value needs quotation-marks "" or not
         '''
         self.name = name
         self.arguments = arguments
@@ -74,18 +77,19 @@ class Query:
 
 
 
+
 class Mutation(Query):
 
     response_query = None
 
-    def __init__(self, name, arguments, response_query):
+    def __init__(self, name: str, arguments: dict, response_query: str):
         '''
         parameters:
 			name:			the name of query
 			arguments:		the names of all the arguments the query takes
 			response_query:	the query after the mutation to check the changed data
         '''
-        super().__init__(name, arguments=arguments)
+        super().__init__(name, arguments)
         self.response_query = response_query
 
     def fill(self, values: dict) -> str:

@@ -1,5 +1,6 @@
-from helper_functions import GraphQLHelper as helper
-from helper_functions import Mutation
+from helper import GraphQLHelper as helper
+from helper import Mutation
+import json
 
 
 ################################################## TEST USER ##################################################
@@ -171,22 +172,34 @@ def test_valids():
         len(valid_shortbios))
 
     for i in range(maxlength):
-        filled_mutation = mutation.fill({"birthDate":	valid_birthdates[min(i, len(valid_birthdates)-1)],
-                                  		 "firstName":	valid_firstnames[min(i, len(valid_firstnames)-1)],
-                                  		 "gender":		valid_genders[min(i, len(valid_genders)-1)],
-                                  		 "lastName":    valid_lastnames[min(i, len(valid_lastnames)-1)],
-                                  		 "phoneNumber":	valid_phonenumbers[min(i, len(valid_phonenumbers)-1)],
-                                  		 "shortBio":	valid_shortbios[min(i, len(valid_shortbios)-1)]})
+
+        current_values = {"birthDate":	valid_birthdates[min(i, len(valid_birthdates)-1)],
+                  		 "firstName":	valid_firstnames[min(i, len(valid_firstnames)-1)],
+                  		 "gender":		valid_genders[min(i, len(valid_genders)-1)],
+                  		 "lastName":    valid_lastnames[min(i, len(valid_lastnames)-1)],
+                  		 "phoneNumber":	valid_phonenumbers[min(i, len(valid_phonenumbers)-1)],
+                  		 "shortBio":	valid_shortbios[min(i, len(valid_shortbios)-1)]}
+
+        filled_mutation = mutation.fill(current_values)
 
         token = helper.request_token(helper, payload = payload_token_auth)
         header = helper.build_header(helper, token = token)
-        response = helper.run_payload(helper, payload = filled_mutation, header = header).json()
+        response = helper.run_payload(helper, payload = filled_mutation, header = header)
 
-        if list(response)[0] != 'data':
-            print(filled_mutation)
-            print(response)
+        if response.status_code == 200:
+            response_values = response.json()["data"]["updateProfile"]["updatedProfile"]
+            for arg_name in response_values:
+                if response_values[arg_name] != current_values[arg_name]:
+                    print(filled_mutation)
+                    print(response.json())
+                assert response_values[arg_name] == current_values[arg_name]
+        else:
+            raise AssertionError
 
-        assert list(response)[0] == 'data'
+        # if response != json.loads(expected_response):
+        #     print(filled_mutation)
+        #     print(response)
+
 
 
 def test_all_invalids():
