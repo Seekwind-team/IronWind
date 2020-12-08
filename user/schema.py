@@ -259,12 +259,23 @@ class UploadUserPicture(graphene.Mutation):
         file_in.name = "" + str(c_user.pk) + "_profilePicture" + extension
 
         if c_user.is_company:
+            if not CompanyData.objects.filter(belongs_to=info.context.user):
+                company_data = CompanyData(
+                    belongs_to=info.context.user
+                )
+                company_data.save()
+
             data = CompanyData.objects.filter(belongs_to=c_user).get()
             if data.company_picture:
                 data.company_picture.storage.delete(data.company_picture.name)
             data.company_picture = file_in
             data.save()
         else:
+            if not UserData.objects.filter(belongs_to=info.context.user):
+                user_data = UserData(
+                    belongs_to=info.context.user
+                )
+                user_data.save()
             data = UserData.objects.filter(belongs_to=c_user).get()
             if data.profile_picture:
                 data.profile_picture.storage.delete(data.profile_picture.name)

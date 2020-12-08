@@ -63,7 +63,7 @@ class JobOffer(models.Model):
     )
 
     description = models.TextField(
-        max_length=4000,
+        max_length=8000,
         blank=True,
         null=True,
         help_text=_('Beschreibung des Jobangebots')
@@ -144,6 +144,10 @@ class JobOffer(models.Model):
 
     def __str__(self):
         return 'Joboffer (' + str(self.id) + ') "' + self.job_title + '"'
+
+    def save(self, *args, **kwargs):
+        self.last_modified = timezone.now()
+        super(JobOffer, self).save(*args, **kwargs)
 
 
 # used to store Images for Joboffers
