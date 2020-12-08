@@ -1,5 +1,5 @@
-from helper_functions import GraphQLHelper as helper
-from helper_functions import Mutation
+from .github.workflows.tests.helper_functions import GraphQLHelper as helper
+from tests.helper_functions import Mutation
 
 
 ################################################## TEST USER ##################################################
@@ -85,33 +85,44 @@ def delete_test_user():
 # includes equivalence classes valid and invalid that are filled with edge values
 arguments = {
         "birthDate": {
-            "valid":    ["0001-01-01", "9999-12-31"],
-            "invalid":    ["","0000-01-01", "0001-00-01", "0001-01-00", "10000-12-31", "9999-13-31", "9999-12-32"]
+        # dates according to iso 8601
+        # YYYY-MM-DD
+        # Y: [0001-9999]
+        # M: [01-12]
+        # D: [01-31]
+            "valid":	["0001-01-01", "9999-12-31"],
+            "invalid":	["","0000-01-01", "0001-00-01", "0001-01-00", "10000-12-31", "9999-13-31", "9999-12-32"]
         },
 
         "firstName": {
-            "valid":    ["a", "Z"*50, "-", "'"],
-            "invalid":    ["", "*", "0", "a"*51]
+        # [a-Z] + special chars - and ' length: 1-50
+            "valid":	["a", "Z"*50, "-", "'"],
+            "invalid":	["", "*", "0", "a"*51]
         },
 
         "gender": {
-            "valid":    ["m", "f", "d"],
-            "invalid":    ["", "z"]
+        # only male, female, diverse
+            "valid":	["m", "f", "d"],
+            "invalid":	["", "z"]
         },
 
         "lastName": {
+        # same as firstName + can be empty
             "valid":    ["", "a", "Z"*50, "-", "'"],
-            "invalid":    ["*", "0", "a"*51]
+            "invalid":	["*", "0", "a"*51]
         },
 
         "phoneNumber": {
+        # telephone number according to e.165-format
+        # [0-9], length: 3-15
             "valid":    ["000", "9"*15],
-            "invalid":    ["", "00", "9"*16]
+            "invalid":	["", "00", "9"*16]
         },
 
         "shortBio": {
+        # [a-Z] + special characters, length: 1-100
             "valid":    ["a", "Z"*100, "*"],
-            "invalid":    ["", "Z"*101]
+            "invalid":	["", "Z"*101]
         }
     }
 
