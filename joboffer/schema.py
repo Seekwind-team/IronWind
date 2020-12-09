@@ -20,6 +20,7 @@ class ImageType(DjangoObjectType):
     class Meta:
         model = Image
         description = 'Meta Object to hold Information for Image-Objects attached to Job Offers'
+        # excludes model to avoid recursive query sets
         exclude_fields = ('model',)
 
 
@@ -46,8 +47,8 @@ class JobOfferType(DjangoObjectType):
 
 # creates new Job offer
 class CreateJobOffer(graphene.Mutation):
-    ok = graphene.Boolean()
-    #job_offer = graphene.Field(JobOfferType) # useless?
+    ok = graphene.Boolean(description="Will return on successful creation")
+    job_offer = graphene.Field(JobOfferType, description="returns created joboffer")
 
     class Arguments:
         # cohooyo requirements
@@ -61,8 +62,8 @@ class CreateJobOffer(graphene.Mutation):
         public_email = graphene.String(description="publicly visible email address")
         hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
 
-        # seekwind additions
-        pay_per_year = graphene.List(graphene.String)
+        # not relevant for Recommenders
+        pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.String(description="Datum des ersten Arbeitstages")
@@ -119,11 +120,11 @@ class CreateJobOffer(graphene.Mutation):
 
 
 class AlterJobOffer(graphene.Mutation):
-    ok = graphene.Boolean()
-    #job_offer = graphene.Field(JobOfferType) # useless?
+    ok = graphene.Boolean(description="returns true on successful creation")
+    job_offer = graphene.Field(JobOfferType, description="returns altered job offer object")
 
     class Arguments:
-        job_id = graphene.Int(required=True)
+        job_id = graphene.Int(required=True, description="ID of Job to be altered")
         job_type = graphene.String(description="'Vollzeit','Teilzeit','Ausbildung'")
         job_title = graphene.String(description="Name (Title) of the Job offered")
         location = graphene.String(description="Location of Job offer")
@@ -136,7 +137,7 @@ class AlterJobOffer(graphene.Mutation):
         add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
         remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
 
-        pay_per_year = graphene.List(graphene.String)
+        pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.String(description="Datum des ersten Arbeitstages")
@@ -205,10 +206,10 @@ class AlterJobOffer(graphene.Mutation):
 
 
 class DeleteJobOffer(graphene.Mutation):
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="Returns True on successful operation")
 
     class Arguments:
-        job_id = graphene.Int(required=True)
+        job_id = graphene.Int(required=True,description="ID of Job to be deleted")
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -225,8 +226,8 @@ class DeleteJobOffer(graphene.Mutation):
 
 
 class AddImage(graphene.Mutation):
-    ok = graphene.Boolean()
-    image = graphene.Field(ImageType)
+    ok = graphene.Boolean(description="returns true on successful operation")
+    image = graphene.Field(ImageType, description="Returns Image Object with metadata")
 
     class Arguments:
         job_offer_id = graphene.Int(required=True, description="ID of Job-Offer Image is being applied to")
@@ -264,8 +265,8 @@ class AddImage(graphene.Mutation):
 
 
 class DeleteImage(graphene.Mutation):
-    ok = graphene.Boolean()
-    joboffer = graphene.Field(JobOfferType)
+    ok = graphene.Boolean(description="returns true on successful operation")
+    joboffer = graphene.Field(JobOfferType, description="returns altered job-offer object")
 
     class Arguments:
         picture_ID = graphene.Int(required=True, description="ID of Picture to be deleted")
@@ -323,8 +324,17 @@ class Mutation(graphene.ObjectType):
     swipe = Swipe.Field()
 
 class Query(graphene.AbstractType):
-    job_offers = graphene.List(JobOfferType)
-    job_offer = graphene.Field(JobOfferType, job_id=graphene.Int())
+    job_offers = graphene.List(
+        JobOfferType,
+        description="returns list of all job-offers created by logged in company-user"
+    )
+    job_offer = graphene.Field(
+        JobOfferType,
+        job_id=graphene.Int(
+            description="ID of Job offer to be returned with this request"
+        ),
+        description="returns job offer with given ID"
+    )
 
     # job_tags = graphene.List(Tag, job_id=graphene.Int())
 

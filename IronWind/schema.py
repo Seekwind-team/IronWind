@@ -1,6 +1,7 @@
 import graphene
 import graphql_jwt
-from django.utils import timezone
+from django.utils import timezone, asyncio
+from graphene.types import datetime
 from graphql_jwt.decorators import setup_jwt_cookie, csrf_rotation, refresh_expiration, on_token_auth_resolve
 from functools import wraps
 from django.contrib.auth import authenticate
@@ -11,6 +12,7 @@ from django.contrib.auth import get_user_model
 
 
 import carespace.schema
+import chat.schema
 import joboffer.schema
 import user.schema
 import recommenders.schema
@@ -61,22 +63,27 @@ class ObtainJSONWebToken(graphql_jwt.ObtainJSONWebToken):
 
 
 # put here any Queries to inherit them
-class Query(carespace.schema.Query, recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
+class Query(carespace.schema.Query, chat.schema.Query,recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
     # Method that Simply returns 'Pong'
-    ping = graphene.String(default_value="Pong")
+    ping = graphene.String(default_value="Pong", description="Used internally for testing, will return \"Pong\"")
     # Returns current Server Time
-    get_server_time = graphene.DateTime()
+    get_server_time = graphene.DateTime(description="Will return server time, aligned with all times stamps")
 
     def resolve_get_server_time(self, info):
         return timezone.now()
 
 
 # put here any Mutations to inherit them
-class Mutation(joboffer.schema.Mutation, user.schema.Mutation, graphene.ObjectType):
+class Mutation(joboffer.schema.Mutation, user.schema.Mutation, chat.schema.Mutation):
     token_auth = ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
     delete_token = graphql_jwt.DeleteJSONWebTokenCookie()
 
 
-schema = graphene.Schema(query=Query, mutation=Mutation, types=[])
+class Subscription(chat.schema.Subscription, graphene.ObjectType):
+    pass
+
+
+schema = graphene.Schema(query=Query, mutation=Mutation, types=[], subscription=Subscription,)
+
