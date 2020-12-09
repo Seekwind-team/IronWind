@@ -19,7 +19,7 @@ from user.schema import Upload
 class ImageType(DjangoObjectType):
     class Meta:
         model = Image
-        description = 'Meta Object to hold Information for Image-Objects attached to Job Offers'
+        description = 'Meta Object to hold information for Image-Objects attached to Job Offers'
         # excludes model to avoid recursive query sets
         exclude_fields = ('model',)
 
@@ -27,7 +27,7 @@ class ImageType(DjangoObjectType):
 class SwipeType(DjangoObjectType):
     class Meta:
         model = Swipe
-        description = 'Meta Object to hold Information for Swipes between User and Job Offers'
+        description = 'Meta Object to hold information for Swipes between User and Job Offers'
         # excludes model to avoid recursive query sets
         exclude_fields = ('job_offer',)
 
@@ -35,7 +35,13 @@ class SwipeType(DjangoObjectType):
 class BookmarkType(DjangoObjectType):
     class Meta:
         model = Bookmark
-        description = 'Meta Object to hold Information for Bookmarks from Users on Job Offers'
+        description = 'Meta Object to hold information for Bookmarks from Users on Job Offers'
+
+
+class TagType(DjangoObjectType):
+    class Meta:
+        model = Tag
+        description = 'Meta Object to hold Tag information'
 
 
 class JobOfferType(DjangoObjectType):
@@ -385,7 +391,10 @@ class Query(graphene.AbstractType):
     )
 
 
-    # all_job_tags = graphene.List(Tag, job_id=graphene.Int())
+    all_tags = graphene.List(
+        TagType,
+        job_id=graphene.Int()
+    )
     
     @user_passes_test(lambda user: user.is_company)
     def resolve_job_offers(self, info):
@@ -396,13 +405,17 @@ class Query(graphene.AbstractType):
         return JobOffer.objects.filter(pk=job_id).get()
 
     @login_required
-    def bookmarks(self, info):
+    def resolve_bookmarks(self, info):
         return list(Bookmark.objects.filter(candidate=info.context.user))
 
     @user_passes_test(lambda user: user.is_company)
-    def swipes(self, info):
+    def resolve_swipes(self, info):
         return list(Swipe.objects.filter(candidate=info.context.user))
 
     @login_required
-    def swipes(self, info):
+    def resolve_swipes(self, info):
         return list(Swipe.objects.filter(candidate=info.context.user))
+
+    @user_passes_test(lambda user: user.is_company)
+    def resolve_all_tags(self, info, job_id):
+        job = JobOffer.objects.filter(pk=job_id).get()
