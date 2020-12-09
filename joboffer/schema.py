@@ -11,8 +11,8 @@ from graphene_django import DjangoObjectType
 
 from django.core.validators import validate_email
 
-from joboffer.models import JobOffer, Tag, Image, Swipes
-from user.models import CompanyData
+from joboffer.models import JobOffer, Tag, Image, Swipe, Bookmark
+from user.models import CompanyData, UserData
 from user.schema import Upload
 
 
@@ -23,11 +23,24 @@ class ImageType(DjangoObjectType):
         # excludes model to avoid recursive query sets
         exclude_fields = ('model',)
 
+class SwipeType(DjangoObjectType):
+    class Meta:
+        model = Swipe
+        description = 'Meta Object to hold Information for Swipes between User and Job Offers'
+        # excludes model to avoid recursive query sets
+        exclude_fields = ('job_offer',)
+
+class BookmarkType(DjangoObjectType):
+    class Meta:
+        model = Bookmark
+        description = 'Meta Object to hold Information for Bookmarks from Users on Job Offers'
+        # excludes model to avoid recursive query sets
+        exclude_fields = ('job_offer',)
 
 class JobOfferType(DjangoObjectType):
     class Meta:
         model = JobOffer
-        description = 'This Type contains a singular Joboffer posted'
+        description = 'This Type contains a singular Job offer posted'
 
     created_at = graphene.DateTime(name='created_at')
     must_have = graphene.String(name='must_have')
@@ -295,24 +308,46 @@ class DeleteImage(graphene.Mutation):
 
         return DeleteImage(ok=True, joboffer=job)
 
-class Swipe(graphene.Mutation):
+# used to store like or dislike from user on joboffer 
+class SaveSwipe(graphene.Mutation):
     ok = graphene.Boolean()
-    joboffer = graphene.Field(JobOfferType)
-
+    swipe = graphene.Field(SwipeType, description="returns new swipe")
+    
     class Arguments:
-        job_id = graphene.Int(required=True, description="ID of Picture to be deleted")
+        job_id = graphene.Int(required=True, description="ID of swiped job")
         like = graphene.Boolean(required=True, description="saves Like(true) or Dislike(false) between User and given job offer")
-        reset = graphene.Boolean(description="set to true to reset wipe")
+        reset = graphene.Boolean(description="set to true to reset swipe")
     
     @login_required
     def mutate(self, info, **kwargs):
         try:
-            job_object = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+            job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
         except Exception:
-            raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_ID']))
-        
-        swipe = Swipe.objects(candidate=info.context.user(), job_offer=job_object)
+            raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
+
+        swipe = Swipe(candidate=info.context.user, job_offer=job)
         swipe.liked = kwargs['like']
+        return SaveSwipe(ok=True, swipe=swipe)
+
+
+# used to store joboffer for user as bookmarks
+class SaveBookmark(graphene.Mutation):
+    ok = graphene.Boolean()
+    bookmark = graphene.Field(BookmarkType, description="returns new Bookmark")
+
+    class Arguments:
+        job_id = graphene.Int(required=True, description="ID of job to be bookmarked")
+    
+    @login_required
+    def mutate(self, info, **kwargs):
+        try:
+            job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+        except Exception:
+            raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
+
+        bookmark = Bookmark(candidate=info.context.user, job_offer=job)
+        return SaveBookmark(ok=True, bookmark=bookmark)
+
 
 
 class Mutation(graphene.ObjectType):
@@ -321,13 +356,15 @@ class Mutation(graphene.ObjectType):
     delete_job_offer = DeleteJobOffer.Field()
     add_image = AddImage.Field()
     delete_image = DeleteImage.Field()
-    swipe = Swipe.Field()
+    save_swipe = SaveSwipe.Field()
+    save_bookmark = SaveBookmark.Field()
 
 class Query(graphene.AbstractType):
     job_offers = graphene.List(
         JobOfferType,
         description="returns list of all job-offers created by logged in company-user"
     )
+
     job_offer = graphene.Field(
         JobOfferType,
         job_id=graphene.Int(

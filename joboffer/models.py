@@ -167,8 +167,7 @@ class Image(models.Model):
         help_text=_('Imagefile with metadata')
     )
 
-    description = models.CharField(max_length=255, null=True, blank=True,
-                                   help_text=_('Description of Image, 255 char max'))
+    description = models.CharField(max_length=255, null=True, blank=True, help_text=_('Description of Image, 255 char max'))
    
     default = models.BooleanField(default=False, help_text=_('is this the default image?'))
     width = models.FloatField(default=0, help_text=_('width of this image, will be set automatically on upload'))
@@ -179,7 +178,7 @@ class Image(models.Model):
 
 
 # used to store like or dislike from user on joboffer
-class Swipes(models.Model):
+class Swipe(models.Model):
     candidate = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE
@@ -192,4 +191,17 @@ class Swipes(models.Model):
 
     liked = models.BooleanField(
         blank=False,
+    )
+
+
+# used to store joboffer for user as bookmarks
+class Bookmark(models.Model):
+    candidate = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE
+    )
+
+    job_offer = models.ForeignKey(
+        JobOffer, 
+        on_delete=models.CASCADE
     )
