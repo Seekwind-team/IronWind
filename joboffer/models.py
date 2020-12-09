@@ -7,21 +7,7 @@ from django.core.validators import int_list_validator
 # used for storing hashtags non-redundant
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique = True)
-    
-class Swipes(models.Model):
-    candidate = models.ForeignKey(
-        UserData,
-        on_delete=models.CASCADE
-    )
 
-    job_offer = models.ForeignKey(
-        JobOffer,
-        on_delete=models.CASCADE
-    )
-
-    liked = models.BooleanField(
-        blank=False,
-    )
 
 class JobOffer(models.Model):
     owner = models.ForeignKey(
@@ -176,3 +162,16 @@ class Image(models.Model):
 
     def __str__(self):
         return self.image.url
+
+
+class Swipes(models.Model):
+    candidate = models.ForeignKey(
+        UserData,
+        on_delete=models.CASCADE
+    )
+
+    job_offer = models.ForeignKey(JobOffer, on_delete=models.CASCADE)
+
+    liked = models.BooleanField(
+        blank=False,
+    )

@@ -296,6 +296,7 @@ class DeleteImage(graphene.Mutation):
 
 class Swipe(graphene.Mutation):
     ok = graphene.Boolean()
+    joboffer = graphene.Field(JobOfferType)
 
     class Arguments:
         job_id = graphene.Int(required=True, description="ID of Picture to be deleted")
@@ -303,15 +304,15 @@ class Swipe(graphene.Mutation):
         reset = graphene.Boolean(description="set to true to reset wipe")
     
     @login_required
-    def mutatate(self, info, **kwargs):
+    def mutate(self, info, **kwargs):
         try:
-            job_object = JobOffer.objects.filter(pk=kwargs['job_ID']).get()
+            job_object = JobOffer.objects.filter(pk=kwargs['job_id']).get()
         except Exception:
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_ID']))
         
         swipe = Swipe.objects(candidate=info.context.user(), job_offer=job_object)
         swipe.liked = kwargs['like']
-        
+
 
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field() 
