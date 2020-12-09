@@ -23,6 +23,7 @@ class ImageType(DjangoObjectType):
         # excludes model to avoid recursive query sets
         exclude_fields = ('model',)
 
+
 class SwipeType(DjangoObjectType):
     class Meta:
         model = Swipe
@@ -30,12 +31,12 @@ class SwipeType(DjangoObjectType):
         # excludes model to avoid recursive query sets
         exclude_fields = ('job_offer',)
 
+
 class BookmarkType(DjangoObjectType):
     class Meta:
         model = Bookmark
         description = 'Meta Object to hold Information for Bookmarks from Users on Job Offers'
-        # excludes model to avoid recursive query sets
-        exclude_fields = ('job_offer',)
+
 
 class JobOfferType(DjangoObjectType):
     class Meta:
@@ -373,8 +374,19 @@ class Query(graphene.AbstractType):
         description="returns job offer with given ID"
     )
 
-    # job_tags = graphene.List(Tag, job_id=graphene.Int())
+    bookmarks = graphene.List(
+        BookmarkType,
+        description="returns list of Bookmarks for logged in user"
+    )
 
+    swipes = graphene.List(
+        SwipeType,
+        description="returns list of Swipes for logged in user or company-user"
+    )
+
+
+    # all_job_tags = graphene.List(Tag, job_id=graphene.Int())
+    
     @user_passes_test(lambda user: user.is_company)
     def resolve_job_offers(self, info):
         return list(JobOffer.objects.filter(owner=info.context.user))
@@ -382,3 +394,15 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_job_offer(self, info, job_id):
         return JobOffer.objects.filter(pk=job_id).get()
+
+    @login_required
+    def bookmarks(self, info):
+        return list(Bookmark.objects.filter(candidate=info.context.user))
+
+    @user_passes_test(lambda user: user.is_company)
+    def swipes(self, info):
+        return list(Swipe.objects.filter(candidate=info.context.user))
+
+    @login_required
+    def swipes(self, info):
+        return list(Swipe.objects.filter(candidate=info.context.user))
