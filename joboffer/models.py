@@ -8,21 +8,25 @@ from django.core.validators import int_list_validator
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique = True)
     
+class Swipes(models.Model):
+    candidate = models.ForeignKey(
+        UserData,
+        on_delete=models.CASCADE
+    )
+
+    job_offer = models.ForeignKey(
+        JobOffer,
+        on_delete=models.CASCADE
+    )
+
+    liked = models.BooleanField(
+        blank=False,
+    )
 
 class JobOffer(models.Model):
     owner = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE,
-    )
-
-    candidates = models.ManyToManyField(
-        UserData,
-        
-    )
-
-    dislikes = models.ManyToManyField(
-        UserData,
-        
     )
 
     hashtags = models.ManyToManyField(

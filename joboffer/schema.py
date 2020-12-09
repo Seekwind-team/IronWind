@@ -11,7 +11,7 @@ from graphene_django import DjangoObjectType
 
 from django.core.validators import validate_email
 
-from joboffer.models import JobOffer, Tag, Image
+from joboffer.models import JobOffer, Tag, Image, Swipes
 from user.models import CompanyData
 from user.schema import Upload
 
@@ -294,40 +294,32 @@ class DeleteImage(graphene.Mutation):
 
         return DeleteImage(ok=True, joboffer=job)
 
-class RightSwipe():
+class Swipe(graphene.Mutation):
     ok = graphene.Boolean()
-    #joboffer = graphene.Field(JobOfferType) # useless?
 
     class Arguments:
         job_id = graphene.Int(required=True, description="ID of Picture to be deleted")
-
+        like = graphene.Boolean(required=True, description="saves Like(true) or Dislike(false) between User and given job offer")
+        reset = graphene.Boolean(description="set to true to reset wipe")
+    
     @login_required
     def mutatate(self, info, **kwargs):
-        if not info.context.user.is_company():
-            job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
-            job.candidates.add(info.context.user.get())
-
-class LeftSwipe():
-    ok = graphene.Boolean()
-    #joboffer = graphene.Field(JobOfferType) # useless?
-
-    class Arguments:
-        job_id = graphene.Int(required=True, description="ID of Picture to be deleted")
-
-    @login_required
-    def mutatate(self, info, **kwargs):
-        if not info.context.user.is_company():
-            job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
-            job.candidates.add(info.context.user.get())
+        try:
+            job_object = JobOffer.objects.filter(pk=kwargs['job_ID']).get()
+        except Exception:
+            raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_ID']))
+        
+        swipe = Swipe.objects(candidate=info.context.user(), job_offer=job_object)
+        swipe.liked = kwargs['like']
+        
 
 class Mutation(graphene.ObjectType):
-    create_job_offer = CreateJobOffer.Field()
+    create_job_offer = CreateJobOffer.Field() 
     alter_job_offer = AlterJobOffer.Field()
     delete_job_offer = DeleteJobOffer.Field()
     add_image = AddImage.Field()
     delete_image = DeleteImage.Field()
-    right_swipe = RightSwipe.Field()
-    left_swipe = LeftSwipe.Field()
+    swipe = Swipe.Field()
 
 class Query(graphene.AbstractType):
     job_offers = graphene.List(JobOfferType)
