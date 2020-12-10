@@ -1,4 +1,6 @@
 import requests
+from datetime import datetime
+import os
 
 class GraphQLHelper:
     # runs Query or Mutation and returns response object
@@ -125,3 +127,38 @@ class Mutation(Query):
 
 
         return mutation
+
+
+class Logger:
+
+    def __init__(self, filename: str):
+        self.filename = filename
+        f = open(filename, "w")
+        f.write("")
+        f.close()
+
+
+
+    def start(self, name: str):
+        f = open(self.filename, "a")
+        f.write("############################## " + name + " ##############################\n")
+        f.close()
+
+
+    def test_failed(self, arg_name: str, expected: str, actual: str, query: str):
+        f = open(self.filename, "a")
+        f.write("expected\t" + arg_name + ":\t'" + expected + "'\nbut was\t\t" + arg_name + ":\t'" + str(actual) + "'\n")
+        f.write("when sending:\t" + query + "\n\n")
+        f.close()
+        # print("expected:\t" + expected + "\nbut was:\t" + str(actual) + "\n")
+
+
+    def expected_error(self, arg_name: str, arg_value,  query: str):
+        f = open(self.filename, "a")
+        f.write("expected an error when sending: " + query + "\n")
+        f.write("because of: \"" + arg_name + "\": '" + arg_value + "'\n\n")
+        f.close()
+        # print("expected an error when sending: " + query)
+        # print("because of: \"" + arg_name + "\": " + arg_value)
+
+logger = Logger(os.path.dirname(__file__) + "\\logs\\testlog-" + datetime.now().strftime("%Y-%M-%d_%H-%M-%S") +".txt")
