@@ -76,7 +76,75 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         help_text=_('User creation DateTime')
     )
 
+# saves soft-skill-slider values range -5 to 5
+class SoftSkills(models.Model):
+    owner=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    artistic=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    social_activity=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    customer_orientated=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    motorskills=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    planning=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    empathic=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    creativity=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    digital=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    innovativity=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    early_rise=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    routine=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    communicativity=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
 
+    
 class UserData(models.Model):
     belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, help_text=_('User Reference'))
 
@@ -131,7 +199,12 @@ class UserData(models.Model):
         help_text=_('gender of User, uses string to allow all genders')
     )
 
-    # TODO: Soft Skills?
+    # soft skills slider values
+    soft_skills = models.OneToOneField(
+        SoftSkills,
+        on_delete=models.CASCADE
+    )
+
     # TODO: Geo-Locations?
 
     location = models.CharField(
