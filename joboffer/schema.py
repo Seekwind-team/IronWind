@@ -29,9 +29,6 @@ class SwipeType(DjangoObjectType):
         model = Swipe
         description = 'Meta Object to hold information for Swipes between User and Job Offers'
 
-    #job_offer = graphene.Int(name='job_offer')
-
-
 class BookmarkType(DjangoObjectType):
     class Meta:
         model = Bookmark
@@ -63,8 +60,8 @@ class JobOfferType(DjangoObjectType):
             return Image.objects.filter(model=self).all()
         except Exception:
             return None
-
-
+            
+ 
 # creates new Job offer
 class CreateJobOffer(graphene.Mutation):
     ok = graphene.Boolean(description="Will return on successful creation")
@@ -356,7 +353,6 @@ class SaveBookmark(graphene.Mutation):
         return SaveBookmark(ok=True, bookmark=bookmark)
 
 
-
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field() 
     alter_job_offer = AlterJobOffer.Field()
@@ -415,14 +411,10 @@ class Query(graphene.AbstractType):
     def resolve_bookmarks(self, info):
         return list(Bookmark.objects.filter(candidate=info.context.user))
 
-    @user_passes_test(lambda user: user.is_company)
-    def resolve_swipes(self, info):
-        return list(Swipe.objects.filter(candidate=info.context.user))
-
     @login_required
     def resolve_swipes(self, info):
         return list(Swipe.objects.filter(candidate=info.context.user))
-    
+
     @login_required
     def resolve_all_tags(self, info):
         return Tag.objects.all()
