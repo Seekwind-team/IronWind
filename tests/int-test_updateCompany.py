@@ -222,6 +222,3 @@ def test(logger):
 	test_valids()
 	test_all_invalids()
 	delete_test_user()
-
-# from helper import logger
-# test(logger)
