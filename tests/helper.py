@@ -161,5 +161,3 @@ class Logger:
         f.close()
         # print("expected an error when sending: " + query)
         # print("because of: \"" + arg_name + "\": " + arg_value)
-
-logger = Logger(os.path.dirname(__file__) + "\\logs\\testlog-" + datetime.now().strftime("%Y-%M-%d_%H-%M-%S") +".txt")
