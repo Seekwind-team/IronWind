@@ -331,6 +331,8 @@ class SaveSwipe(graphene.Mutation):
 
         swipe = Swipe(candidate=info.context.user, job_offer=job)
         swipe.liked = kwargs['like']
+        swipe.save()
+
         return SaveSwipe(ok=True, swipe=swipe)
 
 
@@ -350,6 +352,8 @@ class SaveBookmark(graphene.Mutation):
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
 
         bookmark = Bookmark(candidate=info.context.user, job_offer=job)
+        bookmark.save()
+
         return SaveBookmark(ok=True, bookmark=bookmark)
 
 
