@@ -9,7 +9,7 @@ from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
-from user.models import UserData, CompanyData
+from user.models import UserData, CompanyData, SoftSkills
 
 
 class Upload(graphene.types.Scalar):
@@ -129,6 +129,7 @@ class UpdatedProfile(graphene.Mutation):
         gender = graphene.String(description="gender of user")
         birth_date = graphene.Date(description="birthdate of user, uses iso8601-Format (eg. 2006-01-02)")
         #  profile_picture = Upload(description="Uploaded File") #
+        soft_skills = graphene.JSONString(description="List of slider values for softskills. eg. \"creativity\":2")
 
     @login_required  # requires login
     @user_passes_test(lambda user: not is_company(user))  # only applicable for non-company accounts
@@ -138,7 +139,8 @@ class UpdatedProfile(graphene.Mutation):
                phone_number=None,
                short_bio=None,
                gender=None,
-               birth_date=None):
+               birth_date=None,
+               soft_skills=None):
         # creates new Database entry, if none exists
         if not UserData.objects.filter(belongs_to=info.context.user):
             user_data = UserData(
@@ -157,6 +159,25 @@ class UpdatedProfile(graphene.Mutation):
         data_object.gender = gender or data_object.gender
         data_object.birth_date = birth_date or data_object.birth_date
         data_object.save()
+
+        if soft_skills:
+            soft_skills_object = SoftSkills(owner=info.context.user)
+            soft_skills_object.artistic = soft_skills['artistic']
+            soft_skills_object.social_activity = soft_skills['social_activity']
+            soft_skills_object.customer_orientated = soft_skills['customer_orientated']
+            soft_skills_object.motorskills = soft_skills['motorskills']
+            soft_skills_object.planning = soft_skills['planning']
+            soft_skills_object.empathic = soft_skills['empathic']
+            soft_skills_object.creativity = soft_skills['creativity']
+            soft_skills_object.digital = soft_skills['digital']
+            soft_skills_object.innovativity = soft_skills['innovativity']
+            soft_skills_object.early_rise = soft_skills['early_rise']
+            soft_skills_object.routine = soft_skills['routine']
+            soft_skills_object.communicativity = soft_skills['communicativity']
+            soft_skills_object.save()
+            
+            data_object.soft_skills = soft_skills_object
+            data_object.save()
 
         return UpdatedProfile(updated_profile=data_object)
 

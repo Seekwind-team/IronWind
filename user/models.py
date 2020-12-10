@@ -78,11 +78,6 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
 
 # saves soft-skill-slider values range -5 to 5
 class SoftSkills(models.Model):
-    owner=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
     artistic=models.SmallIntegerField(
         default=0,
         #copy paste
