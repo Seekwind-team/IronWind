@@ -28,8 +28,8 @@ class SwipeType(DjangoObjectType):
     class Meta:
         model = Swipe
         description = 'Meta Object to hold information for Swipes between User and Job Offers'
-        # excludes model to avoid recursive query sets
-        exclude_fields = ('job_offer',)
+
+    #job_offer = graphene.Int(name='job_offer')
 
 
 class BookmarkType(DjangoObjectType):
@@ -390,12 +390,19 @@ class Query(graphene.AbstractType):
         description="returns list of Swipes for logged in user or company-user"
     )
 
-
     all_tags = graphene.List(
         TagType,
-        job_id=graphene.Int()
     )
     
+    job_offer_tag_search = graphene.List(
+        JobOfferType,
+        tag_names = graphene.List(
+            graphene.String,
+            description="tagnames to search for in joboffers"
+        ),
+        description="returns all joboffers that contain given tags"
+    )
+
     @user_passes_test(lambda user: user.is_company)
     def resolve_job_offers(self, info):
         return list(JobOffer.objects.filter(owner=info.context.user))
@@ -415,7 +422,19 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_swipes(self, info):
         return list(Swipe.objects.filter(candidate=info.context.user))
+    
+    @login_required
+    def resolve_all_tags(self, info):
+        return Tag.objects.all()
 
-    @user_passes_test(lambda user: user.is_company)
-    def resolve_all_tags(self, info, job_id):
-        job = JobOffer.objects.filter(pk=job_id).get()
+    @login_required
+    def resolve_job_offer_tag_search(self, info, tag_names):
+        jobs = []
+        for name in tag_names:
+            tag = Tag.objects.filter(name=name).get()
+            query_set = JobOffer.objects.filter(hashtags=tag)
+            for job in query_set:
+                jobs.append(job)    
+        
+        return list(dict.fromkeys(jobs))
+        

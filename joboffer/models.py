@@ -103,7 +103,9 @@ class JobOffer(models.Model):
         validators=[
             int_list_validator(
                 sep=',',
-                allow_negative=False)],
+                allow_negative=False
+            )
+        ],
         max_length = 100,
         blank = True,
         null = True,
