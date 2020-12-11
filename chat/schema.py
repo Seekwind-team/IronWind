@@ -8,9 +8,13 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 from rx import Observable
 
+from graphql_jwt import mixins
+
 from chat.models import Message
 from user.models import Authentication
 from user.schema import UserType
+
+import IronWind.schema
 
 
 class MessageType(DjangoObjectType):
@@ -19,8 +23,9 @@ class MessageType(DjangoObjectType):
 
 
 class Subscription(graphene.ObjectType):
-    count_seconds = graphene.Int(up_to=graphene.Int(description="Seconds the Observable Object will count to. Used for Internal testing"),
-                                 description="Simple Method that counts up to a given value. Used for Internal testing only")
+    count_seconds = graphene.Int(
+        up_to=graphene.Int(description="Seconds the Observable Object will count to. Used for Internal testing"),
+        description="Simple Method that counts up to a given value. Used for Internal testing only")
 
     def resolve_count_seconds(
             self,
@@ -32,27 +37,35 @@ class Subscription(graphene.ObjectType):
             .take_while(lambda i: int(i) <= up_to)
 
     message_created = graphene.Field(MessageType,
+                                     token=graphene.String(required=True),
                                      description="creates an observable to receive all messages sent to logged in user",
-                                     token=graphene.String(required=True)
                                      )
 
-    @login_required
-    def resolve_message_created(self, info, *args, **kwargs):
+    def resolve_message_created(self, info, *args, token, **kwargs):
         """creates an observable to receive all messages sent to logged in user"""
-        receiver = info.context.user
+
+        # this is a REALLY shitty workaround, see https://github.com/flavors/django-graphql-jwt/issues/239 for any
+        # development of the roots issue
+        schema = graphene.Schema(mutation=IronWind.schema.Mutation)
+
+        result = schema.execute(
+            '''
+                mutation testMutation($token:String!){
+                    verifyToken(token: $token) {
+                        payload
+                    }
+                }
+            ''', variables={'token': token},
+        )
+        print(result)
+        email = result.data['verifyToken']['payload']['email']
+
+        receiver = Authentication.objects.filter(email=email).get()
         return self.filter(
             lambda event:
             event.operation == CREATED and
             isinstance(event.instance, Message) and (receiver.pk is event.instance.receiver.id)
         ).map(lambda event: event.instance)
-
-
-'''
-    test = graphene.Field(UserType, token=graphene.String(required=True))
-
-    def resolve_test(self, info, *args, **kwargs):
-        return Observable.interval(1000).map(lambda t: info.context.user)
-'''
 
 
 class SendMessage(graphene.Mutation):
@@ -90,7 +103,8 @@ class Query(graphene.ObjectType):
     get_messages = graphene.List(
         MessageType,
         partner=graphene.Int(description="ID of partner messages are loaded on"),
-        n_from=graphene.Int(description="selects messages from n, where 0 ist the last message received. Defaults to 0"),
+        n_from=graphene.Int(
+            description="selects messages from n, where 0 ist the last message received. Defaults to 0"),
         n_to=graphene.Int(description="will return n last messages, defaults to 25"),
         description="Function Used to get n-last messages with stated partner"
     )
