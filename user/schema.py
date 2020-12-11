@@ -59,25 +59,30 @@ class CompanyDataType(DjangoObjectType):
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
     # returns boolean indicating success of the operation
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
 
     class Arguments:
         # requires password authentication for the process
-        password = graphene.String(required=True, description="Must provide valid password for user to delete own account")
+        password = graphene.String(required=True,
+                                   description="Must provide valid password for user to delete own account")
 
     @login_required
     def mutate(self, info, **kwargs):
         user = info.context.user
         # checks whether provided password is correct
         if user.check_password(raw_password=kwargs["password"]):
-            if user.is_company:
-                data = CompanyData.objects.filter(belongs_to=user).get()
-                if data.company_picture:
-                    data.company_picture.storage.delete(data.company_picture.name)
-            else:
-                data = UserData.objects.filter(belongs_to=user).get()
-                if data.profile_picture:
-                    data.profile_picture.storage.delete(data.profile_picture.name)
+            try:
+                if user.is_company:
+                    data = CompanyData.objects.filter(belongs_to=user).get()
+                    if data.company_picture:
+                        data.company_picture.storage.delete(data.company_picture.name)
+                else:
+                    data = UserData.objects.filter(belongs_to=user).get()
+                    if data.profile_picture:
+                        data.profile_picture.storage.delete(data.profile_picture.name)
+            # Not a real error, only means user hasn't updated profile with any information yet
+            except Exception:
+                None
 
             user.delete()
             return DeleteUser(ok=True)
@@ -88,13 +93,13 @@ class DeleteUser(graphene.Mutation):
 
 # creates new User profile
 class CreateUser(graphene.Mutation):
-    user = graphene.Field(UserType)
+    user = graphene.Field(UserType, description="returns user created")
 
     class Arguments:
         email = graphene.String(required=True, description="EMail Used to authenticate user, must be unique")
         password = graphene.String(required=True, description="Password on account creation")
-        is_company = graphene.Boolean(required=True, description="Set to True, if account created is for a company, set to false otherwise")
-
+        is_company = graphene.Boolean(required=True,
+                                      description="Set to True, if account created is for a company, set to false otherwise")
 
     def mutate(self, info, email, password, is_company=False):
         try:
@@ -113,7 +118,7 @@ class CreateUser(graphene.Mutation):
 # Updates Profile with non-sensitive content (eg. password and email is left out on purpose as they demand password
 # verification and are therefore handled separately)
 class UpdatedProfile(graphene.Mutation):
-    updated_profile = graphene.Field(UserDataType)
+    updated_profile = graphene.Field(UserDataType, description="returns updated user profile")
 
     # accepted arguments from mutation
     class Arguments:
@@ -157,7 +162,7 @@ class UpdatedProfile(graphene.Mutation):
 
 
 class ChangePassword(graphene.Mutation):
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
 
     class Arguments:
         old_password = graphene.String(description='Requires valid (old) password')
@@ -175,7 +180,7 @@ class ChangePassword(graphene.Mutation):
 
 
 class ChangeEmail(graphene.Mutation):
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
 
     class Arguments:
         password = graphene.String(description='Requires valid user-password')
@@ -198,7 +203,7 @@ class ChangeEmail(graphene.Mutation):
 
 # Used to Update Company Profiles
 class UpdatedCompany(graphene.Mutation):
-    updated_profile = graphene.Field(CompanyDataType)
+    updated_profile = graphene.Field(CompanyDataType, description="returns updated company profile")
 
     class Arguments:
         company_name = graphene.String(description="name of company")
@@ -240,7 +245,7 @@ class UploadUserPicture(graphene.Mutation):
     class Arguments:
         file_in = Upload(required=True, description="Uploaded File")
 
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
 
     @login_required
     def mutate(self, info, file_in, **kwargs):
@@ -254,12 +259,23 @@ class UploadUserPicture(graphene.Mutation):
         file_in.name = "" + str(c_user.pk) + "_profilePicture" + extension
 
         if c_user.is_company:
+            if not CompanyData.objects.filter(belongs_to=info.context.user):
+                company_data = CompanyData(
+                    belongs_to=info.context.user
+                )
+                company_data.save()
+
             data = CompanyData.objects.filter(belongs_to=c_user).get()
             if data.company_picture:
                 data.company_picture.storage.delete(data.company_picture.name)
             data.company_picture = file_in
             data.save()
         else:
+            if not UserData.objects.filter(belongs_to=info.context.user):
+                user_data = UserData(
+                    belongs_to=info.context.user
+                )
+                user_data.save()
             data = UserData.objects.filter(belongs_to=c_user).get()
             if data.profile_picture:
                 data.profile_picture.storage.delete(data.profile_picture.name)
@@ -273,7 +289,7 @@ class UploadMeisterbrief(graphene.Mutation):
     class Arguments:
         file_in = Upload(required=True, description="Uploaded File")
 
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="returns true on successful operation")
 
     @user_passes_test(lambda u: u.is_company and u.is_authenticated)
     def mutate(self, info, file_in, **kwargs):
@@ -309,7 +325,7 @@ class Mutation(graphene.ObjectType):
 
 # Read functions for all Profiles
 class Query(graphene.AbstractType):
-    me = graphene.Field(UserType)
+    me = graphene.Field(UserType, description="returns user model of logge in user")
 
     # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below

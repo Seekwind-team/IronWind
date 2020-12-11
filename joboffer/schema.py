@@ -11,22 +11,40 @@ from graphene_django import DjangoObjectType
 
 from django.core.validators import validate_email
 
-from joboffer.models import JobOffer, Tag, Image
-from user.models import CompanyData
+from joboffer.models import JobOffer, Tag, Image, Swipe, Bookmark
+from user.models import CompanyData, UserData
 from user.schema import Upload
 
 
 class ImageType(DjangoObjectType):
     class Meta:
         model = Image
-        description = 'Meta Object to hold Information for Image-Objects attached to Job Offers'
+        description = 'Meta Object to hold information for Image-Objects attached to Job Offers'
+        # excludes model to avoid recursive query sets
         exclude_fields = ('model',)
+
+
+class SwipeType(DjangoObjectType):
+    class Meta:
+        model = Swipe
+        description = 'Meta Object to hold information for Swipes between User and Job Offers'
+
+class BookmarkType(DjangoObjectType):
+    class Meta:
+        model = Bookmark
+        description = 'Meta Object to hold information for Bookmarks from Users on Job Offers'
+
+
+class TagType(DjangoObjectType):
+    class Meta:
+        model = Tag
+        description = 'Meta Object to hold Tag information'
 
 
 class JobOfferType(DjangoObjectType):
     class Meta:
         model = JobOffer
-        description = 'This Type contains a singular Joboffer posted'
+        description = 'This Type contains a singular Job offer posted'
 
     created_at = graphene.DateTime(name='created_at')
     must_have = graphene.String(name='must_have')
@@ -42,14 +60,15 @@ class JobOfferType(DjangoObjectType):
             return Image.objects.filter(model=self).all()
         except Exception:
             return None
-
-
+            
+ 
 # creates new Job offer
 class CreateJobOffer(graphene.Mutation):
-    ok = graphene.Boolean()
-    job_offer = graphene.Field(JobOfferType)
+    ok = graphene.Boolean(description="Will return on successful creation")
+    job_offer = graphene.Field(JobOfferType, description="returns created joboffer")
 
     class Arguments:
+        # cohooyo requirements
         job_type = graphene.String(required=True, description="'Vollzeit','Teilzeit','Ausbildung'")
         job_title = graphene.String(required=True, description="Name (Title) of the Job offered")
         location = graphene.String(description="Location of Job offer")
@@ -61,7 +80,7 @@ class CreateJobOffer(graphene.Mutation):
         hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
 
         # not relevant for Recommenders
-        pay_per_year = graphene.List(graphene.String)
+        pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.String(description="Datum des ersten Arbeitstages")
@@ -118,11 +137,11 @@ class CreateJobOffer(graphene.Mutation):
 
 
 class AlterJobOffer(graphene.Mutation):
-    ok = graphene.Boolean()
-    job_offer = graphene.Field(JobOfferType)
+    ok = graphene.Boolean(description="returns true on successful creation")
+    job_offer = graphene.Field(JobOfferType, description="returns altered job offer object")
 
     class Arguments:
-        job_id = graphene.Int(required=True)
+        job_id = graphene.Int(required=True, description="ID of Job to be altered")
         job_type = graphene.String(description="'Vollzeit','Teilzeit','Ausbildung'")
         job_title = graphene.String(description="Name (Title) of the Job offered")
         location = graphene.String(description="Location of Job offer")
@@ -135,7 +154,7 @@ class AlterJobOffer(graphene.Mutation):
         add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
         remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
 
-        pay_per_year = graphene.List(graphene.String)
+        pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.String(description="Datum des ersten Arbeitstages")
@@ -204,10 +223,10 @@ class AlterJobOffer(graphene.Mutation):
 
 
 class DeleteJobOffer(graphene.Mutation):
-    ok = graphene.Boolean()
+    ok = graphene.Boolean(description="Returns True on successful operation")
 
     class Arguments:
-        job_id = graphene.Int(required=True)
+        job_id = graphene.Int(required=True,description="ID of Job to be deleted")
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -224,8 +243,8 @@ class DeleteJobOffer(graphene.Mutation):
 
 
 class AddImage(graphene.Mutation):
-    ok = graphene.Boolean()
-    image = graphene.Field(ImageType)
+    ok = graphene.Boolean(description="returns true on successful operation")
+    image = graphene.Field(ImageType, description="Returns Image Object with metadata")
 
     class Arguments:
         job_offer_id = graphene.Int(required=True, description="ID of Job-Offer Image is being applied to")
@@ -263,8 +282,8 @@ class AddImage(graphene.Mutation):
 
 
 class DeleteImage(graphene.Mutation):
-    ok = graphene.Boolean()
-    joboffer = graphene.Field(JobOfferType)
+    ok = graphene.Boolean(description="returns true on successful operation")
+    joboffer = graphene.Field(JobOfferType, description="returns altered job-offer object")
 
     class Arguments:
         picture_ID = graphene.Int(required=True, description="ID of Picture to be deleted")
@@ -293,20 +312,96 @@ class DeleteImage(graphene.Mutation):
 
         return DeleteImage(ok=True, joboffer=job)
 
+# used to store like or dislike from user on joboffer 
+class SaveSwipe(graphene.Mutation):
+    ok = graphene.Boolean()
+    swipe = graphene.Field(SwipeType, description="returns new swipe")
+    
+    class Arguments:
+        job_id = graphene.Int(required=True, description="ID of swiped job")
+        like = graphene.Boolean(required=True, description="saves Like(true) or Dislike(false) between User and given job offer")
+        reset = graphene.Boolean(description="set to true to reset swipe")
+    
+    @login_required
+    def mutate(self, info, **kwargs):
+        try:
+            job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+        except Exception:
+            raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
+
+        swipe = Swipe(candidate=info.context.user, job_offer=job)
+        swipe.liked = kwargs['like']
+        swipe.save()
+
+        return SaveSwipe(ok=True, swipe=swipe)
+
+
+# used to store joboffer for user as bookmarks
+class SaveBookmark(graphene.Mutation):
+    ok = graphene.Boolean()
+    bookmark = graphene.Field(BookmarkType, description="returns new Bookmark")
+
+    class Arguments:
+        job_id = graphene.Int(required=True, description="ID of job to be bookmarked")
+    
+    @login_required
+    def mutate(self, info, **kwargs):
+        try:
+            job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+        except Exception:
+            raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
+
+        bookmark = Bookmark(candidate=info.context.user, job_offer=job)
+        bookmark.save()
+
+        return SaveBookmark(ok=True, bookmark=bookmark)
+
 
 class Mutation(graphene.ObjectType):
-    create_job_offer = CreateJobOffer.Field()
+    create_job_offer = CreateJobOffer.Field() 
     alter_job_offer = AlterJobOffer.Field()
     delete_job_offer = DeleteJobOffer.Field()
     add_image = AddImage.Field()
     delete_image = DeleteImage.Field()
-
+    save_swipe = SaveSwipe.Field()
+    save_bookmark = SaveBookmark.Field()
 
 class Query(graphene.AbstractType):
-    job_offers = graphene.List(JobOfferType)
-    job_offer = graphene.Field(JobOfferType, job_id=graphene.Int())
+    job_offers = graphene.List(
+        JobOfferType,
+        description="returns list of all job-offers created by logged in company-user"
+    )
 
-    # job_tags = graphene.List(Tag, job_id=graphene.Int())
+    job_offer = graphene.Field(
+        JobOfferType,
+        job_id=graphene.Int(
+            description="ID of Job offer to be returned with this request"
+        ),
+        description="returns job offer with given ID"
+    )
+
+    bookmarks = graphene.List(
+        BookmarkType,
+        description="returns list of Bookmarks for logged in user"
+    )
+
+    swipes = graphene.List(
+        SwipeType,
+        description="returns list of Swipes for logged in user or company-user"
+    )
+
+    all_tags = graphene.List(
+        TagType,
+    )
+    
+    job_offer_tag_search = graphene.List(
+        JobOfferType,
+        tag_names = graphene.List(
+            graphene.String,
+            description="tagnames to search for in joboffers"
+        ),
+        description="returns all joboffers that contain given tags"
+    )
 
     @user_passes_test(lambda user: user.is_company)
     def resolve_job_offers(self, info):
@@ -315,3 +410,27 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_job_offer(self, info, job_id):
         return JobOffer.objects.filter(pk=job_id).get()
+
+    @login_required
+    def resolve_bookmarks(self, info):
+        return list(Bookmark.objects.filter(candidate=info.context.user))
+
+    @login_required
+    def resolve_swipes(self, info):
+        return list(Swipe.objects.filter(candidate=info.context.user))
+
+    @login_required
+    def resolve_all_tags(self, info):
+        return Tag.objects.all()
+
+    @login_required
+    def resolve_job_offer_tag_search(self, info, tag_names):
+        jobs = []
+        for name in tag_names:
+            tag = Tag.objects.filter(name=name).get()
+            query_set = JobOffer.objects.filter(hashtags=tag)
+            for job in query_set:
+                jobs.append(job)    
+        
+        return list(dict.fromkeys(jobs))
+        

@@ -2,7 +2,7 @@ import pytest
 
 import requests
 import json
-from helper_functions import GraphQLHelper as helper
+from helper import GraphQLHelper as helper
 
 EMAIL = "api@test.xx"
 PASSWORD = "123"

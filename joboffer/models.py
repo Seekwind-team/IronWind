@@ -1,5 +1,5 @@
 from django.db import models
-from user.models import Authentication
+from user.models import Authentication, UserData
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import int_list_validator
@@ -8,7 +8,6 @@ from django.core.validators import int_list_validator
 # used for storing hashtags non-redundant
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique = True)
-    
     def __str__(self):
         return str(self.name)
 
@@ -66,7 +65,7 @@ class JobOffer(models.Model):
     )
 
     description = models.TextField(
-        max_length=4000,
+        max_length=8000,
         blank=True,
         null=True,
         help_text=_('Beschreibung des Jobangebots')
@@ -103,7 +102,9 @@ class JobOffer(models.Model):
         validators=[
             int_list_validator(
                 sep=',',
-                allow_negative=False)],
+                allow_negative=False
+            )
+        ],
         max_length = 100,
         blank = True,
         null = True,
@@ -148,21 +149,60 @@ class JobOffer(models.Model):
     def __str__(self):
         return 'Joboffer (' + str(self.id) + ') "' + self.job_title + '"'
 
+    def save(self, *args, **kwargs):
+        self.last_modified = timezone.now()
+        super(JobOffer, self).save(*args, **kwargs)
+
 
 # used to store Images for Joboffers
 class Image(models.Model):
-    model = models.ForeignKey(JobOffer, on_delete=models.CASCADE)
+    model = models.ForeignKey(
+        JobOffer,
+        on_delete=models.CASCADE,
+        help_text=_('Job this Image belongs to')
+    )
    
     image = models.ImageField(
         upload_to='static/jobImages/',
-        null=False
+        null=False,
+        help_text=_('Imagefile with metadata')
     )
 
-    description = models.CharField(max_length=255, null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True, help_text=_('Description of Image, 255 char max'))
    
-    default = models.BooleanField(default=False)
-    width = models.FloatField(default=0)
-    height = models.FloatField(default=0)
+    default = models.BooleanField(default=False, help_text=_('is this the default image?'))
+    width = models.FloatField(default=0, help_text=_('width of this image, will be set automatically on upload'))
+    height = models.FloatField(default=0, help_text=_('height of this image, will be set automatically on upload'))
 
     def __str__(self):
         return self.image.url
+
+
+# used to store like or dislike from user on joboffer
+class Swipe(models.Model):
+    candidate = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE
+    )
+
+    job_offer = models.ForeignKey(
+        JobOffer, 
+        on_delete=models.CASCADE
+    )
+
+    liked = models.BooleanField(
+        blank=False,
+    )
+
+
+# used to store joboffer for user as bookmarks
+class Bookmark(models.Model):
+    candidate = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE
+    )
+
+    job_offer = models.ForeignKey(
+        JobOffer, 
+        on_delete=models.CASCADE
+    )

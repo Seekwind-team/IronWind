@@ -21,7 +21,7 @@ $ python manage.py createsuperuser
 $ python manage.py runserver
 ```
 
-Structure
+## Structure
 ```py
 IronWind/
 ├─ recommenders/ # Folder for connecting the ML-Framework
@@ -59,11 +59,26 @@ IronWind/
 │  ├─ schema.py # API-Controller 
 │  ├─ tests.py # file for automated testing of this section
 │  ├─ views.py # unused here
-├─ IronWind/
+├─ src/
 │  ├─ asgi.py # definition file for asgi application
 │  ├─ routing.py # file for defining web sockets
 │  ├─ schema.py # root file for API-Controller 
 │  ├─ settings.py # project settings file
 │  ├─ urls.py # file for defining all (HTTP-) URL-Routes
 │  ├─ wsgi.py # definition file for wsgi application
+├─ tests/
+│  ├─ helper.py # Helper functions
+│  ├─ int_*.py # integrationtest. * defines what will be tested (eg. ironwind-api)
+│  ├─ mod_*.py # moduletest. * defines what will be tested (eg. ironwind-user)
 ```
+
+
+## Abgabeumfang
+
+Im Abgabeumfang an den Kunden sind alle Dateien außer
+- `test`-Ordner
+- `static`-Ordner
+- `.github`-Ordner
+- `.gitignore`-Datei
+
+enthalten.

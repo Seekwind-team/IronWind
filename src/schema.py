@@ -65,9 +65,9 @@ class ObtainJSONWebToken(graphql_jwt.ObtainJSONWebToken):
 # put here any Queries to inherit them
 class Query(carespace.schema.Query, chat.schema.Query,recommenders.schema.Query, joboffer.schema.Query, user.schema.Query, graphene.ObjectType):
     # Method that Simply returns 'Pong'
-    ping = graphene.String(default_value="Pong")
+    ping = graphene.String(default_value="Pong", description="Used internally for testing, will return \"Pong\"")
     # Returns current Server Time
-    get_server_time = graphene.DateTime()
+    get_server_time = graphene.DateTime(description="Will return server time, aligned with all times stamps")
 
     def resolve_get_server_time(self, info):
         return timezone.now()
