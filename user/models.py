@@ -76,8 +76,10 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         help_text=_('User creation DateTime')
     )
 
-# saves soft-skill-slider values range -5 to 5
+# saves soft-skill-slider values in range -5 to 5
 class SoftSkills(models.Model):
+    #id = models.AutoField()
+
     artistic=models.SmallIntegerField(
         default=0,
         #copy paste
@@ -194,13 +196,14 @@ class UserData(models.Model):
         help_text=_('gender of User, uses string to allow all genders')
     )
 
+    # TODO: Geo-Locations?
+   
     # soft skills slider values
     soft_skills = models.OneToOneField(
         SoftSkills,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        help_text=_('Reference to slider values for soft skills')
     )
-
-    # TODO: Geo-Locations?
 
     location = models.CharField(
         max_length=50,

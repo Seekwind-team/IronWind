@@ -6,6 +6,7 @@ import graphene
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required, user_passes_test, token_auth
 from graphene_django import DjangoObjectType
+
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
@@ -129,7 +130,10 @@ class UpdatedProfile(graphene.Mutation):
         gender = graphene.String(description="gender of user")
         birth_date = graphene.Date(description="birthdate of user, uses iso8601-Format (eg. 2006-01-02)")
         #  profile_picture = Upload(description="Uploaded File") #
-        soft_skills = graphene.JSONString(description="List of slider values for softskills. eg. \"creativity\":2")
+        # TODO:
+        soft_skills = graphene.GenericScalar(
+            description="List of slider values for softskills. eg. \"creativity\":2"
+        )
 
     @login_required  # requires login
     @user_passes_test(lambda user: not is_company(user))  # only applicable for non-company accounts
@@ -161,19 +165,19 @@ class UpdatedProfile(graphene.Mutation):
         data_object.save()
 
         if soft_skills:
-            soft_skills_object = SoftSkills(owner=info.context.user)
-            soft_skills_object.artistic = soft_skills['artistic']
-            soft_skills_object.social_activity = soft_skills['social_activity']
-            soft_skills_object.customer_orientated = soft_skills['customer_orientated']
-            soft_skills_object.motorskills = soft_skills['motorskills']
-            soft_skills_object.planning = soft_skills['planning']
-            soft_skills_object.empathic = soft_skills['empathic']
-            soft_skills_object.creativity = soft_skills['creativity']
-            soft_skills_object.digital = soft_skills['digital']
-            soft_skills_object.innovativity = soft_skills['innovativity']
-            soft_skills_object.early_rise = soft_skills['early_rise']
-            soft_skills_object.routine = soft_skills['routine']
-            soft_skills_object.communicativity = soft_skills['communicativity']
+            soft_skills_object = SoftSkills()
+            soft_skills_object.artistic = soft_skills['artistic'] or 0
+            soft_skills_object.social_activity = soft_skills['social_activity'] or 0
+            soft_skills_object.customer_orientated = soft_skills['customer_orientated'] or 0
+            soft_skills_object.motorskills = soft_skills['motorskills'] or 0
+            soft_skills_object.planning = soft_skills['planning'] or 0
+            soft_skills_object.empathic = soft_skills['empathic'] or 0
+            soft_skills_object.creativity = soft_skills['creativity'] or 0
+            soft_skills_object.digital = soft_skills['digital'] or 0
+            soft_skills_object.innovativity = soft_skills['innovativity'] or 0
+            soft_skills_object.early_rise = soft_skills['early_rise'] or 0
+            soft_skills_object.routine = soft_skills['routine'] or 0
+            soft_skills_object.communicativity = soft_skills['communicativity'] or 0
             soft_skills_object.save()
             
             data_object.soft_skills = soft_skills_object
@@ -346,15 +350,16 @@ class Mutation(graphene.ObjectType):
 
 # Read functions for all Profiles
 class Query(graphene.AbstractType):
-    me = graphene.Field(UserType, description="returns user model of logge in user")
-
-    # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
-    # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
+    me = graphene.Field(UserType, description="returns user model of logged in user")
 
     # returns auth data
     @login_required  # would return an error on 'Anonymous user', so restricting this to authenticated users
     def resolve_me(self, info):
         return info.context.user
+        
+    # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
+    # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
+
 
 
 '''
