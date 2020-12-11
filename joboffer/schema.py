@@ -390,6 +390,14 @@ class Query(graphene.AbstractType):
         description="returns list of Swipes for logged in user or company-user"
     )
 
+    candidates = graphene.List(
+        SwipeType,
+        job_id = graphene.Int(
+            required=True,
+            description="ID of Job offer to be returned with this request"
+        ),
+        description="returns List of Swipes for specified job offer"
+    )
     all_tags = graphene.List(
         TagType,
     )
@@ -419,6 +427,11 @@ class Query(graphene.AbstractType):
     def resolve_swipes(self, info):
         return list(Swipe.objects.filter(candidate=info.context.user))
 
+    @user_passes_test(lambda user: user.is_company)
+    def resolve_candidates(self, info, job_id):
+        job = JobOffer.objects.filter(pk=job_id).get()
+        return list(Swipe.objects.filter(job_offer=job))
+        
     @login_required
     def resolve_all_tags(self, info):
         return Tag.objects.all()
