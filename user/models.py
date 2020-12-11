@@ -202,6 +202,8 @@ class UserData(models.Model):
     soft_skills = models.OneToOneField(
         SoftSkills,
         on_delete=models.CASCADE,
+        blank=True,
+        null=True,
         help_text=_('Reference to slider values for soft skills')
     )
 

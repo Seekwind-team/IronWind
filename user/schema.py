@@ -56,6 +56,10 @@ class CompanyDataType(DjangoObjectType):
         model = CompanyData
         description = 'This Type contains a singular set of Company-Data'
 
+class SoftSkillsType(DjangoObjectType):
+    class Meta:
+        model = SoftSkills
+        description = 'This Type contains slider values from -5 to 5 for Softskills'
 
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
@@ -92,7 +96,7 @@ class DeleteUser(graphene.Mutation):
         return DeleteUser(ok=False)
 
 
-class SoftSkillsType(graphene.InputObjectType):
+class SoftSkillsArguments(graphene.InputObjectType):
     artistic = graphene.Int()
     social_activity = graphene.Int()
     customer_orientated =graphene.Int()
@@ -146,7 +150,7 @@ class UpdatedProfile(graphene.Mutation):
         birth_date = graphene.Date(description="birthdate of user, uses iso8601-Format (eg. 2006-01-02)")
         #  profile_picture = Upload(description="Uploaded File") #
         # TODO:
-        soft_skills = graphene.Argument(SoftSkillsType,
+        soft_skills = graphene.Argument(SoftSkillsArguments,
             description="List of slider values for softskills. eg. \"creativity\":2"
         )
 
@@ -179,24 +183,23 @@ class UpdatedProfile(graphene.Mutation):
         data_object.birth_date = birth_date or data_object.birth_date
         data_object.save()
 
-        if soft_skills:
-            soft_skills_object = SoftSkills()
-            soft_skills_object.artistic = soft_skills['artistic'] or 0
-            soft_skills_object.social_activity = soft_skills['social_activity'] or 0
-            soft_skills_object.customer_orientated = soft_skills['customer_orientated'] or 0
-            soft_skills_object.motorskills = soft_skills['motorskills'] or 0
-            soft_skills_object.planning = soft_skills['planning'] or 0
-            soft_skills_object.empathic = soft_skills['empathic'] or 0
-            soft_skills_object.creativity = soft_skills['creativity'] or 0
-            soft_skills_object.digital = soft_skills['digital'] or 0
-            soft_skills_object.innovativity = soft_skills['innovativity'] or 0
-            soft_skills_object.early_rise = soft_skills['early_rise'] or 0
-            soft_skills_object.routine = soft_skills['routine'] or 0
-            soft_skills_object.communicativity = soft_skills['communicativity'] or 0
-            soft_skills_object.save()
-            
-            data_object.soft_skills = soft_skills_object
-            data_object.save()
+        soft_skills_object = SoftSkills()
+        soft_skills_object.artistic = soft_skills.artistic
+        soft_skills_object.social_activity = soft_skills.social_activity
+        soft_skills_object.customer_orientated = soft_skills.customer_orientated
+        soft_skills_object.motorskills = soft_skills.motorskills
+        soft_skills_object.planning = soft_skills.planning
+        soft_skills_object.empathic = soft_skills.empathic
+        soft_skills_object.creativity = soft_skills.creativity
+        soft_skills_object.digital = soft_skills.digital
+        soft_skills_object.innovativity = soft_skills.innovativity
+        soft_skills_object.early_rise = soft_skills.early_rise
+        soft_skills_object.routine = soft_skills.routine
+        soft_skills_object.communicativity = soft_skills.communicativity
+        soft_skills_object.save()
+        
+        data_object.soft_skills = soft_skills_object
+        data_object.save()
 
         return UpdatedProfile(updated_profile=data_object)
 
@@ -366,11 +369,19 @@ class Mutation(graphene.ObjectType):
 # Read functions for all Profiles
 class Query(graphene.AbstractType):
     me = graphene.Field(UserType, description="returns user model of logged in user")
-
+    soft_skills = graphene.Field(
+        SoftSkillsType,
+        description="returns soft skills for logged in User"
+    )
     # returns auth data
     @login_required  # would return an error on 'Anonymous user', so restricting this to authenticated users
     def resolve_me(self, info):
         return info.context.user
+
+    @user_passes_test(lambda user: not is_company(user))
+    def resolve_soft_skills(self, info):
+        user = UserData.objects.filter(belongs_to=info.context.user).get()
+        return user.soft_skills
         
     # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
