@@ -133,31 +133,29 @@ class Logger:
 
     def __init__(self, filename: str):
         self.filename = filename
-        f = open(filename, "w")
-        f.write("")
+        f = open(filename, "w+")
         f.close()
 
 
 
     def start(self, name: str):
-        f = open(self.filename, "a")
-        f.write("############################################################ " + name + " ############################################################\n")
-        f.write("#######################################################################################################################################\n")
-        f.close()
+        with open(self.filename, "a") as f:
+	        f.write("############################################################ " + name + " ############################################################\n")
+	        f.write("#######################################################################################################################################\n")
 
 
     def test_failed(self, arg_name: str, expected: str, actual: str, query: str):
-        f = open(self.filename, "a")
-        f.write("expected\t" + arg_name + ":\t'" + expected + "'\nbut was\t\t" + arg_name + ":\t'" + str(actual) + "'\n")
-        f.write("when sending:\t" + query + "\n\n")
-        f.close()
+        with open(self.filename, "a") as f:
+	        f.write("expected\t" + arg_name + ":\t'" + expected + "'\nbut was\t\t" + arg_name + ":\t'" + str(actual) + "'\n")
+	        f.write("when sending:\t" + query + "\n\n")
+
         # print("expected:\t" + expected + "\nbut was:\t" + str(actual) + "\n")
 
 
     def expected_error(self, arg_name: str, arg_value,  query: str):
-        f = open(self.filename, "a")
-        f.write("expected an error when sending: " + query + "\n")
-        f.write("because of: \"" + arg_name + "\": '" + arg_value + "'\n\n")
-        f.close()
+        with open(self.filename, "a") as f:
+	        f.write("expected an error when sending: " + query + "\n")
+	        f.write("because of: \"" + arg_name + "\": '" + arg_value + "'\n\n")
+
         # print("expected an error when sending: " + query)
         # print("because of: \"" + arg_name + "\": " + arg_value)
