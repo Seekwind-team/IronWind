@@ -92,6 +92,21 @@ class DeleteUser(graphene.Mutation):
         return DeleteUser(ok=False)
 
 
+class SoftSkillsType(graphene.InputObjectType):
+    artistic = graphene.Int()
+    social_activity = graphene.Int()
+    customer_orientated =graphene.Int()
+    motorskills =graphene.Int()
+    planning = graphene.Int()
+    empathic =graphene.Int()
+    creativity =graphene.Int()
+    digital = graphene.Int()
+    innovativity = graphene.Int()
+    early_rise = graphene.Int()
+    routine = graphene.Int()
+    communicativity = graphene.Int()
+
+
 # creates new User profile
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType, description="returns user created")
@@ -131,7 +146,7 @@ class UpdatedProfile(graphene.Mutation):
         birth_date = graphene.Date(description="birthdate of user, uses iso8601-Format (eg. 2006-01-02)")
         #  profile_picture = Upload(description="Uploaded File") #
         # TODO:
-        soft_skills = graphene.GenericScalar(
+        soft_skills = graphene.Argument(SoftSkillsType,
             description="List of slider values for softskills. eg. \"creativity\":2"
         )
 
