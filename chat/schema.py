@@ -57,7 +57,7 @@ class Subscription(graphene.ObjectType):
                 }
             ''', variables={'token': token},
         )
-        print(result)
+        # print(result)
         email = result.data['verifyToken']['payload']['email']
 
         receiver = Authentication.objects.filter(email=email).get()
@@ -160,12 +160,12 @@ class Query(graphene.ObjectType):
             if e.sender is not info.context.user:
                 partners.add(e.sender)
 
-        print(partners)
+        # print(partners)
         for partner in partners:
-            print(partner)
+            # print(partner)
             last_message = Message.objects.filter(Q(Q(receiver=info.context.user) & Q(sender=partner)) | (
                     Q(receiver=partner) & Q(sender=info.context.user))).last()
-            print(last_message)
+            # print(last_message)
             last_messages.add(last_message)
 
         return last_messages
