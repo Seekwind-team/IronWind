@@ -144,28 +144,27 @@ class Query(graphene.ObjectType):
     def resolve_get_messages(self, info, partner, n_from=0, n_to=25):
         """Function Used to get n-last messages with stated partner"""
         messages_loaded = Message.objects \
-                .filter((Q(sender=partner) & Q(receiver=info.context.user)) | (
+                              .filter((Q(sender=partner) & Q(receiver=info.context.user)) | (
                 Q(receiver=partner) & Q(sender=info.context.user))) \
-                .all().order_by('timestamp').reverse()[n_from:n_to]
+                              .all().order_by('timestamp').reverse()[n_from:n_to]
         return messages_loaded
 
     @login_required
     def resolve_get_chats(self, info):
         """Function Used to get all partners that logged in user has a chat-history with"""
-        partners = set()
-        last_messages = set()
+        partners = set()  # set to save all chat partners, avoids duplicates
+        last_messages = []  # use array for better performance
+
+        # fetches all chat partners
         for e in Message.objects.filter(Q(sender=info.context.user) | Q(receiver=info.context.user)).all():
             if e.receiver is not info.context.user:
                 partners.add(e.receiver)
             if e.sender is not info.context.user:
                 partners.add(e.sender)
 
-        # print(partners)
+        # iterates over all chat partners and fetches the last message of that chat
         for partner in partners:
-            # print(partner)
-            last_message = Message.objects.filter(Q(Q(receiver=info.context.user) & Q(sender=partner)) | (
-                    Q(receiver=partner) & Q(sender=info.context.user))).last()
-            # print(last_message)
-            last_messages.add(last_message)
+            last_messages.append(Message.objects.filter(Q(Q(receiver=info.context.user) & Q(sender=partner)) | (
+                    Q(receiver=partner) & Q(sender=info.context.user))).last())
 
         return last_messages
