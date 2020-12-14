@@ -61,10 +61,18 @@ class Subscription(graphene.ObjectType):
         email = result.data['verifyToken']['payload']['email']
 
         receiver = Authentication.objects.filter(email=email).get()
+
+        # Checks messages receiver and marks messages read during delivery
+        def check_validity_and_read(event, rec):
+            if event.instance.receiver.id is rec.pk:
+                event.instance.unread = False
+                return True
+            return False
+
         return self.filter(
             lambda event:
             event.operation == CREATED and
-            isinstance(event.instance, Message) and (receiver.pk is event.instance.receiver.id)
+            isinstance(event.instance, Message) and (check_validity_and_read(event, receiver))
         ).map(lambda event: event.instance)
 
 
@@ -88,8 +96,8 @@ class SendMessage(graphene.Mutation):
             receiver=receiver_obj,
             message=message
         )
-        django.db.models.signals.post_save.connect(
-            graphene_subscriptions.signals.post_save_subscription, sender=Message, dispatch_uid="message_post_save"
+        django.db.models.signals.pre_save.connect(
+            graphene_subscriptions.signals.pre_save_subscription, sender=Message, dispatch_uid="message_pre_save"
         )
         message.save()
         return SendMessage(ok=True)
