@@ -9,3 +9,6 @@ following options are available:
 - custom logfile name
 	with the option `-l` you can enter a name for the logfile
 	the name must be the **last argument** and also **without** ending
+
+example: `python testhub.py -l updateProfile updateCompany logfile`
+	to run the tests for updateProfile and updateCompany and log results into logs/logfil.txt
