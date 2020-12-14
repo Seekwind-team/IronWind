@@ -1,6 +1,14 @@
-from helper import GraphQLHelper as helper
-from helper import Mutation
+from importlib import __import__
+Mutation = __import__("helper").Mutation
+helper = __import__("helper").GraphQLHelper
 
+################################################## GET ARGUMENTS ##################################################
+
+arguments = __import__("int-test-arguments").get("companyName",
+                                                 "description",
+                                                 "firstName",
+                                                 "lastName",
+                                                 "phoneNumber")
 
 
 ################################################## TEST USER ##################################################
@@ -80,40 +88,6 @@ def delete_test_user():
 	}}
 	""".format(PASSWORD))
 
-################################################## TEST CASE ARGUMENTS ##################################################
-
-arguments = {
-	"companyName": {
-	# [a-Z] + special characters, length: 1-50
-		"valid":	["a", "Z"*50, "*"],
-		"invalid":	["", "Z"*51]
-	},
-
-	"description": {
-	# [a-Z] + special characters, length: 1-2000
-		"valid":	["a", "Z"*2000, "*"],
-		"invalid":	["", "Z"*2001]
-	},
-
-	"firstName": {
-	# [a-Z] + special chars - and ' length: 1-50
-		"valid":	["a", "Z"*50, "-", "'"],
-		"invalid":	["", "*", "0", "a"*51]
-	},
-
-	"lastName": {
-	# same as firstName + can be empty
-		"valid":	["", "a", "Z"*50, "-", "'"],
-		"invalid":	["*", "0", "a"*51]
-	},
-
-	"phoneNumber": {
-	# telephone number according to e.165-format
-	# [0-9], length: 3-15
-		"valid":	["000", "9"*15],
-		"invalid":	["", "00", "9"*16]
-	},
-}
 
 ################################################## MUTATION ##################################################
 
@@ -125,6 +99,7 @@ mutation = Mutation("updateCompany",
 					 "phoneNumber": True},
 					"{updatedProfile{companyName description firstName lastName phoneNumber}}")
 
+
 ################################################## TEST FUNCTIONS ##################################################
 
 # tests if all valid values of all arguments get the expected response
@@ -134,7 +109,7 @@ def test_valids():
 	fails if the any mutation fails
 	'''
 
-	print("testing all valids")
+	print("testing all valids of updateCompany")
 
 	valid_companyNames	= arguments["companyName"]["valid"]
 	valid_firstnames	= arguments["firstName"]["valid"]
@@ -175,7 +150,7 @@ def test_all_invalids():
 	tests all invalid argument values
 	fails if any mutations do not fail
 	'''
-	print("testing all invalids")
+	print("testing all invalids of updateCompany")
 	for a in list(arguments):
 		test_invalid_cases_of(a)
 
@@ -219,6 +194,8 @@ def test(logger):
 
 	log.start("updateCompany")
 	create_test_user()
-	test_valids()
-	test_all_invalids()
-	delete_test_user()
+	try:
+		test_valids()
+		test_all_invalids()
+	finally:
+		delete_test_user()
