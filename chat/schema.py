@@ -97,18 +97,17 @@ class SendMessage(graphene.Mutation):
             message=message
         )
         django.db.models.signals.post_save.connect(
-            graphene_subscriptions.signals.post_save_subscription, sender=Message, dispatch_uid="message_pre_save"
+            graphene_subscriptions.signals.post_save_subscription, sender=Message, dispatch_uid="message_post_save"
         )
         message.save()
         return SendMessage(ok=True)
 
 
 class SetRead(graphene.Mutation):
-
     ok = graphene.Boolean()
 
     class Arguments:
-        message_ids = graphene.List(graphene.Int, required=True, description= "Message" )
+        message_ids = graphene.List(graphene.Int, required=True, description="Message")
 
     def mutate(self, info, message_ids):
         for message_id in message_ids:
@@ -145,9 +144,9 @@ class Query(graphene.ObjectType):
     def resolve_get_messages(self, info, partner, n_from=0, n_to=25):
         """Function Used to get n-last messages with stated partner"""
         messages_loaded = Message.objects \
-                              .filter(Q(sender=info.context.user) or Q(receiver=info.context.user)) \
-                              .filter(Q(receiver=partner) or Q(sender=partner)) \
-                              .all().order_by('timestamp').reverse()[n_from:n_to]
+                .filter((Q(sender=partner) & Q(receiver=info.context.user)) | (
+                Q(receiver=partner) & Q(sender=info.context.user))) \
+                .all().order_by('timestamp').reverse()[n_from:n_to]
         return messages_loaded
 
     @login_required
@@ -155,7 +154,7 @@ class Query(graphene.ObjectType):
         """Function Used to get all partners that logged in user has a chat-history with"""
         partners = set()
         last_messages = set()
-        for e in Message.objects.filter(Q(sender=info.context.user) or Q(receiver=info.context.user)).all():
+        for e in Message.objects.filter(Q(sender=info.context.user) | Q(receiver=info.context.user)).all():
             if e.receiver is not info.context.user:
                 partners.add(e.receiver)
             if e.sender is not info.context.user:
@@ -163,8 +162,10 @@ class Query(graphene.ObjectType):
 
         print(partners)
         for partner in partners:
-            last_messages.add(Message.objects\
-                .filter(Q(receiver=info.context.user) or Q(sender=info.context.user))\
-                .filter(Q(receiver=partner) or Q(sender=partner)).last())
+            print(partner)
+            last_message = Message.objects.filter(Q(Q(receiver=info.context.user) & Q(sender=partner)) | (
+                    Q(receiver=partner) & Q(sender=info.context.user))).last()
+            print(last_message)
+            last_messages.add(last_message)
 
         return last_messages
