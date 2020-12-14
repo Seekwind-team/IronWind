@@ -29,6 +29,11 @@ class Message(models.Model):
         help_text=_('Headline of this Care-Space Entry')
     )
 
+    unread = models.BooleanField(
+        default=True,
+        help_text=_('Whether this message has been read or not')
+    )
+
     timestamp = models.DateTimeField(default=timezone.now)
 
 
