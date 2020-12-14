@@ -1,5 +1,5 @@
 from django.db import models
-from user.models import Authentication
+from user.models import Authentication, UserData
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import int_list_validator
@@ -8,7 +8,10 @@ from django.core.validators import int_list_validator
 # used for storing hashtags non-redundant
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique = True)
-    
+
+    def __str__(self):
+        return str(self.name)
+
 
 class JobOffer(models.Model):
     owner = models.ForeignKey(
@@ -100,7 +103,9 @@ class JobOffer(models.Model):
         validators=[
             int_list_validator(
                 sep=',',
-                allow_negative=False)],
+                allow_negative=False
+            )
+        ],
         max_length = 100,
         blank = True,
         null = True,
@@ -164,8 +169,7 @@ class Image(models.Model):
         help_text=_('Imagefile with metadata')
     )
 
-    description = models.CharField(max_length=255, null=True, blank=True,
-                                   help_text=_('Description of Image, 255 char max'))
+    description = models.CharField(max_length=255, null=True, blank=True, help_text=_('Description of Image, 255 char max'))
    
     default = models.BooleanField(default=False, help_text=_('is this the default image?'))
     width = models.FloatField(default=0, help_text=_('width of this image, will be set automatically on upload'))
@@ -173,3 +177,33 @@ class Image(models.Model):
 
     def __str__(self):
         return self.image.url
+
+
+# used to store like or dislike from user on joboffer
+class Swipe(models.Model):
+    candidate = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE
+    )
+
+    job_offer = models.ForeignKey(
+        JobOffer, 
+        on_delete=models.CASCADE
+    )
+
+    liked = models.BooleanField(
+        blank=False,
+    )
+
+
+# used to store joboffer for user as bookmarks
+class Bookmark(models.Model):
+    candidate = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE
+    )
+
+    job_offer = models.ForeignKey(
+        JobOffer, 
+        on_delete=models.CASCADE
+    )
