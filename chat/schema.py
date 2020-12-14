@@ -96,8 +96,8 @@ class SendMessage(graphene.Mutation):
             receiver=receiver_obj,
             message=message
         )
-        django.db.models.signals.pre_save.connect(
-            graphene_subscriptions.signals.pre_save_subscription, sender=Message, dispatch_uid="message_pre_save"
+        django.db.models.signals.post_save.connect(
+            graphene_subscriptions.signals.post_save_subscription, sender=Message, dispatch_uid="message_pre_save"
         )
         message.save()
         return SendMessage(ok=True)
