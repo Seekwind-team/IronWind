@@ -105,15 +105,20 @@ class SendMessage(graphene.Mutation):
 
 class SetRead(graphene.Mutation):
 
+    ok = graphene.Boolean()
+
     class Arguments:
-        message_id = graphene.Int(required= True, description= Message )
+        message_id = graphene.Int(required=True, description= "Message" )
 
     def mutate(self, info, message_id):
         obj = Message.objects.filter(pk=message_id).get()
         if obj.receiver.id is info.context.user.id:
             obj.unread = False
+            obj.save()
         else:
             raise GraphQLError('can\'t mark messages not directed to current user as \'read\'')
+
+        return SetRead(ok=True)
 
 
 class Mutation(graphene.ObjectType):
