@@ -225,6 +225,29 @@ class CompanyData(models.Model):
         return "(" + str(self.pk) + "): " + self.belongs_to.email + " company data"
 
 
+class Notizfeld(models.Model):
+
+    user_from = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE,
+        related_name='%(class)s_sender',
+    )
+
+    user_to = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE,
+        related_name='%(class)s_receiver',
+    )
+
+    memo = models.TextField(
+        _('memo field'),
+        null=True,
+        blank=True,
+        max_length=5000,
+        help_text=_('Memo field to leave a note on an applicant')
+    )
+
+
 '''
 # class Image(models.Model):
     """ProfileImage"""

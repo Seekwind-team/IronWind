@@ -26,7 +26,7 @@ class Message(models.Model):
         blank=False,
         unique=False,
         max_length=255,
-        help_text=_('Headline of this Care-Space Entry')
+        help_text=_('message sent through chat message')
     )
 
     unread = models.BooleanField(
