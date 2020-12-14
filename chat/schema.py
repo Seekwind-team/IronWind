@@ -61,11 +61,9 @@ class Subscription(graphene.ObjectType):
         email = result.data['verifyToken']['payload']['email']
 
         receiver = Authentication.objects.filter(email=email).get()
-
-        # Checks messages receiver and marks messages read during delivery
         def check_validity_and_read(event, rec):
             if event.instance.receiver.id is rec.pk:
-                event.instance.unread = False
+                # room to do something with the message object
                 return True
             return False
 
