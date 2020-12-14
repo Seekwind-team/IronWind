@@ -1,3 +1,6 @@
+from abc import ABC
+from collections import Iterable
+
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -35,5 +38,9 @@ class Message(models.Model):
     )
 
     timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        # will Return Name of self-objects as stated:
+        return str(self.sender.email) + " (at " + str(self.timestamp) + "): " + str(self.message)
 
 

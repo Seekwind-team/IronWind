@@ -61,7 +61,9 @@ class Subscription(graphene.ObjectType):
         email = result.data['verifyToken']['payload']['email']
 
         receiver = Authentication.objects.filter(email=email).get()
-        def check_validity_and_read(event, rec):
+
+        # checks validity of the messages receiver
+        def check_validity_and_modify(event, rec):
             if event.instance.receiver.id is rec.pk:
                 # room to do something with the message object
                 return True
@@ -70,7 +72,7 @@ class Subscription(graphene.ObjectType):
         return self.filter(
             lambda event:
             event.operation == CREATED and
-            isinstance(event.instance, Message) and (check_validity_and_read(event, receiver))
+            isinstance(event.instance, Message) and (check_validity_and_modify(event, receiver))
         ).map(lambda event: event.instance)
 
 
@@ -106,15 +108,16 @@ class SetRead(graphene.Mutation):
     ok = graphene.Boolean()
 
     class Arguments:
-        message_id = graphene.Int(required=True, description= "Message" )
+        message_ids = graphene.List(graphene.Int, required=True, description= "Message" )
 
-    def mutate(self, info, message_id):
-        obj = Message.objects.filter(pk=message_id).get()
-        if obj.receiver.id is info.context.user.id:
-            obj.unread = False
-            obj.save()
-        else:
-            raise GraphQLError('can\'t mark messages not directed to current user as \'read\'')
+    def mutate(self, info, message_ids):
+        for message_id in message_ids:
+            obj = Message.objects.filter(pk=message_id).get()
+            if obj.receiver.id is info.context.user.id:
+                obj.unread = False
+                obj.save()
+            else:
+                raise GraphQLError('can\'t mark messages not directed to current user as \'read\'')
 
         return SetRead(ok=True)
 
@@ -134,7 +137,7 @@ class Query(graphene.ObjectType):
         description="Function Used to get n-last messages with stated partner"
     )
     get_chats = graphene.List(
-        UserType,
+        MessageType,
         description="Returns all partners that logged in user has a chat-history with"
     )
 
@@ -142,13 +145,9 @@ class Query(graphene.ObjectType):
     def resolve_get_messages(self, info, partner, n_from=0, n_to=25):
         """Function Used to get n-last messages with stated partner"""
         messages_loaded = Message.objects \
-                              .filter(Q(sender=info.context.user) | Q(receiver=info.context.user)) \
-                              .filter(Q(receiver=partner) | Q(sender=partner)) \
+                              .filter(Q(sender=info.context.user) or Q(receiver=info.context.user)) \
+                              .filter(Q(receiver=partner) or Q(sender=partner)) \
                               .all().order_by('timestamp').reverse()[n_from:n_to]
-        for i in messages_loaded:
-            # Mark messages received as read
-            if i.receiver is info.context.user:
-                i.unread = False
         return messages_loaded
 
     @login_required
@@ -156,16 +155,19 @@ class Query(graphene.ObjectType):
         """Function Used to get all partners that logged in user has a chat-history with"""
         partners = set()
         last_messages = set()
-        for e in Message.objects.filter(Q(sender=info.context.user) | Q(receiver=info.context.user)).all():
+        for e in Message.objects.filter(Q(sender=info.context.user) or Q(receiver=info.context.user)).all():
             if e.receiver is not info.context.user:
                 partners.add(e.receiver)
             if e.sender is not info.context.user:
                 partners.add(e.sender)
 
+        print(partners)
         for partner in partners:
-            last_messages.add(Message.objects
-                              .filter(Q(sender=info.context.user) | Q(receiver=info.context.user))
-                              .filter(Q(receiver=partner) | Q(sender=partner))
-                              .all().order_by('timestamp').reverse().last())
+            print(partner)
+            last_message = Message.objects\
+                .filter(Q(receiver=info.context.user) or Q(sender=info.context.user))\
+                .filter(Q(receiver=partner) or Q(sender=partner)).last()
+            print(last_message)
+            last_messages.add(last_message)
 
         return last_messages
