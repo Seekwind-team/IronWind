@@ -163,11 +163,8 @@ class Query(graphene.ObjectType):
 
         print(partners)
         for partner in partners:
-            print(partner)
-            last_message = Message.objects\
+            last_messages.add(Message.objects\
                 .filter(Q(receiver=info.context.user) or Q(sender=info.context.user))\
-                .filter(Q(receiver=partner) or Q(sender=partner)).last()
-            print(last_message)
-            last_messages.add(last_message)
+                .filter(Q(receiver=partner) or Q(sender=partner)).last())
 
         return last_messages
