@@ -356,6 +356,21 @@ class SaveBookmark(graphene.Mutation):
 
         return SaveBookmark(ok=True, bookmark=bookmark)
 
+class DeleteBookmark(graphene.Mutation):
+    ok =graphene.Boolean()
+
+    class Arguments:
+        bookmark_id = graphene.Int(required=True)
+
+        @login_required
+        def mutate(self, info, bookmark_id):
+            bookmark = Bookmark.objects.filter(bookmark_id).get()
+            if info.context.user is bookmark.candidate:
+                del bookmark
+            else:
+                raise Exception("bookmark with id {} is not owned by User.".format(bookmark_id))
+            
+            return DeleteBookmark(ok=True)
 
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field() 
@@ -365,6 +380,7 @@ class Mutation(graphene.ObjectType):
     delete_image = DeleteImage.Field()
     save_swipe = SaveSwipe.Field()
     save_bookmark = SaveBookmark.Field()
+    delete_bookmark = DeleteBookmark.Field()
 
 class Query(graphene.AbstractType):
     job_offers = graphene.List(
