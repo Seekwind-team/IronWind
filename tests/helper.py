@@ -23,7 +23,7 @@ class GraphQLHelper:
     def request_token(self, payload):
         response = self.run_payload(self, payload = payload)
         if response.status_code == 200:
-            return response.json().get('data').get('tokenAuth').get('token')
+            return response.json()['data']['tokenAuth']['token']
         else:
             exc = "Recieved no token. Payload: {}Response: {}".format(payload, response.json())
             raise Exception(exc)
@@ -34,7 +34,7 @@ class GraphQLHelper:
     def request_job_id(self, payload, header):
         response = self.run_payload(self, payload = payload, header = header)
         if response.status_code == 200:
-            return response.json().get('data').get('jobOffers')[0].get('id')
+            return response.json()['data']['jobOffers'][0]['id']
 
 
 
@@ -131,9 +131,12 @@ class Mutation(Query):
 
 class Logger:
 
-    def __init__(self, filename: str):
-        self.filename = filename
-        f = open(filename, "w+")
+    def __init__(self, filename: str = None):
+        if filename == None:
+            self.filename = os.path.dirname(os.path.abspath(__file__)) + "\\logs\\testlog-" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +".txt"
+        else:
+            self.filename = filename
+        f = open(self.filename, "w+")
         f.close()
 
 
@@ -141,12 +144,12 @@ class Logger:
     def start(self, name: str):
         with open(self.filename, "a") as f:
 	        f.write("############################################################ " + name + " ############################################################\n")
-	        f.write("#######################################################################################################################################\n")
+	        f.write("#"*len(name) + "##########################################################################################################################\n")
 
 
-    def test_failed(self, arg_name: str, expected: str, actual: str, query: str):
+    def test_failed(self, arg_name: str, expected, actual, query: str):
         with open(self.filename, "a") as f:
-	        f.write("expected\t" + arg_name + ":\t'" + expected + "'\nbut was\t\t" + arg_name + ":\t'" + str(actual) + "'\n")
+	        f.write("expected\t" + arg_name + ":\t'" + str(expected) + "'\nbut was\t\t" + arg_name + ":\t'" + str(actual) + "'\n")
 	        f.write("when sending:\t" + query + "\n\n")
 
         # print("expected:\t" + expected + "\nbut was:\t" + str(actual) + "\n")
@@ -159,3 +162,8 @@ class Logger:
 
         # print("expected an error when sending: " + query)
         # print("because of: \"" + arg_name + "\": " + arg_value)
+
+    def exception_raised(e):
+        with open(self.filename, "a") as f:
+            f.write("an unknown exception was raised during testing:")
+            f.write(str(e))
