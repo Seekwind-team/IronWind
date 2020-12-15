@@ -392,7 +392,6 @@ class Query(graphene.AbstractType):
 
     candidates = graphene.List(
         SwipeType,
-        job_ID=graphene.Int(),
         description="returns list of Swipes for logged in company"
     )
     all_tags = graphene.List(
@@ -425,13 +424,14 @@ class Query(graphene.AbstractType):
         return list(Swipe.objects.filter(candidate=info.context.user))
 
     @user_passes_test(lambda user: user.is_company)
-    def resolve_candidates(self, info, job_ID):
-        job = JobOffer.objects.filter(pk=job_ID).get()
-        if info.context.user == job.owner:
-            return list(Swipe.objects.filter(job_offer=job, liked=True))
-        else:
-            raise GraphQLError("user does not own joboffer with id {}".format(job_ID))
-    
+    def resolve_candidates(self, info):
+        jobs = list(JobOffer.objects.filter(owner=info.context.user))
+        swipes = []
+        for job in jobs:
+            swipes.append(Swipe.objects.filter(job_offer=job, liked=True).get())
+        
+        return swipes
+        
     @login_required
     def resolve_all_tags(self, info):
         return Tag.objects.all()
