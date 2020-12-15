@@ -373,7 +373,7 @@ class DeleteBookmark(graphene.Mutation):
     ok = graphene.Boolean()
 
     class Arguments:
-        bookmark_id = graphene.Int(required=True)
+        bookmark_id = graphene.Int(required=True, description="id of Bookmark to be deleted")
 
     @login_required
     def mutate(self, info, bookmark_id):
