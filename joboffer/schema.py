@@ -335,7 +335,7 @@ class SaveSwipe(graphene.Mutation):
             swipe = Swipe(candidate=info.context.user, job_offer=job)
             swipe.liked = kwargs['like']
             swipe.save()
-        elif Swipe.objects.filter(candidate=info.context.user, job_offer=job).get().liked != kwargs['like']:
+        elif Swipe.objects.filter(candidate=info.context.user, job_offer=job).get().liked != kwargs['like']: 
             # alter like attribute
             swipe = Swipe.objects.filter(candidate=info.context.user, job_offer=job).get()
             swipe.liked = kwargs['like']
