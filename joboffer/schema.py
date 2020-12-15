@@ -328,10 +328,20 @@ class SaveSwipe(graphene.Mutation):
             job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
         except Exception:
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
-
-        swipe = Swipe(candidate=info.context.user, job_offer=job)
-        swipe.liked = kwargs['like']
-        swipe.save()
+        
+        
+        if not Swipe.objects.filter(candidate=info.context.user, job_offer=job).exists():
+            # initial swipe
+            swipe = Swipe(candidate=info.context.user, job_offer=job)
+            swipe.liked = kwargs['like']
+            swipe.save()
+        elif Swipe.objects.filter(candidate=info.context.user, job_offer=job).get().liked != kwargs['like']:
+            # alter like attribute
+            swipe = Swipe.objects.filter(candidate=info.context.user, job_offer=job).get()
+            swipe.liked = kwargs['like']
+            swipe.save()
+        else:
+            raise GraphQLError("this joboffer is already {} by user".format('liked' if kwargs['like'] else 'disliked'))
 
         return SaveSwipe(ok=True, swipe=swipe)
 
@@ -350,9 +360,12 @@ class SaveBookmark(graphene.Mutation):
             job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
         except Exception:
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
-
-        bookmark = Bookmark(candidate=info.context.user, job_offer=job)
-        bookmark.save()
+        
+        if not Bookmark.objects.filter(candidate=info.context.user, job_offer=job).get():
+            bookmark = Bookmark(candidate=info.context.user, job_offer=job)
+            bookmark.save()
+        else:
+            raise GraphQLError("this bookmark is already set")
 
         return SaveBookmark(ok=True, bookmark=bookmark)
 
