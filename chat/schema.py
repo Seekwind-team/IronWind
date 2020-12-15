@@ -8,11 +8,8 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 from rx import Observable
 
-from graphql_jwt import mixins
-
 from chat.models import Message
 from user.models import Authentication
-from user.schema import UserType
 
 import IronWind.schema
 

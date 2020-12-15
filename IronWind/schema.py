@@ -1,6 +1,6 @@
 import graphene
 import graphql_jwt
-from django.utils import timezone, asyncio
+from django.utils import timezone
 from graphene.types import datetime
 from graphql_jwt.decorators import setup_jwt_cookie, csrf_rotation, refresh_expiration, on_token_auth_resolve
 from functools import wraps
