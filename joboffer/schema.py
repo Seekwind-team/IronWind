@@ -374,7 +374,7 @@ class Query(graphene.AbstractType):
 
     job_offer = graphene.Field(
         JobOfferType,
-        job_id=graphene.Int(
+        job_ID=graphene.Int(
             description="ID of Job offer to be returned with this request"
         ),
         description="returns job offer with given ID"
@@ -387,9 +387,14 @@ class Query(graphene.AbstractType):
 
     swipes = graphene.List(
         SwipeType,
-        description="returns list of Swipes for logged in user or company-user"
+        description="returns list of Swipes for logged in user"
     )
 
+    candidates = graphene.List(
+        SwipeType,
+        job_ID=graphene.Int(),
+        description="returns list of Swipes for logged in company"
+    )
     all_tags = graphene.List(
         TagType,
     )
@@ -408,8 +413,8 @@ class Query(graphene.AbstractType):
         return list(JobOffer.objects.filter(owner=info.context.user))
 
     @login_required
-    def resolve_job_offer(self, info, job_id):
-        return JobOffer.objects.filter(pk=job_id).get()
+    def resolve_job_offer(self, info, job_ID):
+        return JobOffer.objects.filter(pk=job_ID).get()
 
     @login_required
     def resolve_bookmarks(self, info):
@@ -419,6 +424,14 @@ class Query(graphene.AbstractType):
     def resolve_swipes(self, info):
         return list(Swipe.objects.filter(candidate=info.context.user))
 
+    @user_passes_test(lambda user: user.is_company)
+    def resolve_candidates(self, info, job_ID):
+        job = JobOffer.objects.filter(pk=job_ID).get()
+        if info.context.user == job.owner:
+            return list(Swipe.objects.filter(job_offer=job, liked=True))
+        else:
+            raise GraphQLError("user does not own joboffer with id {}".format(job_ID))
+    
     @login_required
     def resolve_all_tags(self, info):
         return Tag.objects.all()
