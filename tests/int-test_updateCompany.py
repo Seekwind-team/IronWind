@@ -103,7 +103,7 @@ mutation = Mutation("updateCompany",
 ################################################## TEST FUNCTIONS ##################################################
 
 # tests if all valid values of all arguments get the expected response
-def test_valids():
+def all_valids():
 	'''
 	tests the mutation with all valid argument values
 	fails if the any mutation fails
@@ -145,16 +145,16 @@ def test_valids():
 					log.test_failed(arg_name, current_values[arg_name], response_values[arg_name], filled_mutation)
 
 
-def test_all_invalids():
+def all_invalids():
 	'''
 	tests all invalid argument values
 	fails if any mutations do not fail
 	'''
 	print("testing all invalids of updateCompany")
 	for a in list(arguments):
-		test_invalid_cases_of(a)
+		invalid_cases_of(a)
 
-def test_invalid_cases_of(invalid_argument):
+def invalid_cases_of(invalid_argument):
 	'''
 	tests all invalid values for one argument
 	fails if any mutations do not fail
@@ -185,17 +185,17 @@ def test_invalid_cases_of(invalid_argument):
 			log.expected_error(invalid_argument, invalid_value, filled_mutation)
 
 
-def test(logger):
+def test():
 	'''
 	creates a user and tests the mutation updateProfile on that user. deletes the user after
 	'''
 	global log
-	log = logger
+	log = __import__("testhub").logger
 
 	log.start("updateCompany")
 	create_test_user()
 	try:
-		test_valids()
-		test_all_invalids()
+		all_valids()
+		all_invalids()
 	finally:
 		delete_test_user()

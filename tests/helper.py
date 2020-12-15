@@ -22,9 +22,9 @@ class GraphQLHelper:
     # payload: tokenAuth mutation
     def request_token(self, payload):
         response = self.run_payload(self, payload = payload)
-        if response.status_code == 200:
+        try:
             return response.json()['data']['tokenAuth']['token']
-        else:
+        except:
             exc = "Recieved no token. Payload: {}Response: {}".format(payload, response.json())
             raise Exception(exc)
 

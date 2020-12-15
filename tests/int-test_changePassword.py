@@ -8,7 +8,7 @@ passwords = __import__("int-test-arguments").get("password")["password"]
 
 #to keep track of which password the user currently has, so that we can delete the user with that password
 active_password = passwords["valid"][0]
-print(active_password)
+
 
 
 ################################################## MUTATION ##################################################
@@ -99,7 +99,7 @@ def delete_user(password):
 ################################################## TEST FUNCTIONS ##################################################
 
 
-def test_valids():
+def all_valids():
 	'''
 	tests the mutation with all valid argument values
 	fails if any mutation fails
@@ -139,10 +139,10 @@ def test_valids():
 				log.test_failed("ok", "true", "false", filled_mutation)
 			else:
 				active_password = valid_passwords[i]
-				print(active_password)
 
 
-def test_all_invalids():
+
+def all_invalids():
 	'''
 	tests all invalid argument values
 	fails if any mutations do not fail
@@ -179,20 +179,20 @@ def test_all_invalids():
 		if response.json() != None and list(response.json())[0] != 'errors':
 			log.expected_error("new_password", inv_password, filled_mutation)
 			active_password = inv_password
-			print(active_password)
 
 
 
 
-def test(logger):
+
+def test():
 
     global log
-    log = logger
+    log = __import__("testhub").logger
     log.start("changePassword")
     try:
 	    create_user(passwords["valid"][0])
-	    test_valids()
-	    test_all_invalids()
+	    all_valids()
+	    all_invalids()
     except Exception as e:
         print(e)
     finally:

@@ -197,7 +197,7 @@ class UpdatedProfile(graphene.Mutation):
         soft_skills_object.routine = soft_skills.routine
         soft_skills_object.communicativity = soft_skills.communicativity
         soft_skills_object.save()
-        
+
         data_object.soft_skills = soft_skills_object
         data_object.save()
 
@@ -369,17 +369,10 @@ class Mutation(graphene.ObjectType):
 # Read functions for all Profiles
 class Query(graphene.AbstractType):
     me = graphene.Field(UserType, description="returns user model of logged in user")
-<<<<<<< HEAD
-
-    # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
-    # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
-
-=======
     soft_skills = graphene.Field(
         SoftSkillsType,
         description="returns soft skills for logged in User"
     )
->>>>>>> 9e04bc05e92e1de1ba70c9ed02fd64134fd821e4
     # returns auth data
     @login_required  # would return an error on 'Anonymous user', so restricting this to authenticated users
     def resolve_me(self, info):
@@ -389,7 +382,7 @@ class Query(graphene.AbstractType):
     def resolve_soft_skills(self, info):
         user = UserData.objects.filter(belongs_to=info.context.user).get()
         return user.soft_skills
-        
+
     # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
 

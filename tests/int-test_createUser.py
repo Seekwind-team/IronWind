@@ -45,17 +45,31 @@ def delete_user(email, password):
 				}}
 			}}
 			""".format(password)
-	response = helper.run_payload(helper, header = header, payload = payload)
+	helper.run_payload(helper, header = header, payload = payload)
 
-	if response.json() != None:
-		if str(response.json()["data"]["deleteUser"]["ok"]).lower() != "true":
-			log.test_failed("ok", "True", response.json()["data"]["deleteUser"]["ok"], payload)
+def user_exists(email, password):
+	payload_token_auth = """
+	mutation{{
+		tokenAuth(
+			email:"{}",
+			password: "{}"
+			)
+			{{
+				token
+			}}
+	}}""".format(email, password)
+
+	try:
+		helper.request_token(helper, payload = payload_token_auth)
+		return True
+	except:
+		return False
 
 
 ################################################## TEST FUNCTIONS ##################################################
 
 
-def test_valids():
+def all_valids():
 	'''
 	tests the mutation with all valid argument values
 	fails if the any mutation fails
@@ -79,6 +93,9 @@ def test_valids():
 
 		filled_mutation = mutation.fill(current_values)
 
+		if  user_exists(current_values["email"], current_values["password"]):
+			delete_user(current_values["email"], current_values["password"])
+
 
 		response = helper.run_payload(helper, payload = filled_mutation)
 
@@ -94,17 +111,17 @@ def test_valids():
 
 
 
-def test_all_invalids():
+def all_invalids():
 	'''
 	tests all invalid argument values
 	fails if any mutations do not fail
 	'''
 	print("testing all invalids of createUser")
 	for a in list(arguments):
-		test_invalid_cases_of(a)
+		invalid_cases_of(a)
 
 
-def test_invalid_cases_of(invalid_argument):
+def invalid_cases_of(invalid_argument):
 	'''
 	tests all invalid values for one argument
 	fails if any mutations do not fail
@@ -126,6 +143,9 @@ def test_invalid_cases_of(invalid_argument):
 		test_values[invalid_argument] = invalid_value
 		filled_mutation = mutation.fill(test_values)
 
+		if  user_exists(test_values["email"], test_values["password"]):
+			delete_user(test_values["email"], test_values["password"])
+
 		response = helper.run_payload(helper, payload = filled_mutation)
 
 		if response.json() != None and list(response.json())[0] != 'errors':
@@ -133,12 +153,12 @@ def test_invalid_cases_of(invalid_argument):
 			log.expected_error(invalid_argument, invalid_value, filled_mutation)
 
 
-def test(logger):
+def test():
 	global log
-	log = logger
+	log = __import__("testhub").logger
 
 	log.start("createUser")
-	test_valids()
-	test_all_invalids()
+	all_valids()
+	all_invalids()
 
 # test(Logger())

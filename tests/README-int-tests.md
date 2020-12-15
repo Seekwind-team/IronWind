@@ -11,4 +11,4 @@ following options are available:
 	the name must be the **last argument** and also **without** ending
 
 example: `python testhub.py -l updateProfile updateCompany logfile`
-	to run the tests for updateProfile and updateCompany and log results into logs/logfil.txt
+	to run the tests for updateProfile and updateCompany and log results into logs/logfile.txt
