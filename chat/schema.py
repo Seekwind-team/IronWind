@@ -153,7 +153,7 @@ class Query(graphene.ObjectType):
     def resolve_get_chats(self, info):
         """Function Used to get all partners that logged in user has a chat-history with"""
         partners = set()  # set to save all chat partners, avoids duplicates
-        last_messages = []  # array used to collect messages to form response
+        last_messages = set()  # array used to collect messages to form response
 
         # fetches all chat partners
         for e in Message.objects.filter(Q(sender=info.context.user) | Q(receiver=info.context.user)).all():
@@ -164,7 +164,7 @@ class Query(graphene.ObjectType):
 
         # iterates over all chat partners and fetches the last message of that chat
         for partner in partners:
-            last_messages.append(Message.objects.filter(Q(Q(receiver=info.context.user) & Q(sender=partner)) | (
+            last_messages.add(Message.objects.filter(Q(Q(receiver=info.context.user) & Q(sender=partner)) | (
                     Q(receiver=partner) & Q(sender=info.context.user))).last())
 
         return last_messages
