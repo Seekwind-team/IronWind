@@ -226,19 +226,21 @@ class DeleteJobOffer(graphene.Mutation):
     ok = graphene.Boolean(description="Returns True on successful operation")
 
     class Arguments:
-        job_id = graphene.Int(required=True,description="ID of Job to be deleted")
+        job_ID = graphene.Int(required=True,description="ID of Job to be deleted")
 
     @login_required
     def mutate(self, info, **kwargs):
         # checks if user owns joboffer
         user_job_offers = JobOffer.objects.filter(owner=info.context.user)
-        job_offer = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+        job_offer = JobOffer.objects.filter(pk=kwargs['job_ID']).get()
 
         if job_offer in user_job_offers:
-            job_offer.delete()
+            job_offer.is_deleted = True
+            job_offer.save()
             return DeleteJobOffer(ok=True)
         else:
-            raise GraphQLError("User has no Job with id: ", kwargs['job_id'])
+            raise GraphQLError("User has no Job with id: ", kwargs['job_ID'])
+
         return DeleteJobOffer(ok=False)
 
 
@@ -429,11 +431,14 @@ class Query(graphene.AbstractType):
 
     @user_passes_test(lambda user: user.is_company)
     def resolve_job_offers(self, info):
-        return list(JobOffer.objects.filter(owner=info.context.user))
+        return list(JobOffer.objects.filter(owner=info.context.user, is_deleted=False))
 
     @login_required
     def resolve_job_offer(self, info, job_id):
-        return JobOffer.objects.filter(pk=job_id).get()
+        if JobOffer.objects.filter(pk=job_id).get().is_deleted:
+            raise GraphQLError("this Joboffer is deleted")
+        else:
+            return JobOffer.objects.filter(pk=job_id).get()
 
     @login_required
     def resolve_bookmarks(self, info):
