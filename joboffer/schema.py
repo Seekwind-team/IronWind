@@ -330,10 +330,20 @@ class SaveSwipe(graphene.Mutation):
             job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
         except Exception:
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
-
-        swipe = Swipe(candidate=info.context.user, job_offer=job)
-        swipe.liked = kwargs['like']
-        swipe.save()
+        
+        
+        if not Swipe.objects.filter(candidate=info.context.user, job_offer=job).exists():
+            # initial swipe
+            swipe = Swipe(candidate=info.context.user, job_offer=job)
+            swipe.liked = kwargs['like']
+            swipe.save()
+        elif Swipe.objects.filter(candidate=info.context.user, job_offer=job).get().liked != kwargs['like']: 
+            # alter like attribute
+            swipe = Swipe.objects.filter(candidate=info.context.user, job_offer=job).get()
+            swipe.liked = kwargs['like']
+            swipe.save()
+        else:
+            raise GraphQLError("this joboffer is already {} by user".format('liked' if kwargs['like'] else 'disliked'))
 
         return SaveSwipe(ok=True, swipe=swipe)
 
@@ -352,9 +362,12 @@ class SaveBookmark(graphene.Mutation):
             job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
         except Exception:
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
-
-        bookmark = Bookmark(candidate=info.context.user, job_offer=job)
-        bookmark.save()
+        
+        if not Bookmark.objects.filter(candidate=info.context.user, job_offer=job).get():
+            bookmark = Bookmark(candidate=info.context.user, job_offer=job)
+            bookmark.save()
+        else:
+            raise GraphQLError("this bookmark is already set")
 
         return SaveBookmark(ok=True, bookmark=bookmark)
 
@@ -362,7 +375,7 @@ class DeleteBookmark(graphene.Mutation):
     ok = graphene.Boolean()
 
     class Arguments:
-        bookmark_id = graphene.Int(required=True)
+        bookmark_id = graphene.Int(required=True, description="id of Bookmark to be deleted")
 
     @login_required
     def mutate(self, info, bookmark_id):
@@ -410,7 +423,6 @@ class Query(graphene.AbstractType):
 
     candidates = graphene.List(
         SwipeType,
-        job_ID=graphene.Int(),
         description="returns list of Swipes for logged in company"
     )
     all_tags = graphene.List(
@@ -446,13 +458,14 @@ class Query(graphene.AbstractType):
         return list(Swipe.objects.filter(candidate=info.context.user))
 
     @user_passes_test(lambda user: user.is_company)
-    def resolve_candidates(self, info, job_ID):
-        job = JobOffer.objects.filter(pk=job_ID).get()
-        if info.context.user == job.owner:
-            return list(Swipe.objects.filter(job_offer=job, liked=True))
-        else:
-            raise GraphQLError("user does not own joboffer with id {}".format(job_ID))
-    
+    def resolve_candidates(self, info):
+        jobs = list(JobOffer.objects.filter(owner=info.context.user))
+        swipes = []
+        for job in jobs:
+            swipes.append(Swipe.objects.filter(job_offer=job, liked=True).get())
+        
+        return swipes
+        
     @login_required
     def resolve_all_tags(self, info):
         return Tag.objects.all()
