@@ -32,7 +32,9 @@ class Subscription(graphene.ObjectType):
             .take_while(lambda i: int(i) <= up_to)
 
     message_created = graphene.Field(MessageType,
-                                     description="creates an observable to receive all messages sent to logged in user")
+                                     description="creates an observable to receive all messages sent to logged in user",
+                                     token=graphene.String(required=True)
+                                     )
 
     @login_required
     def resolve_message_created(self, info, *args, **kwargs):
