@@ -1,3 +1,6 @@
+from abc import ABC
+from collections import Iterable
+
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -26,9 +29,18 @@ class Message(models.Model):
         blank=False,
         unique=False,
         max_length=255,
-        help_text=_('Headline of this Care-Space Entry')
+        help_text=_('message sent through chat message')
+    )
+
+    unread = models.BooleanField(
+        default=True,
+        help_text=_('Whether this message has been read or not')
     )
 
     timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        # will Return Name of self-objects as stated:
+        return str(self.sender.email) + " (at " + str(self.timestamp) + "): " + str(self.message)
 
 
