@@ -314,6 +314,7 @@ class DeleteImage(graphene.Mutation):
 
         return DeleteImage(ok=True, joboffer=job)
 
+
 # used to store like or dislike from user on joboffer 
 class SaveSwipe(graphene.Mutation):
     ok = graphene.Boolean()
@@ -330,8 +331,7 @@ class SaveSwipe(graphene.Mutation):
             job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
         except Exception:
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
-        
-        
+
         if not Swipe.objects.filter(candidate=info.context.user, job_offer=job).exists():
             # initial swipe
             swipe = Swipe(candidate=info.context.user, job_offer=job)
@@ -371,6 +371,7 @@ class SaveBookmark(graphene.Mutation):
 
         return SaveBookmark(ok=True, bookmark=bookmark)
 
+
 class DeleteBookmark(graphene.Mutation):
     ok = graphene.Boolean()
 
@@ -387,6 +388,37 @@ class DeleteBookmark(graphene.Mutation):
         
         return DeleteBookmark(ok=True)
 
+
+class EndSearch(graphene.Mutation):
+
+    ok = graphene.Boolean()
+
+    class Arguments:
+        pass
+
+    @user_passes_test(lambda u: u.is_authenticated and not u.is_company)
+    def mutate(self, info):
+        userdata = info.context.user.get_data()
+        userdata.looking = False
+        userdata.save()
+        JobOffer.objects.filter(swipe__candidate=info.context.user).all().delete()
+        return EndSearch(ok=True)
+
+
+class ReactivateSearch(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    class Arguments:
+        pass
+
+    @user_passes_test(lambda u: u.is_authenticated and not u.is_company)
+    def mutate(self, info):
+        userdata = info.context.user.get_data()
+        userdata.looking = True
+        userdata.save()
+        return ReactivateSearch(True)
+
+
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field() 
     alter_job_offer = AlterJobOffer.Field()
@@ -396,6 +428,9 @@ class Mutation(graphene.ObjectType):
     save_swipe = SaveSwipe.Field()
     save_bookmark = SaveBookmark.Field()
     delete_bookmark = DeleteBookmark.Field()
+    end_search = EndSearch.Field()
+    reactivate_search = ReactivateSearch.Field()
+
 
 class Query(graphene.AbstractType):
     job_offers = graphene.List(
@@ -480,4 +515,3 @@ class Query(graphene.AbstractType):
                 jobs.append(job)    
         
         return list(dict.fromkeys(jobs))
-        
