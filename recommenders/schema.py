@@ -13,6 +13,7 @@ RCMDR = Recommender.new()
 class Query(graphene.ObjectType):
     my_recommendations = graphene.List(JobOfferType)
 
+    # needs testing
     @login_required
     def resolve_my_recommendations(self, info):
         # temp return value for frontend testing
