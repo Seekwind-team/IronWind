@@ -59,7 +59,7 @@ IronWind/
 │  ├─ schema.py # API-Controller 
 │  ├─ tests.py # file for automated testing of this section
 │  ├─ views.py # unused here
-├─ src/
+├─ IronWind/
 │  ├─ asgi.py # definition file for asgi application
 │  ├─ routing.py # file for defining web sockets
 │  ├─ schema.py # root file for API-Controller 

@@ -62,7 +62,7 @@ CHANNEL_LAYERS = {
 }
 
 
-ASGI_APPLICATION = 'src.routing.application'
+ASGI_APPLICATION = 'IronWind.routing.application'
 
 
 MIDDLEWARE = [
@@ -76,7 +76,7 @@ MIDDLEWARE = [
 ]
 
 GRAPHENE = {
-    'SCHEMA': 'src.schema.schema',
+    'SCHEMA': 'IronWind.schema.schema',
     'MIDDLEWARE': [
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
     ],
@@ -88,7 +88,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-ROOT_URLCONF = 'src.urls'
+ROOT_URLCONF = 'IronWind.urls'
 
 GRAPHQL_JWT = {
     'JWT_ALLOW_ARGUMENT': True,
@@ -111,7 +111,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'src.wsgi.application'
+WSGI_APPLICATION = 'IronWind.wsgi.application'
 
 
 # Database

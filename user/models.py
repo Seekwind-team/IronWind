@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from django.utils.translation import gettext_lazy as _
 
-from src import settings
+from IronWind import settings
 
 
 class UserManager(BaseUserManager):
