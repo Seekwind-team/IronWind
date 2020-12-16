@@ -1,6 +1,3 @@
-from abc import ABC
-from collections import Iterable
-
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -22,6 +19,15 @@ class Message(models.Model):
         unique=False,
         related_name='%(class)s_receiver',
         help_text=_('receiver')
+    )
+
+    meta = models.CharField(
+        default="Textmessage",
+        null=False,
+        blank=False,
+        unique=False,
+        max_length=255,
+        help_text=_('Type of message sent')
     )
 
     message = models.CharField(

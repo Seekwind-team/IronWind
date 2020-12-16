@@ -8,11 +8,8 @@ from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 from rx import Observable
 
-from graphql_jwt import mixins
-
 from chat.models import Message
 from user.models import Authentication
-from user.schema import UserType
 
 import IronWind.schema
 
@@ -83,9 +80,10 @@ class SendMessage(graphene.Mutation):
     class Arguments:
         receiver_id = graphene.Int(required=True, description="ID of the receiver of this message")
         message = graphene.String(required=True, description="content of this message")
+        meta = graphene.String(default="Textmessage", description="additional information attached to the message")
 
     @login_required
-    def mutate(self, info, receiver_id, message):
+    def mutate(self, info, receiver_id, message, meta):
 
         try:
             receiver_obj = Authentication.objects.filter(pk=receiver_id).get()
@@ -94,7 +92,8 @@ class SendMessage(graphene.Mutation):
         message = Message(
             sender=info.context.user,
             receiver=receiver_obj,
-            message=message
+            message=message,
+            meta=meta
         )
         django.db.models.signals.post_save.connect(
             graphene_subscriptions.signals.post_save_subscription, sender=Message, dispatch_uid="message_post_save"
@@ -153,7 +152,7 @@ class Query(graphene.ObjectType):
     def resolve_get_chats(self, info):
         """Function Used to get all partners that logged in user has a chat-history with"""
         partners = set()  # set to save all chat partners, avoids duplicates
-        last_messages = []  # array used to collect messages to form response
+        last_messages = set()  # array used to collect messages to form response
 
         # fetches all chat partners
         for e in Message.objects.filter(Q(sender=info.context.user) | Q(receiver=info.context.user)).all():
@@ -164,7 +163,7 @@ class Query(graphene.ObjectType):
 
         # iterates over all chat partners and fetches the last message of that chat
         for partner in partners:
-            last_messages.append(Message.objects.filter(Q(Q(receiver=info.context.user) & Q(sender=partner)) | (
+            last_messages.add(Message.objects.filter(Q(Q(receiver=info.context.user) & Q(sender=partner)) | (
                     Q(receiver=partner) & Q(sender=info.context.user))).last())
 
         return last_messages
