@@ -22,6 +22,7 @@ class Message(models.Model):
     )
 
     meta = models.CharField(
+        default="Textmessage",
         null=False,
         blank=False,
         unique=False,
