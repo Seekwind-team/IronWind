@@ -21,6 +21,15 @@ class Message(models.Model):
         help_text=_('receiver')
     )
 
+    meta = models.CharField(
+        default="Textmessage",
+        null=False,
+        blank=False,
+        unique=False,
+        max_length=255,
+        help_text=_('Type of message sent')
+    )
+
     message = models.CharField(
         null=False,
         blank=False,

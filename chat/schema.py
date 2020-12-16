@@ -80,9 +80,10 @@ class SendMessage(graphene.Mutation):
     class Arguments:
         receiver_id = graphene.Int(required=True, description="ID of the receiver of this message")
         message = graphene.String(required=True, description="content of this message")
+        meta = graphene.String(default="Textmessage", description="additional information attached to the message")
 
     @login_required
-    def mutate(self, info, receiver_id, message):
+    def mutate(self, info, receiver_id, message, meta):
 
         try:
             receiver_obj = Authentication.objects.filter(pk=receiver_id).get()
@@ -91,7 +92,8 @@ class SendMessage(graphene.Mutation):
         message = Message(
             sender=info.context.user,
             receiver=receiver_obj,
-            message=message
+            message=message,
+            meta=meta
         )
         django.db.models.signals.post_save.connect(
             graphene_subscriptions.signals.post_save_subscription, sender=Message, dispatch_uid="message_post_save"
