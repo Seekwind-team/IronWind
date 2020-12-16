@@ -80,10 +80,10 @@ class SendMessage(graphene.Mutation):
     class Arguments:
         receiver_id = graphene.Int(required=True, description="ID of the receiver of this message")
         message = graphene.String(required=True, description="content of this message")
-        meta = graphene.String(default="Textmessage", description="additional information attached to the message")
+        meta = graphene.String(description="additional information attached to the message")
 
     @login_required
-    def mutate(self, info, receiver_id, message, meta):
+    def mutate(self, info, receiver_id, message, meta="Textmessage"):
 
         try:
             receiver_obj = Authentication.objects.filter(pk=receiver_id).get()
