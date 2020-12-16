@@ -67,7 +67,7 @@ class Recommender:
         for i in top_indices:
             topjobid = self.index2id[i] ## <- Tested: returns correct _id
             #print(topjobid)
-            recommended_jobs.append(list(self.df["jobTitle"])[i])
+            recommended_jobs.append(topjobid)
         return recommended_jobs
 
 
