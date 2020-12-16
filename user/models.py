@@ -318,7 +318,7 @@ class CompanyData(models.Model):
         return "(" + str(self.pk) + "): " + self.belongs_to.email + " company data"
 
 
-class Notizfeld(models.Model):
+class Note(models.Model):
 
     user_from = models.ForeignKey(
         Authentication,
@@ -339,6 +339,9 @@ class Notizfeld(models.Model):
         max_length=5000,
         help_text=_('Memo field to leave a note on an applicant')
     )
+
+
+
 
 
 '''

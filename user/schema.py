@@ -10,7 +10,7 @@ from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
-from user.models import UserData, CompanyData, SoftSkills
+from user.models import UserData, CompanyData, SoftSkills, Authentication, Note
 
 
 class Upload(graphene.types.Scalar):
@@ -56,10 +56,17 @@ class CompanyDataType(DjangoObjectType):
         model = CompanyData
         description = 'This Type contains a singular set of Company-Data'
 
+
 class SoftSkillsType(DjangoObjectType):
     class Meta:
         model = SoftSkills
         description = 'This Type contains slider values from -5 to 5 for Softskills'
+
+
+class NoteType(DjangoObjectType):
+    class Meta:
+        model = Note
+
 
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
@@ -357,6 +364,29 @@ class UploadMeisterbrief(graphene.Mutation):
         return UploadMeisterbrief(ok=True)
 
 
+class AddNote(graphene.Mutation):
+    note = graphene.Field(NoteType)
+
+    class Arguments:
+        note = graphene.String()
+        user = graphene.Int()
+
+    @user_passes_test(lambda u: u.is_compan)
+    def mutate(self, info, note, user):
+        try:
+            user_to = Authentication.objects.filter(pk=user).get()
+        except Exception:
+            raise GraphQLError("Can't find referenced user")
+
+        if Note.objects.filter(user_from=info.context.user).filter(user_to=user_to):
+            note = Note.objects.filter(user_from=info.context.user).filter(user_to=user_to).get()
+            note.note = note
+        else:
+            note = Note(user_from=info.context.user, user_to=user_to, note=note)
+        note.save()
+        return note
+
+
 # Create - Update - Delete for all User-Profiles
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
@@ -366,6 +396,7 @@ class Mutation(graphene.ObjectType):
     change_password = ChangePassword.Field()
     change_email = ChangeEmail.Field()
     upload_file = UploadUserPicture.Field()
+    add_note = AddNote.Field()
 
 
 # Read functions for all Profiles
