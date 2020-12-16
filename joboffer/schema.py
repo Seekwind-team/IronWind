@@ -363,7 +363,7 @@ class SaveBookmark(graphene.Mutation):
         except Exception:
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
         
-        if not Bookmark.objects.filter(candidate=info.context.user, job_offer=job).get():
+        if not Bookmark.objects.filter(candidate=info.context.user, job_offer=job).exists():
             bookmark = Bookmark(candidate=info.context.user, job_offer=job)
             bookmark.save()
         else:
