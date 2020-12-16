@@ -183,23 +183,25 @@ class UpdatedProfile(graphene.Mutation):
         data_object.birth_date = birth_date or data_object.birth_date
         data_object.save()
 
-        soft_skills_object = SoftSkills()
-        soft_skills_object.artistic = soft_skills.artistic
-        soft_skills_object.social_activity = soft_skills.social_activity
-        soft_skills_object.customer_orientated = soft_skills.customer_orientated
-        soft_skills_object.motorskills = soft_skills.motorskills
-        soft_skills_object.planning = soft_skills.planning
-        soft_skills_object.empathic = soft_skills.empathic
-        soft_skills_object.creativity = soft_skills.creativity
-        soft_skills_object.digital = soft_skills.digital
-        soft_skills_object.innovativity = soft_skills.innovativity
-        soft_skills_object.early_rise = soft_skills.early_rise
-        soft_skills_object.routine = soft_skills.routine
-        soft_skills_object.communicativity = soft_skills.communicativity
-        soft_skills_object.save()
-        
-        data_object.soft_skills = soft_skills_object
-        data_object.save()
+        # TODO set proper creation/editation for soft skills. if Statement just prevents error raise in frontend 
+        if soft_skills:
+            soft_skills_object = SoftSkills()
+            soft_skills_object.artistic = soft_skills.artistic 
+            soft_skills_object.social_activity = soft_skills.social_activity 
+            soft_skills_object.customer_orientated = soft_skills.customer_orientated  
+            soft_skills_object.motorskills = soft_skills.motorskills 
+            soft_skills_object.planning = soft_skills.planning 
+            soft_skills_object.empathic = soft_skills.empathic 
+            soft_skills_object.creativity = soft_skills.creativity 
+            soft_skills_object.digital = soft_skills.digital 
+            soft_skills_object.innovativity = soft_skills.innovativity 
+            soft_skills_object.early_rise = soft_skills.early_rise 
+            soft_skills_object.routine = soft_skills.routine 
+            soft_skills_object.communicativity = soft_skills.communicativity 
+            soft_skills_object.save()
+            
+            data_object.soft_skills = soft_skills_object
+            data_object.save()
 
         return UpdatedProfile(updated_profile=data_object)
 

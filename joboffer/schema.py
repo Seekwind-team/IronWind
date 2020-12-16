@@ -407,7 +407,7 @@ class SaveBookmark(graphene.Mutation):
         except Exception:
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
         
-        if not Bookmark.objects.filter(candidate=info.context.user, job_offer=job).get():
+        if not Bookmark.objects.filter(candidate=info.context.user, job_offer=job).exists():
             bookmark = Bookmark(candidate=info.context.user, job_offer=job)
             bookmark.save()
         else:
@@ -484,7 +484,7 @@ class Query(graphene.AbstractType):
 
     job_offer = graphene.Field(
         JobOfferType,
-        job_ID=graphene.Int(
+        job_Id=graphene.Int(
             description="ID of Job offer to be returned with this request"
         ),
         description="returns job offer with given ID"
@@ -522,11 +522,11 @@ class Query(graphene.AbstractType):
         return list(JobOffer.objects.filter(owner=info.context.user, is_deleted=False))
 
     @login_required
-    def resolve_job_offer(self, info, job_id):
-        if JobOffer.objects.filter(pk=job_id).get().is_deleted:
+    def resolve_job_offer(self, info, job_Id):
+        if JobOffer.objects.filter(pk=job_Id).get().is_deleted:
             raise GraphQLError("this Joboffer is deleted")
         else:
-            return JobOffer.objects.filter(pk=job_id).get()
+            return JobOffer.objects.filter(pk=job_Id).get()
 
     @login_required
     def resolve_bookmarks(self, info):
