@@ -76,6 +76,22 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         help_text=_('User creation DateTime')
     )
 
+    def get_data(self):
+        if self.is_company:
+            if not CompanyData.objects.filter(belongs_to=self):
+                company_data = CompanyData(
+                    belongs_to=self
+                )
+                company_data.save()
+            return CompanyData.objects.filter(belongs_to=self).get()
+        else:
+            if not UserData.objects.filter(belongs_to=self):
+                user_data = UserData(
+                    belongs_to=self
+                )
+                user_data.save()
+            return UserData.objects.filter(belongs_to=self).get()
+
 # saves soft-skill-slider values in range -5 to 5
 class SoftSkills(models.Model):
     #id = models.AutoField()
@@ -139,7 +155,6 @@ class SoftSkills(models.Model):
         default=0,
         #copy paste
     )
-    
 
     
 class UserData(models.Model):
@@ -174,6 +189,11 @@ class UserData(models.Model):
         null=True,
         blank=True,
         help_text=_('Short self-description of user, 2000 characters maximum')
+    )
+
+    looking = models.BooleanField(
+        default=True,
+        help_text=_('Is actively looking for Job Offers?')
     )
 
     # TODO: Grades ?
