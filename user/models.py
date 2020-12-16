@@ -76,7 +76,87 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         help_text=_('User creation DateTime')
     )
 
+    def get_data(self):
+        if self.is_company:
+            if not CompanyData.objects.filter(belongs_to=self):
+                company_data = CompanyData(
+                    belongs_to=self
+                )
+                company_data.save()
+            return CompanyData.objects.filter(belongs_to=self).get()
+        else:
+            if not UserData.objects.filter(belongs_to=self):
+                user_data = UserData(
+                    belongs_to=self
+                )
+                user_data.save()
+            return UserData.objects.filter(belongs_to=self).get()
 
+# saves soft-skill-slider values in range -5 to 5
+class SoftSkills(models.Model):
+    #id = models.AutoField()
+
+    artistic=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    social_activity=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    customer_orientated=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    motorskills=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    planning=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    empathic=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    creativity=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    digital=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    innovativity=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    early_rise=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    routine=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+    
+    communicativity=models.SmallIntegerField(
+        default=0,
+        #copy paste
+    )
+
+    
 class UserData(models.Model):
     belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, help_text=_('User Reference'))
 
@@ -111,6 +191,11 @@ class UserData(models.Model):
         help_text=_('Short self-description of user, 2000 characters maximum')
     )
 
+    looking = models.BooleanField(
+        default=True,
+        help_text=_('Is actively looking for Job Offers?')
+    )
+
     # TODO: Grades ?
     # TODO: Graduation ?
 
@@ -131,8 +216,16 @@ class UserData(models.Model):
         help_text=_('gender of User, uses string to allow all genders')
     )
 
-    # TODO: Soft Skills?
     # TODO: Geo-Locations?
+   
+    # soft skills slider values
+    soft_skills = models.OneToOneField(
+        SoftSkills,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        help_text=_('Reference to slider values for soft skills')
+    )
 
     location = models.CharField(
         max_length=50,
@@ -223,6 +316,29 @@ class CompanyData(models.Model):
 
     def __str__(self):
         return "(" + str(self.pk) + "): " + self.belongs_to.email + " company data"
+
+
+class Notizfeld(models.Model):
+
+    user_from = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE,
+        related_name='%(class)s_sender',
+    )
+
+    user_to = models.ForeignKey(
+        Authentication,
+        on_delete=models.CASCADE,
+        related_name='%(class)s_receiver',
+    )
+
+    memo = models.TextField(
+        _('memo field'),
+        null=True,
+        blank=True,
+        max_length=5000,
+        help_text=_('Memo field to leave a note on an applicant')
+    )
 
 
 '''

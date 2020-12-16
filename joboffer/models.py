@@ -24,6 +24,7 @@ class JobOffer(models.Model):
     )
 
     # job_cats = models.TextField()
+    
     filled = models.BooleanField(
         default=False,
         help_text=_('Definmiert, ob ein Jobangebot besetzt ist')
@@ -33,8 +34,6 @@ class JobOffer(models.Model):
         default=False,
         help_text=_('definiert, ob ein Jobangebot "gelöscht" ist')
     )
-
-    #job_cats = models.TextField()
 
     JOBTYPE_CHOICES = [
         ('Vollzeit', 'Vollzeit'),

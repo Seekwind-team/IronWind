@@ -21,14 +21,32 @@ class Message(models.Model):
         help_text=_('receiver')
     )
 
+    meta = models.CharField(
+        default="Textmessage",
+        null=False,
+        blank=False,
+        unique=False,
+        max_length=255,
+        help_text=_('Type of message sent')
+    )
+
     message = models.CharField(
         null=False,
         blank=False,
         unique=False,
         max_length=255,
-        help_text=_('Headline of this Care-Space Entry')
+        help_text=_('message sent through chat message')
+    )
+
+    unread = models.BooleanField(
+        default=True,
+        help_text=_('Whether this message has been read or not')
     )
 
     timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        # will Return Name of self-objects as stated:
+        return str(self.sender.email) + " (at " + str(self.timestamp) + "): " + str(self.message)
 
 
