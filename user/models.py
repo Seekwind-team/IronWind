@@ -200,7 +200,7 @@ class UserData(models.Model):
     # TODO: Graduation ?
 
     profile_picture = models.ImageField(
-        upload_to='static/images/',
+        upload_to='images',
         null=True,
         blank=True,
         help_text=_('profile picture of user')
@@ -293,14 +293,14 @@ class CompanyData(models.Model):
     )
 
     company_picture = models.ImageField(
-        upload_to='static/images/',
+        upload_to='images',
         null=True,
         blank=True,
         help_text=_('eg. Picture of the company Logo')
     )
 
     meisterbrief = models.ImageField(
-        upload_to='static/images/',
+        upload_to='images',
         null=True,
         blank=True,
         help_text=_('Picture to validate the company as legally permitted to accept apprentices')
