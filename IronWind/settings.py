@@ -19,12 +19,17 @@ AUTH_USER_MODEL = 'user.Authentication'
 
 ALLOWED_HOSTS = ['141.19.142.7']
 
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 # Application definition
 
 INSTALLED_APPS = [
     # Websockets and Chatting
     'channels',
+
+    # Temporary
+    'corsheaders',
 
     # Required for GraphiQL
     "django.contrib.staticfiles",
@@ -44,7 +49,7 @@ INSTALLED_APPS = [
     'chat',
 ]
 
-'''
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -60,7 +65,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
-
+'''
 
 ASGI_APPLICATION = 'IronWind.routing.application'
 
@@ -73,6 +78,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # Temporary
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 GRAPHENE = {
