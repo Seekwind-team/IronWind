@@ -167,4 +167,6 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
+#MEDIA_ROOT = '/home/seekwind/WhiteWater/IronWind/media/'
+#MEDIA_ROOT = '/media/'
+MEDIA_ROOT = '/static/'
