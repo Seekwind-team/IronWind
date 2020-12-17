@@ -504,6 +504,7 @@ class Query(graphene.AbstractType):
         SwipeType,
         description="returns list of Swipes for logged in company"
     )
+    
     all_tags = graphene.List(
         TagType,
     )

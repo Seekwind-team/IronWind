@@ -162,7 +162,7 @@ class Image(models.Model):
     )
    
     image = models.ImageField(
-        upload_to='media/jobImages',
+        upload_to='jobImages',
         null=False,
         help_text=_('Imagefile with metadata')
     )
