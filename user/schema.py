@@ -42,6 +42,13 @@ class UserType(DjangoObjectType):
         description = 'Returns auth data'
         exclude_fields = ('password', 'is_superuser', 'message_sender', 'message_receiver')
 
+    images = graphene.List(graphene.String)
+
+    def resolve_images(self, info):
+        try:
+            return Image.objects.filter(model=self).all()
+        except Exception:
+            return None
 
 # Imports UserData from Models
 class UserDataType(DjangoObjectType):
