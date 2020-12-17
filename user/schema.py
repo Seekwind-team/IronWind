@@ -193,9 +193,9 @@ class UpdatedProfile(graphene.Mutation):
             soft_skills_object.planning = soft_skills.planning 
             soft_skills_object.empathic = soft_skills.empathic 
             soft_skills_object.creativity = soft_skills.creativity 
-            soft_skills_object.digital = soft_skills.digital 
+            #soft_skills_object.digital = soft_skills.digital 
             soft_skills_object.innovativity = soft_skills.innovativity 
-            soft_skills_object.early_rise = soft_skills.early_rise 
+            #soft_skills_object.early_rise = soft_skills.early_rise 
             soft_skills_object.routine = soft_skills.routine 
             soft_skills_object.communicativity = soft_skills.communicativity 
             soft_skills_object.save()

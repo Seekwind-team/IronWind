@@ -96,67 +96,73 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         # will Return Name of self-objects as stated:
         return "(" + str(self.pk) + ") " + str(self.email)
 
-# saves soft-skill-slider values in range -5 to 5
+# saves soft-skill-slider 
 class SoftSkills(models.Model):
     #id = models.AutoField()
 
-    artistic=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
     social_activity=models.SmallIntegerField(
         default=0,
-        #copy paste
-    )
-    
-    customer_orientated=models.SmallIntegerField(
-        default=0,
+        description="Teamplayer --- Einzelgänger",
         #copy paste
     )
     
     motorskills=models.SmallIntegerField(
         default=0,
-        #copy paste
-    )
-    
-    planning=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    empathic=models.SmallIntegerField(
-        default=0,
+        description="Muskeln --- Fingerspitzengefühl",
         #copy paste
     )
     
     creativity=models.SmallIntegerField(
         default=0,
+        description="Kreativ --- Strikt nach Plan",
+        #copy paste
+    )
+    
+    artistic=models.SmallIntegerField(
+        default=0,
+        description="Technisch — Gestalterisch",
+        #copy paste
+    )
+
+    customer_orientated=models.SmallIntegerField(
+        default=0,
+        description="Hinter den Kulissen --- Kundenorientiert",
         #copy paste
     )
     
     digital=models.SmallIntegerField(
         default=0,
+        description="",
         #copy paste
     )
     
     innovativity=models.SmallIntegerField(
         default=0,
+        description="Innovation --- Tradition",
         #copy paste
     )
     
     early_rise=models.SmallIntegerField(
         default=0,
+        description="",
         #copy paste
     )
     
     routine=models.SmallIntegerField(
         default=0,
+        description="Routine --- Abwechslung",
         #copy paste
     )
     
     communicativity=models.SmallIntegerField(
         default=0,
+        description="Stiller Denker --- Kommunikativ",
+        #copy paste
+    )
+    
+    planning=models.SmallIntegerField(
+        default=0,
+        description="Gleich ran an die Arbeit --- Detaillierte Planung zuerst",
         #copy paste
     )
 
