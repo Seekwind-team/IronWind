@@ -10,7 +10,7 @@ from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
-from user.models import UserData, CompanyData, SoftSkills
+from user.models import UserData, CompanyData, SoftSkills, Authentication, Note
 
 
 class Upload(graphene.types.Scalar):
@@ -61,6 +61,11 @@ class SoftSkillsType(DjangoObjectType):
     class Meta:
         model = SoftSkills
         description = 'This Type contains slider values from -5 to 5 for Softskills'
+
+
+class NoteType(DjangoObjectType):
+    class Meta:
+        model = Note
 
 
 # Deletes currently logged in account
@@ -359,6 +364,30 @@ class UploadMeisterbrief(graphene.Mutation):
         return UploadMeisterbrief(ok=True)
 
 
+class AddNote(graphene.Mutation):
+    note = graphene.Field(NoteType)
+    ok = graphene.Boolean()
+
+    class Arguments:
+        memo = graphene.String()
+        user = graphene.Int()
+
+    @user_passes_test(lambda u: u.is_company)
+    def mutate(self, info, memo, user):
+        try:
+            user_to = Authentication.objects.filter(pk=user, is_company=False).get()
+        except Exception:
+            raise GraphQLError("Can't find referenced user")
+
+        if Note.objects.filter(user_from=info.context.user).filter(user_to=user_to):
+            note = Note.objects.filter(user_from=info.context.user).filter(user_to=user_to).get()
+            note.memo = memo
+        else:
+            note = Note(user_from=info.context.user, user_to=user_to, memo=memo)
+        note.save()
+        return AddNote(note=note, ok=True)
+
+
 # Create - Update - Delete for all User-Profiles
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
@@ -368,15 +397,27 @@ class Mutation(graphene.ObjectType):
     change_password = ChangePassword.Field()
     change_email = ChangeEmail.Field()
     upload_file = UploadUserPicture.Field()
+    add_note = AddNote.Field()
 
 
 # Read functions for all Profiles
 class Query(graphene.AbstractType):
-    me = graphene.Field(UserType, description="returns user model of logged in user")
+    me = graphene.Field(
+        UserType,
+        description="returns user model of logged in user"
+    )
+
+    get_notes = graphene.Field(
+        NoteType,
+        from_user=graphene.Int(required=True, description="ID of the user to retrieve the notes from"),
+        description="gets all notes on this user"
+    )
+
     soft_skills = graphene.Field(
         SoftSkillsType,
         description="returns soft skills for logged in User"
     )
+
     # returns auth data
     @login_required  # would return an error on 'Anonymous user', so restricting this to authenticated users
     def resolve_me(self, info):
@@ -386,7 +427,13 @@ class Query(graphene.AbstractType):
     def resolve_soft_skills(self, info):
         user = UserData.objects.filter(belongs_to=info.context.user).get()
         return user.soft_skills
-        
+
+    @user_passes_test(lambda u: u.is_company)
+    def resolve_get_notes(self,info,from_user):
+        if Note.objects.filter(user_from=info.context.user).filter(user_to=from_user):
+            return Note.objects.filter(user_from=info.context.user).filter(user_to=from_user).get()
+        return Note(user_from=info.context.user, user_to=from_user, memo="")
+
     # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
 
