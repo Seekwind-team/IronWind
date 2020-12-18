@@ -187,13 +187,15 @@ class UpdatedProfile(graphene.Mutation):
         data_object.gender = gender or data_object.gender
         data_object.birth_date = birth_date or data_object.birth_date
 
-        # TODO set proper creation/editation for soft skills. if Statement just prevents error raise in frontend 
+        # test if soft skills are set
         if soft_skills:
+            # validate slider values
             try:
                 soft_skills_validator(soft_skills, SoftSkillsArguments.MAXIMUM, SoftSkillsArguments.MINIMUM)
             except ValidationError as e:
                 raise GraphQLError("invalid input in SoftSkills {}".format(e))
             
+            # evaluate if this is the first time soft skills are set for this user
             if data_object.soft_skills:
                 soft_skills_object = data_object.soft_skills
             else:
@@ -211,6 +213,7 @@ class UpdatedProfile(graphene.Mutation):
             soft_skills_object.communicativity = soft_skills.communicativity 
             soft_skills_object.save()
             
+            # set attribute if this is the first time soft skills are set for this user
             if not data_object.soft_skills:
                 data_object.soft_skills = soft_skills_object
         
