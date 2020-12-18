@@ -92,6 +92,11 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
                 user_data.save()
             return UserData.objects.filter(belongs_to=self).get()
 
+    def __str__(self):
+        # will Return Name of self-objects as stated:
+        return "(" + str(self.pk) + ") " + str(self.email)
+
+
 # saves soft-skill-slider values in range -5 to 5
 class SoftSkills(models.Model):
     #id = models.AutoField()
@@ -318,7 +323,7 @@ class CompanyData(models.Model):
         return "(" + str(self.pk) + "): " + self.belongs_to.email + " company data"
 
 
-class Notizfeld(models.Model):
+class Note(models.Model):
 
     user_from = models.ForeignKey(
         Authentication,
@@ -339,6 +344,9 @@ class Notizfeld(models.Model):
         max_length=5000,
         help_text=_('Memo field to leave a note on an applicant')
     )
+
+
+
 
 
 '''

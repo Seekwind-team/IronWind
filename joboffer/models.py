@@ -129,7 +129,8 @@ class JobOffer(models.Model):
         help_text=_('Datum des ersten Arbeitstages')
     )
 
-    trade = models.TextField(
+    trade = models.CharField(
+        max_length=255,
         blank=True,
         null=True,
         help_text=_('Jobkategorie')
