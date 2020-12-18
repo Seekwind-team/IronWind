@@ -186,7 +186,6 @@ class UpdatedProfile(graphene.Mutation):
         data_object.short_bio = short_bio or data_object.short_bio
         data_object.gender = gender or data_object.gender
         data_object.birth_date = birth_date or data_object.birth_date
-        data_object.save()
 
         # TODO set proper creation/editation for soft skills. if Statement just prevents error raise in frontend 
         if soft_skills:
@@ -195,7 +194,11 @@ class UpdatedProfile(graphene.Mutation):
             except ValidationError as e:
                 raise GraphQLError("invalid input in SoftSkills {}".format(e))
             
-            soft_skills_object = SoftSkills()
+            if data_object.soft_skills:
+                soft_skills_object = data_object.soft_skills
+            else:
+                soft_skills_object = SoftSkills()
+            
             soft_skills_object.artistic = soft_skills.artistic 
             soft_skills_object.social_activity = soft_skills.social_activity 
             soft_skills_object.customer_orientated = soft_skills.customer_orientated  
@@ -208,8 +211,10 @@ class UpdatedProfile(graphene.Mutation):
             soft_skills_object.communicativity = soft_skills.communicativity 
             soft_skills_object.save()
             
-            data_object.soft_skills = soft_skills_object
-            data_object.save()
+            if not data_object.soft_skills:
+                data_object.soft_skills = soft_skills_object
+        
+        data_object.save()
 
         return UpdatedProfile(updated_profile=data_object)
 
