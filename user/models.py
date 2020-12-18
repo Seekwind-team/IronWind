@@ -92,6 +92,11 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
                 user_data.save()
             return UserData.objects.filter(belongs_to=self).get()
 
+    def __str__(self):
+        # will Return Name of self-objects as stated:
+        return "(" + str(self.pk) + ") " + str(self.email)
+
+
 # saves soft-skill-slider values in range -5 to 5
 class SoftSkills(models.Model):
     #id = models.AutoField()
