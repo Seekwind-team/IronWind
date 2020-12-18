@@ -12,6 +12,7 @@ from django.core.validators import validate_email
 
 from user.models import UserData, CompanyData, SoftSkills
 
+from validators import soft_skills_validator
 
 class Upload(graphene.types.Scalar):
     """Create scalar that ignores normal serialization/deserialization, since
@@ -96,7 +97,13 @@ class DeleteUser(graphene.Mutation):
         return DeleteUser(ok=False)
 
 
+# holds User input for Soft-Skill-Slider Values
 class SoftSkillsArguments(graphene.InputObjectType):
+    # defines minimal and maximal value to be stored in Arguments
+    MAXIMUM = 5
+    MINIMUM = -5
+
+    # Arguments
     artistic = graphene.Int()
     social_activity = graphene.Int()
     customer_orientated =graphene.Int()
@@ -104,9 +111,7 @@ class SoftSkillsArguments(graphene.InputObjectType):
     planning = graphene.Int()
     empathic =graphene.Int()
     creativity =graphene.Int()
-    digital = graphene.Int()
     innovativity = graphene.Int()
-    early_rise = graphene.Int()
     routine = graphene.Int()
     communicativity = graphene.Int()
 
@@ -149,7 +154,7 @@ class UpdatedProfile(graphene.Mutation):
         gender = graphene.String(description="gender of user")
         birth_date = graphene.Date(description="birthdate of user, uses iso8601-Format (eg. 2006-01-02)")
         #  profile_picture = Upload(description="Uploaded File") #
-        # TODO:
+
         soft_skills = graphene.Argument(SoftSkillsArguments,
             description="List of slider values for softskills. eg. \"creativity\":2"
         )
@@ -185,6 +190,11 @@ class UpdatedProfile(graphene.Mutation):
 
         # TODO set proper creation/editation for soft skills. if Statement just prevents error raise in frontend 
         if soft_skills:
+            try:
+                soft_skills_validator(soft_skills, SoftSkillsArguments.MAXIMUM, SoftSkillsArguments.MINIMUM)
+            except ValidationError as e:
+                raise GraphQLError("invalid input in SoftSkills {}".format(e))
+            
             soft_skills_object = SoftSkills()
             soft_skills_object.artistic = soft_skills.artistic 
             soft_skills_object.social_activity = soft_skills.social_activity 
@@ -193,9 +203,7 @@ class UpdatedProfile(graphene.Mutation):
             soft_skills_object.planning = soft_skills.planning 
             soft_skills_object.empathic = soft_skills.empathic 
             soft_skills_object.creativity = soft_skills.creativity 
-            #soft_skills_object.digital = soft_skills.digital 
             soft_skills_object.innovativity = soft_skills.innovativity 
-            #soft_skills_object.early_rise = soft_skills.early_rise 
             soft_skills_object.routine = soft_skills.routine 
             soft_skills_object.communicativity = soft_skills.communicativity 
             soft_skills_object.save()
