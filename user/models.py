@@ -97,7 +97,7 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         # will Return Name of self-objects as stated:
         return "(" + str(self.pk) + ") " + str(self.email)
 
-# saves soft-skill-slider 
+# saves soft-skill-slider values
 class SoftSkills(models.Model):
     social_activity=models.SmallIntegerField(
         default=0,

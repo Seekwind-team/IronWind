@@ -57,10 +57,12 @@ class CompanyDataType(DjangoObjectType):
         model = CompanyData
         description = 'This Type contains a singular set of Company-Data'
 
+
 class SoftSkillsType(DjangoObjectType):
     class Meta:
         model = SoftSkills
         description = 'This Type contains slider values from -5 to 5 for Softskills'
+
 
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
