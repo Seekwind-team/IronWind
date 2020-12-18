@@ -96,10 +96,6 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         # will Return Name of self-objects as stated:
         return "(" + str(self.pk) + ") " + str(self.email)
 
-    def save(self):
-        super(Authentication, self).save()
-        self.get_data()
-
 
 # saves soft-skill-slider values in range -5 to 5
 class SoftSkills(models.Model):
