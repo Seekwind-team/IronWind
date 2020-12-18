@@ -375,7 +375,7 @@ class AddNote(graphene.Mutation):
     @user_passes_test(lambda u: u.is_company)
     def mutate(self, info, memo, user):
         try:
-            user_to = Authentication.objects.filter(pk=user).get()
+            user_to = Authentication.objects.filter(pk=user, is_company=False).get()
         except Exception:
             raise GraphQLError("Can't find referenced user")
 
