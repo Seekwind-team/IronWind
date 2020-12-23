@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin)
 
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
 from django.utils.translation import gettext_lazy as _
@@ -96,72 +97,64 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         # will Return Name of self-objects as stated:
         return "(" + str(self.pk) + ") " + str(self.email)
 
-
-# saves soft-skill-slider values in range -5 to 5
+# saves soft-skill-slider values
 class SoftSkills(models.Model):
-    #id = models.AutoField()
+    social_activity=models.SmallIntegerField(
+        default=0,
+        validators=[MinValueValidator(limit_value=-5), MaxValueValidator(limit_value=5)],
+        help_text=_("Teamplayer --- Einzelgänger"),
+        #copy paste
+    )
+
+    motorskills=models.SmallIntegerField(
+        default=0,
+        help_text=_("Muskeln --- Fingerspitzengefühl"),
+        #copy paste
+    )
+
+    creativity=models.SmallIntegerField(
+        default=0,
+        help_text=_("Kreativ --- Strikt nach Plan"),
+        #copy paste
+    )
 
     artistic=models.SmallIntegerField(
         default=0,
-        #copy paste
-    )
-    
-    social_activity=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    customer_orientated=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    motorskills=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    planning=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    empathic=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    creativity=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    digital=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    innovativity=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    early_rise=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    routine=models.SmallIntegerField(
-        default=0,
-        #copy paste
-    )
-    
-    communicativity=models.SmallIntegerField(
-        default=0,
+        help_text=_("Technisch — Gestalterisch"),
         #copy paste
     )
 
-    
+    customer_orientated=models.SmallIntegerField(
+        default=0,
+        help_text=_("Hinter den Kulissen --- Kundenorientiert"),
+        #copy paste
+    )
+
+    innovativity=models.SmallIntegerField(
+        default=0,
+        help_text=_("Innovation --- Tradition"),
+        #copy paste
+    )
+
+    routine=models.SmallIntegerField(
+        default=0,
+        help_text=_("Routine --- Abwechslung"),
+        #copy paste
+    )
+
+    communicativity=models.SmallIntegerField(
+        default=0,
+        help_text=_("Stiller Denker --- Kommunikativ"),
+        #copy paste
+    )
+
+    planning=models.SmallIntegerField(
+        default=0,
+        help_text=_("Gleich ran an die Arbeit --- Detaillierte Planung zuerst"),
+        #copy paste
+    )
+
+
 class UserData(models.Model):
     belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, help_text=_('User Reference'))
 
@@ -222,7 +215,7 @@ class UserData(models.Model):
     )
 
     # TODO: Geo-Locations?
-   
+
     # soft skills slider values
     soft_skills = models.OneToOneField(
         SoftSkills,
