@@ -129,7 +129,8 @@ class CreateJobOffer(graphene.Mutation):
                 if Tag.objects.filter(name=tag).exists():
                     new_tag = Tag.objects.filter(name=tag).first()
                 else:
-                    new_tag = Tag(name=tag).save()
+                    new_tag = Tag(name=tag)
+                    new_tag.save()
 
                 job_object.hashtags.add(new_tag)
 
@@ -151,6 +152,7 @@ class AlterJobOffer(graphene.Mutation):
         nice_have = graphene.String(description="Conditions that arent required but would be nice to have")
         public_email = graphene.String(description="publicly visible email address")
         is_active = graphene.Boolean(description="Boolean, set to true will deactivate the public job offer")
+        
         add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
         remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
 
@@ -206,11 +208,12 @@ class AlterJobOffer(graphene.Mutation):
                 if Tag.objects.filter(name=tag).exists():
                     new_tag = Tag.objects.filter(name=tag).first()
                 else:
-                    new_tag = Tag(name=tag).save()
+                    new_tag = Tag(name=tag)
+                    new_tag.save()
 
                 job_object.hashtags.add(new_tag)
 
-            # remove Tag
+            # remove Tag from job offer
             for tag in remove_hashtags:
                 if Tag.objects.filter(name=tag).exists():
                     tag = Tag.objects.filter(name=tag).get()
@@ -460,6 +463,7 @@ class Query(graphene.AbstractType):
         SwipeType,
         description="returns list of Swipes for logged in company"
     )
+
     all_tags = graphene.List(
         TagType,
     )
@@ -501,9 +505,16 @@ class Query(graphene.AbstractType):
         
         return swipes
         
+    # returns all tags that got a reference to a job offer
     @login_required
     def resolve_all_tags(self, info):
-        return Tag.objects.all()
+        all_tags = list(Tag.objects.all())
+        active_tags = []
+        for tag in all_tags:
+            if tag.joboffer_set.all().first():
+                active_tags.append(tag)
+
+        return active_tags
 
     @login_required
     def resolve_job_offer_tag_search(self, info, tag_names):
