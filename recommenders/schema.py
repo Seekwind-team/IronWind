@@ -16,8 +16,6 @@ class Query(graphene.ObjectType):
     # needs testing
     @login_required
     def resolve_my_recommendations(self, info):
-        # temp return value for frontend testing
-        RCMDR.update()
         RCMDR.preprocessing()
         RCMDR.createBow()
         RCMDR.createSimilarityMatrix()
