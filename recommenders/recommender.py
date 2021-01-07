@@ -1,113 +1,59 @@
-### Offene Fragen:
-
-### STEP 1: IMPORT DATA
-
-from rake_nltk import Rake
 import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from yellowbrick.text import FreqDistVisualizer
 
-## Rows are jobs and columns are attributes
-df = pd.read_json (r'https://api.cohooyo.com/jobs')
+class Recommender:
+    df = None
+    corrMatrix = None
 
-### STEP 2: DATA PREPROCESSING
+    def __init__(self):
+        self.update()
 
-for index, row in df.iterrows():
-    columns = ["description", "hashtags"]
-    for col in columns:
-        #cleaning data
-        row[col] = row[col].replace("­","")
+    def update(self):
+        self.df = pd.read_csv ('matching2.csv')
+        allUserRatings = self.df.pivot_table(index=['userID'],columns=['jobID'],values='like')
+        self.corrMatrix = allUserRatings.corr(method="pearson")
 
-### STEP 3: COMBINE IMPORTANT COLUMNS TO BAG OF WORDS = bow
-
-
-#dictionaries to convert jobids to indeces and indeces to jobids
-id2index = {}
-index2id = {}
-#choose important columns
-columns = ["description"]
-wordlist = []
-for index, row in df.iterrows():
-    #create Dictionaries for matrix
-    id2index[row["_id"]] = index
-    index2id[index] = row["_id"]
-    words = ""
-    for col in columns:
-        if row[col] is not None:
-            words += str(row[col])
-    wordlist.append(words)
-df["bow"] = wordlist
-
-
-### STEP 4: CREATE VECTOR REPRESENTATION FOR Bag_of_words AND SIMILARITY MATRIX
-
-count = CountVectorizer()
-tfidf = TfidfVectorizer(analyzer="word",max_df=1.0, strip_accents="ascii")
-# create count matrix
-cm = count.fit_transform(df["bow"])
-cm2 = tfidf.fit_transform(df["bow"])
-ftc = count.get_feature_names()
-ftt = tfidf.get_feature_names()
-
-#visualizer = FreqDistVisualizer(features=ftc, orient='v')
-#visualizer.fit(cm)
-#visualizer.show()
-#visualizer2 = FreqDistVisualizer(features=ftt, orient='v')
-#visualizer2.fit(cm2)
-#visualizer2.show()
-
-# print(cm.shape)
-# print(cm2.shape)
-cosine_sim = cosine_similarity(cm)
-cosine_sim2 = cosine_similarity(cm2)
-
-### STEP 5: RUN AND TEST RECOMMENDER MODEL
-
-def recommend(jobid, cosine_sim):
-    recommended_jobs = []
-    idx = id2index[jobid]
-    #print(indices[indices == job])
-    #idx = indices[indices == job].index[0]
-    ### idx ist noch Job4 -> abtrennen nach job und int casten
-    #idx = int(idx[3:]) falls dieser idx unten idx-1
-    #print("idx = ",idx)
-    score_series = pd.Series(cosine_sim[idx]).sort_values(ascending = False)
-    top_indices = list(score_series.iloc[1:6].index)
-    #print(top_indices)
-    print(score_series.iloc[1:6])
-    for i in top_indices:
-        topjobid = index2id[i] ## <- Tested: returns correct _id
-        #print(topjobid)
-        recommended_jobs.append(list(df["jobTitle"])[i])
-    return recommended_jobs
-
-
-### READY FOR TESTING
-### Insert IDs of Jobs you liked, job titles of recommended jobs will be printed on screen
-
-for i in range(10):
-    print("\n","Jobvorschläge für: ",df.loc[i, "jobTitle"])
-    print("Jobvorschläge count: ",recommend(df.loc[i, "_id"], cosine_sim))
-    print("Jobvorschläge tfidf: ",recommend(df.loc[i, "_id"], cosine_sim2))
-"""
-def get_similar(jobid, like):
-    similar_score = pd.DataFrame(data=(cosine_sim[jobid]*like),columns=["score"])
+    def evaluate(self,jobID,rating):
+        
+        similar_ratings = self.corrMatrix[jobID]*(rating)
+        similar_ratings = similar_ratings.sort_values(ascending=False)
+        return similar_ratings
     
-    similar_score = similar_score.sort_values(by=["score"],ascending=False)
-    print(similar_score)
-    return similar_score
+    def get_rated_jobs(self, user_id):
+        rated_jobs = self.df[self.df["userID"] == user_id]
+        ratings = []
+        for index, row in rated_jobs.iterrows():
+            tmp = [row["jobID"],row["like"]]
+            ratings.append(tmp)
+        #print("Ratings of user: ", user_id)
+        #print(ratings)
+        return ratings
 
+    def recommend(self, user_id):
+        recommended_jobs = pd.DataFrame()
+        userRatings = self.get_rated_jobs(user_id)
+        #User didnt rate any jobs yet
+        if len(userRatings) == 0:
+            print("Random Job")
+            
+        #User already rated jobs
+        else:
+            #print(userRatings)
+            for jobid, rating in userRatings:
+                recommended_jobs = recommended_jobs.append(self.evaluate(jobid, rating), ignore_index = True)
 
-## Jobid,Like?(1=True,0=False)
-maler = [(1,1)]
-
-similar_scores = pd.DataFrame()
-for job,like in maler:
-    similar_scores = similar_scores.append(get_similar(job,like), ignore_index = True)
-
-
-similar_scores.sum().sort_values(ascending=False)
-"""
+        recommended_jobs = recommended_jobs.sum().sort_values(ascending=False)
+        print(recommended_jobs[:10])
+        recommended_jobs = list(recommended_jobs.index)
+        #Remove jobs from list, that were already rated by User
+        #for jobid, rating in userRatings:
+            #if rating == 1:
+                #print("ID = ", jobid)
+                #recommended_jobs.remove(jobid)
+        
+        top10 = recommended_jobs[:10]
+        return top10
+        #return recommended_jobs
