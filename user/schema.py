@@ -261,7 +261,7 @@ class ChangeEmail(graphene.Mutation):
                 validate_email(kwargs['new_email'])
             except ValidationError as e:
                 raise GraphQLError("must provide valid email address, ", e)
-            info.context.user.email = kwargs['new_email']
+            info.context.user.email = kwargs['new_email'].lower()
             info.context.user.save()
             return ChangeEmail(ok=True)
         else:
