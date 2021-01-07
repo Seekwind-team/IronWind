@@ -97,61 +97,62 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         # will Return Name of self-objects as stated:
         return "(" + str(self.pk) + ") " + str(self.email)
 
+
 # saves soft-skill-slider values
 class SoftSkills(models.Model):
-    social_activity=models.SmallIntegerField(
+    social_activity = models.SmallIntegerField(
         default=0,
         validators=[MinValueValidator(limit_value=-5), MaxValueValidator(limit_value=5)],
         help_text=_("Teamplayer --- Einzelgänger"),
-        #copy paste
+        # copy paste
     )
 
-    motorskills=models.SmallIntegerField(
+    motorskills = models.SmallIntegerField(
         default=0,
         help_text=_("Muskeln --- Fingerspitzengefühl"),
-        #copy paste
+        # copy paste
     )
 
-    creativity=models.SmallIntegerField(
+    creativity = models.SmallIntegerField(
         default=0,
         help_text=_("Kreativ --- Strikt nach Plan"),
-        #copy paste
+        # copy paste
     )
 
-    artistic=models.SmallIntegerField(
+    artistic = models.SmallIntegerField(
         default=0,
         help_text=_("Technisch — Gestalterisch"),
-        #copy paste
+        # copy paste
     )
 
-    customer_orientated=models.SmallIntegerField(
+    customer_orientated = models.SmallIntegerField(
         default=0,
         help_text=_("Hinter den Kulissen --- Kundenorientiert"),
-        #copy paste
+        # copy paste
     )
 
-    innovativity=models.SmallIntegerField(
+    innovativity = models.SmallIntegerField(
         default=0,
         help_text=_("Innovation --- Tradition"),
-        #copy paste
+        # copy paste
     )
 
-    routine=models.SmallIntegerField(
+    routine = models.SmallIntegerField(
         default=0,
         help_text=_("Routine --- Abwechslung"),
-        #copy paste
+        # copy paste
     )
 
-    communicativity=models.SmallIntegerField(
+    communicativity = models.SmallIntegerField(
         default=0,
         help_text=_("Stiller Denker --- Kommunikativ"),
-        #copy paste
+        # copy paste
     )
 
-    planning=models.SmallIntegerField(
+    planning = models.SmallIntegerField(
         default=0,
         help_text=_("Gleich ran an die Arbeit --- Detaillierte Planung zuerst"),
-        #copy paste
+        # copy paste
     )
 
 
@@ -317,7 +318,6 @@ class CompanyData(models.Model):
 
 
 class Note(models.Model):
-
     user_from = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE,
@@ -339,7 +339,33 @@ class Note(models.Model):
     )
 
 
+class Badges(models.Model):
+    # Badges are represented by their name and an integer-value representing their state and progress,
+    # usually starting off at 0 and progressing towards a higher number (usually the range will be 0-2 to represent a
+    # progression in 3 steps)
 
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text=_('User Reference'))
+
+    top_vorbereitet = models.IntegerField(
+        default=0,
+        null=True,
+        help_text=_('awarded for reading articles on the app')
+    )
+
+    beliebt = models.IntegerField(
+        default=0,
+        null=True,
+        help_text=_('awarded for starting chats')
+    )
+
+    profil_vollstaendig = models.IntegerField(
+        default=0,
+        null=True,
+        help_text=_('awarded for completing the user profile')
+    )
 
 
 '''
