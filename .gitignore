@@ -9,6 +9,8 @@ joboffer/migrations/
 .joboffer/migrations/
 carespace/migrations/
 .carespace/migrations/
+chat/migrations/
+.chat/migrations/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -143,4 +145,3 @@ dmypy.json
 static/images/*.jpg
 static/images/*.png
 static/images/*.jpeg
-
