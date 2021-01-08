@@ -1,21 +1,34 @@
 from django.test import TestCase
+from django.utils import timezone
 
-from user.models import UserData, CompanyData, Authentication
+import graphene
+
+from user.models import UserData, UserManager, CompanyData, Authentication
 from user.schema import CreateUser
 
 class DemoUser():
-    EMAIL = 'demo@must.er'
-    PW = '1234'
+    def __init__(test, is_company):
+        self.EMAIL = 'demo@must.er'
+        self.PW = '1234'
 
-    def __init__():
-        user = CreateUser(user_mutation())
-
-    def user_mutation(self):
+    
+    # builds mutation to create user 
+    def create_mutation(self, name = test, is_company=False):
         mutation = """
-            muatation{
-                
+            mutation {
+                createUser(
+                    email:"{}@rng.de" 
+                    password:"123" 
+                    isCompany:{}
+                ){
+                    user{
+                        id
+                    }
+                }
             }
-        """
+        """.format(name, is_company)
+        return mutation
+
     # getter functions
     def mail(self): 
         return EMAIL
@@ -24,9 +37,25 @@ class DemoUser():
         return PW
 
     def acc(self): 
-        return 
+        return user
 
 class UserTestCase(TestCase):
     def setUp(self):
+        self.facotry = RequestFactory()
+        self.user = UserManager.create_user(email='notarealuseraccount@stupid.gg', password='123')
 
-    def 
+    def test_details(self):
+        query = """
+            mutation {
+                tokenAuth(
+                    email:"notarealuseraccount@stupid.gg"
+                    password:"123"
+                ){
+                    token
+                }
+            }
+        """
+        schema = graphene.Schema(query=Query)
+        result = schema.execute(query)
+        self.assertIsNone(result.errors)
+        

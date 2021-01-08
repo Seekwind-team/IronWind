@@ -1,18 +1,10 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 
 from joboffer.models import JobOffer, Authentication
 
 class JobOfferTestCase(TestCase):
     def setUp(self):
-        # owner Object
-        owner = Authentication.objects.create_user(
-            email = "muster@maxmann.aha",
-            password = "123",
-            # im going to create 'create user' method in user tests to use here    
-        )
-
-        owner.is_company = True
-
+    
         # maximal filled JobOffer
         max_joboffer = JobOffer.objects.create(
             owner = owner,
