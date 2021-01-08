@@ -122,11 +122,11 @@ class SoftSkillsArguments(graphene.InputObjectType):
     # Arguments
     artistic = graphene.Int()
     social_activity = graphene.Int()
-    customer_orientated =graphene.Int()
-    motorskills =graphene.Int()
+    customer_orientated = graphene.Int()
+    motorskills = graphene.Int()
     planning = graphene.Int()
-    empathic =graphene.Int()
-    creativity =graphene.Int()
+    empathic = graphene.Int()
+    creativity = graphene.Int()
     innovativity = graphene.Int()
     routine = graphene.Int()
     communicativity = graphene.Int()
@@ -172,8 +172,8 @@ class UpdatedProfile(graphene.Mutation):
         #  profile_picture = Upload(description="Uploaded File") #
 
         soft_skills = graphene.Argument(SoftSkillsArguments,
-            description="List of slider values for softskills. eg. \"creativity\":2"
-        )
+                                        description="List of slider values for softskills. eg. \"creativity\":2"
+                                        )
 
     @login_required  # requires login
     @user_passes_test(lambda user: not is_company(user))  # only applicable for non-company accounts
@@ -203,8 +203,11 @@ class UpdatedProfile(graphene.Mutation):
         data_object.gender = gender or data_object.gender
         data_object.birth_date = birth_date or data_object.birth_date
 
-
         if data_object.first_name and data_object.last_name and data_object.short_bio and short_bio.gender and short_bio.birth_date and data_object.soft_skills and data_object.looking:
+            badge_obj = info.context.user.get_badges()
+            badge_obj.profil_vollstaendig = 2
+            badge_obj.save()
+
 
         # test if soft skills are set
         if soft_skills:
@@ -213,29 +216,29 @@ class UpdatedProfile(graphene.Mutation):
                 soft_skills_validator(soft_skills, SoftSkillsArguments.MAXIMUM, SoftSkillsArguments.MINIMUM)
             except ValidationError as e:
                 raise GraphQLError("invalid input in SoftSkills {}".format(e))
-            
+
             # evaluate if this is the first time soft skills are set for this user
             if data_object.soft_skills:
                 soft_skills_object = data_object.soft_skills
             else:
                 soft_skills_object = SoftSkills()
-            
-            soft_skills_object.artistic = soft_skills.artistic 
-            soft_skills_object.social_activity = soft_skills.social_activity 
-            soft_skills_object.customer_orientated = soft_skills.customer_orientated  
-            soft_skills_object.motorskills = soft_skills.motorskills 
-            soft_skills_object.planning = soft_skills.planning 
-            soft_skills_object.empathic = soft_skills.empathic 
-            soft_skills_object.creativity = soft_skills.creativity 
-            soft_skills_object.innovativity = soft_skills.innovativity 
-            soft_skills_object.routine = soft_skills.routine 
-            soft_skills_object.communicativity = soft_skills.communicativity 
+
+            soft_skills_object.artistic = soft_skills.artistic
+            soft_skills_object.social_activity = soft_skills.social_activity
+            soft_skills_object.customer_orientated = soft_skills.customer_orientated
+            soft_skills_object.motorskills = soft_skills.motorskills
+            soft_skills_object.planning = soft_skills.planning
+            soft_skills_object.empathic = soft_skills.empathic
+            soft_skills_object.creativity = soft_skills.creativity
+            soft_skills_object.innovativity = soft_skills.innovativity
+            soft_skills_object.routine = soft_skills.routine
+            soft_skills_object.communicativity = soft_skills.communicativity
             soft_skills_object.save()
-            
+
             # set attribute if this is the first time soft skills are set for this user
             if not data_object.soft_skills:
                 data_object.soft_skills = soft_skills_object
-        
+
         data_object.save()
 
         return UpdatedProfile(updated_profile=data_object)
@@ -457,7 +460,7 @@ class Query(graphene.AbstractType):
         return user.soft_skills
 
     @user_passes_test(lambda u: u.is_company)
-    def resolve_get_notes(self,info,from_user):
+    def resolve_get_notes(self, info, from_user):
         if Note.objects.filter(user_from=info.context.user).filter(user_to=from_user):
             return Note.objects.filter(user_from=info.context.user).filter(user_to=from_user).get()
         return Note(user_from=info.context.user, user_to=from_user, memo="")
