@@ -17,8 +17,8 @@ class Recommender:
         self.update()
 
     def update(self):
-        self.df = pd.read_csv ('/home/student/hs/sep/IronWind/recommenders/matching2.csv')
-        self.alljobs = pd.read_json(r'/home/student/hs/sep/IronWind/recommenders/joblist.json')
+        self.df = pd.read_csv ('matching2.csv')
+        self.alljobs = pd.read_json(r'joblist.json')
         self.preprocessing()
         self.createBow()
         self.createSimilarityMatrix()
