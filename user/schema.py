@@ -208,7 +208,6 @@ class UpdatedProfile(graphene.Mutation):
             badge_obj.profil_vollstaendig = 2
             badge_obj.save()
 
-
         # test if soft skills are set
         if soft_skills:
             # validate slider values
