@@ -77,6 +77,7 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         help_text=_('User creation DateTime')
     )
 
+    # returns model with user data belonging to user
     def get_data(self):
         if self.is_company:
             if not CompanyData.objects.filter(belongs_to=self):
@@ -92,6 +93,13 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
                 )
                 user_data.save()
             return UserData.objects.filter(belongs_to=self).get()
+
+    # returns model with badges belonging to current user
+    def get_badges(self):
+        if not Badges.objects.filter(user=self):
+            model = Badges(user=self)
+            model.save()
+        return Badges.objects.filter(user=self).get()
 
     def __str__(self):
         # will Return Name of self-objects as stated:
@@ -355,10 +363,21 @@ class Badges(models.Model):
         help_text=_('awarded for reading articles on the app')
     )
 
+    articles_read = models.IntegerField(
+        default=0,
+        help_text="Number of articles read by user"
+    )
+
     beliebt = models.IntegerField(
         default=0,
         null=True,
         help_text=_('awarded for starting chats')
+    )
+
+    chats_started = models.IntegerField(
+        default=0,
+        null=True,
+        help_text=_('number of stats started')
     )
 
     profil_vollstaendig = models.IntegerField(

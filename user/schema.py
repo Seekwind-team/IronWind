@@ -10,9 +10,10 @@ from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
-from user.models import UserData, CompanyData, SoftSkills, Authentication, Note
+from user.models import UserData, CompanyData, SoftSkills, Authentication, Note, Badges
 
 from validators import soft_skills_validator
+
 
 class Upload(graphene.types.Scalar):
     """Create scalar that ignores normal serialization/deserialization, since
@@ -67,6 +68,12 @@ class SoftSkillsType(DjangoObjectType):
 class NoteType(DjangoObjectType):
     class Meta:
         model = Note
+
+
+class BadgesType(DjangoObjectType):
+    class Meta:
+        model = Badges
+        exclude_fields = ('user',)
 
 
 # Deletes currently logged in account
@@ -452,7 +459,6 @@ class Query(graphene.AbstractType):
 
     # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
-
 
 
 '''
