@@ -5,9 +5,9 @@ import re
 from glob import glob
 from helper import Logger
 
+
+
 cmd_args = sys.argv
-
-
 
 tests = []
 logfile_name = None
@@ -36,4 +36,4 @@ logger = Logger(logfile_name)
 def test():
 	for test in tests:
 		testfile = importlib.__import__(test)
-		testfile.test(logger)
+		testfile.test()

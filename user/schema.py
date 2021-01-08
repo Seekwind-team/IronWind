@@ -444,15 +444,12 @@ class Query(graphene.AbstractType):
         user = UserData.objects.filter(belongs_to=info.context.user).get()
         return user.soft_skills
 
-<<<<<<< HEAD
-=======
     @user_passes_test(lambda u: u.is_company)
     def resolve_get_notes(self,info,from_user):
         if Note.objects.filter(user_from=info.context.user).filter(user_to=from_user):
             return Note.objects.filter(user_from=info.context.user).filter(user_to=from_user).get()
         return Note(user_from=info.context.user, user_to=from_user, memo="")
 
->>>>>>> 6b093ec4beba7fa6eef3f1b2cb0fd45d23678fd2
     # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
 

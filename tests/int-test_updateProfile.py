@@ -154,6 +154,7 @@ def all_valids():
 			for arg_name in response_values:
 				if current_values[arg_name] != response_values[arg_name]:
 					log.test_failed(arg_name, current_values[arg_name], response_values[arg_name], filled_mutation)
+				assert current_values[arg_name] == response_values[arg_name]
 
 
 
@@ -201,6 +202,7 @@ def invalid_cases_of(invalid_argument):
 
 		if response.json() != None and list(response.json())[0] != 'errors':
 			log.expected_error(invalid_argument, invalid_value, filled_mutation)
+		assert list(response.json())[0] == 'errors'
 
 
 
@@ -212,7 +214,10 @@ def test():
 	log = __import__("testhub").logger
 
 	log.start("updateProfile")
+
 	create_test_user()
-	all_valids()
-	all_invalids()
-	delete_test_user()
+	try:
+		all_valids()
+		all_invalids()
+	finally:
+		delete_test_user()

@@ -139,7 +139,8 @@ def all_valids():
 				log.test_failed("ok", "true", "false", filled_mutation)
 			else:
 				active_password = valid_passwords[i]
-
+		assert list(response.json())[0] == 'data'
+		assert str(response.json()["data"]["changePassword"]["ok"]).lower() == "true"
 
 
 def all_invalids():
@@ -179,6 +180,7 @@ def all_invalids():
 		if response.json() != None and list(response.json())[0] != 'errors':
 			log.expected_error("new_password", inv_password, filled_mutation)
 			active_password = inv_password
+		assert list(response.json())[0] == 'errors'
 
 
 
@@ -193,7 +195,5 @@ def test():
 	    create_user(passwords["valid"][0])
 	    all_valids()
 	    all_invalids()
-    except Exception as e:
-        print(e)
     finally:
     	delete_user(active_password)

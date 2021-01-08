@@ -25,7 +25,7 @@ class GraphQLHelper:
         try:
             return response.json()['data']['tokenAuth']['token']
         except:
-            exc = "Recieved no token. Payload: {}Response: {}".format(payload, response.json())
+            exc = "Recieved no token.\nPayload: {}\nResponse: {}".format(payload, response.json())
             raise Exception(exc)
 
     # requests ids for all job offers belonging to user token and returns first id
@@ -158,6 +158,7 @@ class Logger:
     def expected_error(self, arg_name: str, arg_value,  query: str):
         with open(self.filename, "a") as f:
 	        f.write("expected an error when sending: " + query + "\n")
+	        f.write("but got no error \n")
 	        f.write("because of: \"" + arg_name + "\": '" + arg_value + "'\n\n")
 
         # print("expected an error when sending: " + query)

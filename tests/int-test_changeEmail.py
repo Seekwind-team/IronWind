@@ -110,6 +110,8 @@ def all_valids():
 				log.test_failed("ok", "true", str(response_value).lower(), filled_mutation)
 			else:
 				active_email = valid_emails[i]
+		assert list(response.json())[0] == 'data'
+		assert str(response.json()["data"]["changeEmail"]["ok"]).lower() == "true"
 
 
 def all_invalids():
@@ -124,9 +126,6 @@ def all_invalids():
 	invalid_emails = emails["invalid"]
 
 	for inv_email in invalid_emails:
-
-		if inv_email == "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ@a.aa":
-			print("here")
 
 		current_values = {"newEmail":	inv_email,
                           "password":	PASSWORD}
@@ -152,6 +151,7 @@ def all_invalids():
 		if response.json() != None and list(response.json())[0] != 'errors':
 			log.expected_error("newEmail", inv_email, filled_mutation)
 			active_email = inv_email
+		assert list(response.json())[0] == 'errors'
 
 
 def test():
@@ -163,9 +163,9 @@ def test():
 		create_test_user()
 		all_valids()
 		all_invalids()
-	except Exception as e:
-		print(e)
-		print("active_email: " + active_email)
-		print("password: " + PASSWORD)
+	# except Exception as e:
+	# 	print(e)
+	# 	print("active_email: " + active_email)
+	# 	print("password: " + PASSWORD)
 	finally:
 		delete_test_user()

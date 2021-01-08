@@ -64,11 +64,116 @@ arguments = {
 	},
 
 	"shortBio": {
-	# [a-Z] + special characters, length: 1-100
-		"valid":	["a", "Z"*100, "*"],
+	# [a-Z] + [0-9] + special characters, length: 1-100
+		"valid":	["a", "Z"*100, "*", "0"],
 		"invalid":	["", "Z"*101]
-	}
+	},
+
+	"message": {
+    # [a-Z] + [0-9] + special characters, length: 1-255
+		"valid":	["a", "Z"*255, "0", "*"],
+		"invalid":	["", "Z"*256]
+	},
+
+	"meta": {
+    # [a-Z] + [0-9] + special characters, length: 0-255
+		"valid":	["", "Z"*255, "0", "*"],
+		"invalid":	["Z"*256]
+	},
+
+###############################################
+
+	"city":{
+	# [a-Z] + special characters, length: 0-100
+		"valid":	[],
+		"invalid":	[]
+	},
+
+	"location":{
+    # [a-Z]
+		"valid":	[],
+		"invalid":	[]
+	},
+
+###############################################
+
+	"hashtags":{
+	# list of tags
+	# tag: # [a-Z] + [0-9] + special characters, length: 1-100
+		"valid": 	['["a", "'+"Z"*100+'", "0", "*"]', "[]"],
+		"invalid":	[]
+	},
+
+	"jobType":{
+	#
+		"valid":	["", "Vollzeit", "Teilzeit", "Ausbildung", "Praktikum", "Volunteer"],
+		"invalid":	["invalid"]
+	},
+
+	"jobTitle":{
+	# [a-Z] + [0-9] + special characters, length: 1-255
+		"valid":	["a", "Z"*255, "0", "*"],
+		"invalid":	["", "Z"*256]
+	},
+
+	"jobOfferDescription":{
+	# [a-Z] + [0-9] + special characters, length: 0-8000
+		"valid":	["", "a", "Z"*8000, "0", "*"],
+		"invalid":	["Z"*8001]
+	},
+
+	"highlights":{
+    # [a-Z] + [0-9] + special characters, length: 0-1000
+		"valid": 	["", "a", "Z"*1000, "0", "*"],
+		"invalid":	["Z"*1001]
+	},
+
+	"mustHave":{
+    # [a-Z] + [0-9] + special characters, length: 0-1000
+		"valid": 	["", "a", "Z"*1000, "0", "*"],
+		"invalid":	["Z"*1001]
+	},
+
+	"niceHave":{
+    # [a-Z] + [0-9] + special characters, length: 0-1000
+		"valid": 	["", "a", "Z"*1000, "0", "*"],
+		"invalid":	["Z"*1001]
+	},
+
+	"publicEmail":{
+    # same as email
+    # declared after argument-dict initialization
+	},
+
+	"payPerYear":{
+    # integer list separated by comma, values [1-max_int], list length 0-100
+		"valid": 	["", "1", "9999999999, "*99 + "9999999999"],
+		"invalid":	["9999999999, "*100 + "9999999999"]
+	},
+
+	"payPerHour":{
+    # integer, can be blank
+		"valid": 	["", "0"],
+		"invalid":	["a", "*"]
+	},
+
+	"startDate":{
+    # same as birthDate
+    # declared after argument-dict initialization
+	},
+
+	"trade":{
+    # [a-Z] + [0-9] + special characters, length: 0-255
+		"valid": 	["", "a", "Z"*255, "0", "*"],
+		"invalid":	["Z"*256]
+	},
+
+
+
 }
+
+arguments["publicEmail"] = arguments["email"]
+arguments["startDate"] = arguments["birthDate"]
 
 def get(*arg_names: str):
     file_args = {}
