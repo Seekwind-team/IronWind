@@ -42,7 +42,9 @@ class UserType(DjangoObjectType):
     class Meta:
         model = get_user_model()
         description = 'Returns auth data'
-        exclude_fields = ('password', 'is_superuser', 'message_sender', 'message_receiver')
+        exclude_fields = (
+            'password', 'is_superuser', 'message_sender', 'message_receiver', 'note_receiver', 'note_sender'
+        )
 
 
 # Imports UserData from Models
@@ -200,6 +202,9 @@ class UpdatedProfile(graphene.Mutation):
         data_object.short_bio = short_bio or data_object.short_bio
         data_object.gender = gender or data_object.gender
         data_object.birth_date = birth_date or data_object.birth_date
+
+
+        if data_object.first_name and data_object.last_name and data_object.short_bio and short_bio.gender and short_bio.birth_date and data_object.soft_skills and data_object.looking:
 
         # test if soft skills are set
         if soft_skills:

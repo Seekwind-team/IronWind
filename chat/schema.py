@@ -93,10 +93,10 @@ class SendMessage(graphene.Mutation):
         if not Message.objects.filter(sender=info.context.user, receiver=receiver_obj):
             badges = info.context.user.get_badges()
             badges.chats_started += 1
-            if badges.chats_started > 0:
-                badges.beliebt = 1
-            elif badges.chats_started > 2:
+            if badges.chats_started > 2:
                 badges.beliebt = 2
+            elif badges.chats_started > 0:
+                badges.beliebt = 1
             badges.save()
         message = Message(
             sender=info.context.user,
