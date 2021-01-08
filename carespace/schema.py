@@ -1,7 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
 
-from carespace.models import CareSpace
+from carespace.models import CareSpace, ArticleRead
 
 
 class CareSpaceType(DjangoObjectType):
@@ -26,4 +26,16 @@ class Query(graphene.AbstractType):
         return list(CareSpace.objects.all())
 
     def resolve_get_care_space_item(self, info, care_space_item_id):
-        return CareSpace.objects.filter(pk=care_space_item_id).get()
+        article = CareSpace.objects.filter(pk=care_space_item_id).get()
+        user = info.context.user
+        if not ArticleRead.objects.filter(user=user, article=article):
+            badges = user.get_badges()
+            badges.articles_read += 1
+            num_badges = badges.articles_read
+            ArticleRead(user=user, article=article)
+            if num_badges > 2:
+                user.get_badges.top_vorbereitet = 2
+            elif num_badges > 0:
+                user.get_badges.top_vorbereitet = 1
+            badges.save()
+        return article

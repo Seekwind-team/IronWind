@@ -10,9 +10,10 @@ from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
-from user.models import UserData, CompanyData, SoftSkills, Authentication, Note
+from user.models import UserData, CompanyData, SoftSkills, Authentication, Note, Badges
 
 from validators import soft_skills_validator
+
 
 class Upload(graphene.types.Scalar):
     """Create scalar that ignores normal serialization/deserialization, since
@@ -41,7 +42,9 @@ class UserType(DjangoObjectType):
     class Meta:
         model = get_user_model()
         description = 'Returns auth data'
-        exclude_fields = ('password', 'is_superuser', 'message_sender', 'message_receiver')
+        exclude_fields = (
+            'password', 'is_superuser', 'message_sender', 'message_receiver', 'note_receiver', 'note_sender'
+        )
 
 
 # Imports UserData from Models
@@ -67,6 +70,12 @@ class SoftSkillsType(DjangoObjectType):
 class NoteType(DjangoObjectType):
     class Meta:
         model = Note
+
+
+class BadgesType(DjangoObjectType):
+    class Meta:
+        model = Badges
+        exclude_fields = ('user', 'id')
 
 
 # Deletes currently logged in account
@@ -113,11 +122,11 @@ class SoftSkillsArguments(graphene.InputObjectType):
     # Arguments
     artistic = graphene.Int()
     social_activity = graphene.Int()
-    customer_orientated =graphene.Int()
-    motorskills =graphene.Int()
+    customer_orientated = graphene.Int()
+    motorskills = graphene.Int()
     planning = graphene.Int()
-    empathic =graphene.Int()
-    creativity =graphene.Int()
+    empathic = graphene.Int()
+    creativity = graphene.Int()
     innovativity = graphene.Int()
     routine = graphene.Int()
     communicativity = graphene.Int()
@@ -167,8 +176,8 @@ class UpdatedProfile(graphene.Mutation):
 
 
         soft_skills = graphene.Argument(SoftSkillsArguments,
-            description="List of slider values for softskills. eg. \"creativity\":2"
-        )
+                                        description="List of slider values for softskills. eg. \"creativity\":2"
+                                        )
 
     @login_required  # requires login
     @user_passes_test(lambda user: not is_company(user))  # only applicable for non-company accounts
@@ -205,6 +214,11 @@ class UpdatedProfile(graphene.Mutation):
         data_object.graduation = graduation or data_object.graduation
         data_object.graduation_year = graduation_year or data_object.graduation_year
         data_object.cv = cv or data_object.cv
+
+        if data_object.first_name and data_object.last_name and data_object.short_bio and short_bio.gender and short_bio.birth_date and data_object.soft_skills and data_object.looking:
+            badge_obj = info.context.user.get_badges()
+            badge_obj.profil_vollstaendig = 2
+            badge_obj.save()
 
         # test if soft skills are set
         if soft_skills:
@@ -457,14 +471,13 @@ class Query(graphene.AbstractType):
         return user.soft_skills
 
     @user_passes_test(lambda u: u.is_company)
-    def resolve_get_notes(self,info,from_user):
+    def resolve_get_notes(self, info, from_user):
         if Note.objects.filter(user_from=info.context.user).filter(user_to=from_user):
             return Note.objects.filter(user_from=info.context.user).filter(user_to=from_user).get()
         return Note(user_from=info.context.user, user_to=from_user, memo="")
 
     # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
-
 
 
 '''
