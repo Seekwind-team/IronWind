@@ -205,7 +205,6 @@ class UserData(models.Model):
     )
 
     graduation_year = models.IntegerField(
-        max_length=5,
         null=True,
         blank=True,
         help_text=_('year of graduation')
@@ -213,6 +212,8 @@ class UserData(models.Model):
 
     cv = models.JSONField(
         encoder=None,
+        null=True,
+        blank=True,
         help_text=_('Curriculum Vitae, or CV for short')
     )
 
