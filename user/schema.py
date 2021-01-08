@@ -75,7 +75,7 @@ class NoteType(DjangoObjectType):
 class BadgesType(DjangoObjectType):
     class Meta:
         model = Badges
-        exclude_fields = ('user',)
+        exclude_fields = ('user', 'id')
 
 
 # Deletes currently logged in account
