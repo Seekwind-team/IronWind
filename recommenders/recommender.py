@@ -4,6 +4,8 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 
+from joboffer.models import JobOffer
+
 class Recommender:
 
     df = None
@@ -18,7 +20,9 @@ class Recommender:
 
     def update(self):
         self.df = pd.read_csv ('matching2.csv')
-        self.alljobs = pd.read_json(r'joblist.json')
+        #self.alljobs = pd.read_json(r'joblist.json')
+        self.alljobs = JobOffer.objects.all()
+        
         self.preprocessing()
         self.createBow()
         self.createSimilarityMatrix()

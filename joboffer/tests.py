@@ -7,7 +7,7 @@ class JobOfferTestCase(TestCase):
     
         # maximal filled JobOffer
         max_joboffer = JobOffer.objects.create(
-            owner = owner,
+            #owner = TBD
             #hashtags = TBD,
             filled = False,
             is_deleted = False,

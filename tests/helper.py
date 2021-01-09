@@ -33,3 +33,24 @@ class GraphQLHelper:
         response = self.run_payload(self, payload = payload, header = header)
         if response.status_code == 200:
             return response.json().get('data').get('jobOffers')[0].get('id')
+
+# creates a DemoUser Object. Adding User to DB and storing User-Information. Used for WhiteBoxtests
+class DemoUser(email = "demo@us.er", password = "123"):
+    def __init__(self):
+        self.email = email
+        self.password = password
+
+        # Create User mutation
+        payload_create_user = """
+        mutation {
+            createUser(
+                email:"%s"
+                isCompany:true
+                password:"%s"
+            ){
+                user{id}
+            }
+        }
+        """ %(email, password)
+
+        self.user = helper.run_payload(helper, payload = payload_create_user)

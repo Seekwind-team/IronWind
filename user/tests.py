@@ -1,61 +1,29 @@
-from django.test import TestCase
-from django.utils import timezone
+from django.contrib.auth.models import AnonymousUser, User
+from django.test import RequestFactory, TestCase
 
-import graphene
+from .views import MyView, my_view
 
-from user.models import UserData, UserManager, CompanyData, Authentication
-from user.schema import CreateUser
-
-class DemoUser():
-    def __init__(test, is_company):
-        self.EMAIL = 'demo@must.er'
-        self.PW = '1234'
-
-    
-    # builds mutation to create user 
-    def create_mutation(self, name = test, is_company=False):
-        mutation = """
-            mutation {
-                createUser(
-                    email:"{}@rng.de" 
-                    password:"123" 
-                    isCompany:{}
-                ){
-                    user{
-                        id
-                    }
-                }
-            }
-        """.format(name, is_company)
-        return mutation
-
-    # getter functions
-    def mail(self): 
-        return EMAIL
-
-    def pw(self): 
-        return PW
-
-    def acc(self): 
-        return user
-
-class UserTestCase(TestCase):
+class SimpleTest(TestCase):
     def setUp(self):
-        self.facotry = RequestFactory()
-        self.user = UserManager.create_user(email='notarealuseraccount@stupid.gg', password='123')
+        # Every test needs access to the request factory.
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(
+            username='jacob', email='jacob@asdf.asdf', password='top_secret')
 
     def test_details(self):
-        query = """
-            mutation {
-                tokenAuth(
-                    email:"notarealuseraccount@stupid.gg"
-                    password:"123"
-                ){
-                    token
-                }
-            }
-        """
-        schema = graphene.Schema(query=Query)
-        result = schema.execute(query)
-        self.assertIsNone(result.errors)
-        
+        # Create an instance of a GET request.
+        request = self.factory.get('/')
+
+        # Recall that middleware are not supported. You can simulate a
+        # logged-in user by setting request.user manually.
+        request.user = self.user
+
+        # Or you can simulate an anonymous user by setting request.user to
+        # an AnonymousUser instance.
+        request.user = AnonymousUser()
+
+        # Test my_view() as if it were deployed at /customer/details
+        response = my_view(request)
+        # Use this syntax for class-based views.
+        response = MyView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
