@@ -97,62 +97,60 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         # will Return Name of self-objects as stated:
         return "(" + str(self.pk) + ") " + str(self.email)
 
-
 # saves soft-skill-slider values
 class SoftSkills(models.Model):
     social_activity=models.SmallIntegerField(
         default=0,
-        validators=[MinValueValidator(limit_value=-5), MaxValueValidator(limit_value=5)],
         help_text=_("Teamplayer --- Einzelgänger"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
     motorskills=models.SmallIntegerField(
         default=0,
         help_text=_("Muskeln --- Fingerspitzengefühl"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
     creativity=models.SmallIntegerField(
         default=0,
         help_text=_("Kreativ --- Strikt nach Plan"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
     artistic=models.SmallIntegerField(
         default=0,
         help_text=_("Technisch — Gestalterisch"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
     customer_orientated=models.SmallIntegerField(
         default=0,
         help_text=_("Hinter den Kulissen --- Kundenorientiert"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
     innovativity=models.SmallIntegerField(
         default=0,
         help_text=_("Innovation --- Tradition"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
     routine=models.SmallIntegerField(
         default=0,
         help_text=_("Routine --- Abwechslung"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
     communicativity=models.SmallIntegerField(
         default=0,
         help_text=_("Stiller Denker --- Kommunikativ"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
     planning=models.SmallIntegerField(
         default=0,
         help_text=_("Gleich ran an die Arbeit --- Detaillierte Planung zuerst"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
 
@@ -196,29 +194,10 @@ class UserData(models.Model):
     )
 
     # TODO: Grades ?
-
-    graduation = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text=_('what sort of graduation does the user have?')
-    )
-
-    graduation_year = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text=_('year of graduation')
-    )
-
-    cv = models.JSONField(
-        encoder=None,
-        null=True,
-        blank=True,
-        help_text=_('Curriculum Vitae, or CV for short')
-    )
+    # TODO: Graduation ?
 
     profile_picture = models.ImageField(
-        upload_to='static/images/',
+        upload_to='images',
         null=True,
         blank=True,
         help_text=_('profile picture of user')
@@ -250,7 +229,7 @@ class UserData(models.Model):
         max_length=50,
         null=True,
         blank=True,
-        help_text=_('location of user in String (Name of City + ZIP Code)')
+        help_text=_('location of user in String (eg. Name of City)')
     )
 
     birth_date = models.DateField(
@@ -312,14 +291,14 @@ class CompanyData(models.Model):
     )
 
     company_picture = models.ImageField(
-        upload_to='static/images/',
+        upload_to='images',
         null=True,
         blank=True,
         help_text=_('eg. Picture of the company Logo')
     )
 
     meisterbrief = models.ImageField(
-        upload_to='static/images/',
+        upload_to='images',
         null=True,
         blank=True,
         help_text=_('Picture to validate the company as legally permitted to accept apprentices')
