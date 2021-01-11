@@ -15,5 +15,5 @@ class Query(graphene.ObjectType):
     @login_required
     def resolve_my_recommendations(self, info):
         user_id = info.context.user.id
-        r = Recommender()
+        r = Recommender().update()
         return r.recommend(user_id)
