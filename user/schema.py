@@ -10,8 +10,9 @@ from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
-from user.models import UserData, CompanyData, SoftSkills
+from user.models import UserData, CompanyData, SoftSkills, Authentication, Note
 
+from validators import soft_skills_validator
 
 class Upload(graphene.types.Scalar):
     """Create scalar that ignores normal serialization/deserialization, since
@@ -56,10 +57,17 @@ class CompanyDataType(DjangoObjectType):
         model = CompanyData
         description = 'This Type contains a singular set of Company-Data'
 
+
 class SoftSkillsType(DjangoObjectType):
     class Meta:
         model = SoftSkills
         description = 'This Type contains slider values from -5 to 5 for Softskills'
+
+
+class NoteType(DjangoObjectType):
+    class Meta:
+        model = Note
+
 
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
@@ -96,7 +104,13 @@ class DeleteUser(graphene.Mutation):
         return DeleteUser(ok=False)
 
 
+# holds User input for Soft-Skill-Slider Values
 class SoftSkillsArguments(graphene.InputObjectType):
+    # defines minimal and maximal value to be stored in Arguments
+    MAXIMUM = 5
+    MINIMUM = -5
+
+    # Arguments
     artistic = graphene.Int()
     social_activity = graphene.Int()
     customer_orientated =graphene.Int()
@@ -104,9 +118,7 @@ class SoftSkillsArguments(graphene.InputObjectType):
     planning = graphene.Int()
     empathic =graphene.Int()
     creativity =graphene.Int()
-    digital = graphene.Int()
     innovativity = graphene.Int()
-    early_rise = graphene.Int()
     routine = graphene.Int()
     communicativity = graphene.Int()
 
@@ -148,8 +160,12 @@ class UpdatedProfile(graphene.Mutation):
         short_bio = graphene.String(description="short bio (self description) of user, 5000 characters maximum")
         gender = graphene.String(description="gender of user")
         birth_date = graphene.Date(description="birthdate of user, uses iso8601-Format (eg. 2006-01-02)")
-        #  profile_picture = Upload(description="Uploaded File") #
-        # TODO:
+        graduation = graphene.String(description="graduation of user")
+        graduation_year = graphene.Int(description="graduation year of user")
+        cv = graphene.JSONString(description="CV of user")
+        location = graphene.String(description="location of user")
+
+
         soft_skills = graphene.Argument(SoftSkillsArguments,
             description="List of slider values for softskills. eg. \"creativity\":2"
         )
@@ -163,7 +179,11 @@ class UpdatedProfile(graphene.Mutation):
                short_bio=None,
                gender=None,
                birth_date=None,
-               soft_skills=None):
+               soft_skills=None,
+               location=None,
+               graduation=None,
+               graduation_year=None,
+               cv=None):
         # creates new Database entry, if none exists
         if not UserData.objects.filter(belongs_to=info.context.user):
             user_data = UserData(
@@ -181,11 +201,25 @@ class UpdatedProfile(graphene.Mutation):
         data_object.short_bio = short_bio or data_object.short_bio
         data_object.gender = gender or data_object.gender
         data_object.birth_date = birth_date or data_object.birth_date
-        data_object.save()
+        data_object.location = location or data_object.location
+        data_object.graduation = graduation or data_object.graduation
+        data_object.graduation_year = graduation_year or data_object.graduation_year
+        data_object.cv = cv or data_object.cv
 
-        # TODO set proper creation/editation for soft skills. if Statement just prevents error raise in frontend 
+        # test if soft skills are set
         if soft_skills:
-            soft_skills_object = SoftSkills()
+            # validate slider values
+            try:
+                soft_skills_validator(soft_skills, SoftSkillsArguments.MAXIMUM, SoftSkillsArguments.MINIMUM)
+            except ValidationError as e:
+                raise GraphQLError("invalid input in SoftSkills {}".format(e))
+            
+            # evaluate if this is the first time soft skills are set for this user
+            if data_object.soft_skills:
+                soft_skills_object = data_object.soft_skills
+            else:
+                soft_skills_object = SoftSkills()
+            
             soft_skills_object.artistic = soft_skills.artistic 
             soft_skills_object.social_activity = soft_skills.social_activity 
             soft_skills_object.customer_orientated = soft_skills.customer_orientated  
@@ -193,15 +227,16 @@ class UpdatedProfile(graphene.Mutation):
             soft_skills_object.planning = soft_skills.planning 
             soft_skills_object.empathic = soft_skills.empathic 
             soft_skills_object.creativity = soft_skills.creativity 
-            soft_skills_object.digital = soft_skills.digital 
             soft_skills_object.innovativity = soft_skills.innovativity 
-            soft_skills_object.early_rise = soft_skills.early_rise 
             soft_skills_object.routine = soft_skills.routine 
             soft_skills_object.communicativity = soft_skills.communicativity 
             soft_skills_object.save()
             
-            data_object.soft_skills = soft_skills_object
-            data_object.save()
+            # set attribute if this is the first time soft skills are set for this user
+            if not data_object.soft_skills:
+                data_object.soft_skills = soft_skills_object
+        
+        data_object.save()
 
         return UpdatedProfile(updated_profile=data_object)
 
@@ -238,7 +273,7 @@ class ChangeEmail(graphene.Mutation):
                 validate_email(kwargs['new_email'])
             except ValidationError as e:
                 raise GraphQLError("must provide valid email address, ", e)
-            info.context.user.email = kwargs['new_email']
+            info.context.user.email = kwargs['new_email'].lower()
             info.context.user.save()
             return ChangeEmail(ok=True)
         else:
@@ -357,6 +392,30 @@ class UploadMeisterbrief(graphene.Mutation):
         return UploadMeisterbrief(ok=True)
 
 
+class AddNote(graphene.Mutation):
+    note = graphene.Field(NoteType)
+    ok = graphene.Boolean()
+
+    class Arguments:
+        memo = graphene.String()
+        user = graphene.Int()
+
+    @user_passes_test(lambda u: u.is_company)
+    def mutate(self, info, memo, user):
+        try:
+            user_to = Authentication.objects.filter(pk=user, is_company=False).get()
+        except Exception:
+            raise GraphQLError("Can't find referenced user")
+
+        if Note.objects.filter(user_from=info.context.user).filter(user_to=user_to):
+            note = Note.objects.filter(user_from=info.context.user).filter(user_to=user_to).get()
+            note.memo = memo
+        else:
+            note = Note(user_from=info.context.user, user_to=user_to, memo=memo)
+        note.save()
+        return AddNote(note=note, ok=True)
+
+
 # Create - Update - Delete for all User-Profiles
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
@@ -366,15 +425,27 @@ class Mutation(graphene.ObjectType):
     change_password = ChangePassword.Field()
     change_email = ChangeEmail.Field()
     upload_file = UploadUserPicture.Field()
+    add_note = AddNote.Field()
 
 
 # Read functions for all Profiles
 class Query(graphene.AbstractType):
-    me = graphene.Field(UserType, description="returns user model of logged in user")
+    me = graphene.Field(
+        UserType,
+        description="returns user model of logged in user"
+    )
+
+    get_notes = graphene.Field(
+        NoteType,
+        from_user=graphene.Int(required=True, description="ID of the user to retrieve the notes from"),
+        description="gets all notes on this user"
+    )
+
     soft_skills = graphene.Field(
         SoftSkillsType,
         description="returns soft skills for logged in User"
     )
+
     # returns auth data
     @login_required  # would return an error on 'Anonymous user', so restricting this to authenticated users
     def resolve_me(self, info):
@@ -384,7 +455,13 @@ class Query(graphene.AbstractType):
     def resolve_soft_skills(self, info):
         user = UserData.objects.filter(belongs_to=info.context.user).get()
         return user.soft_skills
-        
+
+    @user_passes_test(lambda u: u.is_company)
+    def resolve_get_notes(self,info,from_user):
+        if Note.objects.filter(user_from=info.context.user).filter(user_to=from_user):
+            return Note.objects.filter(user_from=info.context.user).filter(user_to=from_user).get()
+        return Note(user_from=info.context.user, user_to=from_user, memo="")
+
     # my_company = graphene.Field(CompanyDataType) # not needed, see giant comment below
     # my_user = graphene.Field(UserDataType) # not needed, see giant comment below
 

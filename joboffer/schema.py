@@ -129,7 +129,8 @@ class CreateJobOffer(graphene.Mutation):
                 if Tag.objects.filter(name=tag).exists():
                     new_tag = Tag.objects.filter(name=tag).first()
                 else:
-                    new_tag = Tag(name=tag).save()
+                    new_tag = Tag(name=tag)
+                    new_tag.save()
 
                 job_object.hashtags.add(new_tag)
 
@@ -151,6 +152,7 @@ class AlterJobOffer(graphene.Mutation):
         nice_have = graphene.String(description="Conditions that arent required but would be nice to have")
         public_email = graphene.String(description="publicly visible email address")
         is_active = graphene.Boolean(description="Boolean, set to true will deactivate the public job offer")
+        
         add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
         remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
 
@@ -206,11 +208,12 @@ class AlterJobOffer(graphene.Mutation):
                 if Tag.objects.filter(name=tag).exists():
                     new_tag = Tag.objects.filter(name=tag).first()
                 else:
-                    new_tag = Tag(name=tag).save()
+                    new_tag = Tag(name=tag)
+                    new_tag.save()
 
                 job_object.hashtags.add(new_tag)
 
-            # remove Tag
+            # remove Tag from job offer
             for tag in remove_hashtags:
                 if Tag.objects.filter(name=tag).exists():
                     tag = Tag.objects.filter(name=tag).get()
@@ -363,7 +366,7 @@ class SaveBookmark(graphene.Mutation):
         except Exception:
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
         
-        if not Bookmark.objects.filter(candidate=info.context.user, job_offer=job).get():
+        if not Bookmark.objects.filter(candidate=info.context.user, job_offer=job).exists():
             bookmark = Bookmark(candidate=info.context.user, job_offer=job)
             bookmark.save()
         else:
@@ -440,7 +443,7 @@ class Query(graphene.AbstractType):
 
     job_offer = graphene.Field(
         JobOfferType,
-        job_ID=graphene.Int(
+        job_Id=graphene.Int(
             description="ID of Job offer to be returned with this request"
         ),
         description="returns job offer with given ID"
@@ -460,6 +463,7 @@ class Query(graphene.AbstractType):
         SwipeType,
         description="returns list of Swipes for logged in company"
     )
+
     all_tags = graphene.List(
         TagType,
     )
@@ -478,11 +482,11 @@ class Query(graphene.AbstractType):
         return list(JobOffer.objects.filter(owner=info.context.user, is_deleted=False))
 
     @login_required
-    def resolve_job_offer(self, info, job_id):
-        if JobOffer.objects.filter(pk=job_id).get().is_deleted:
+    def resolve_job_offer(self, info, job_Id):
+        if JobOffer.objects.filter(pk=job_Id).get().is_deleted:
             raise GraphQLError("this Joboffer is deleted")
         else:
-            return JobOffer.objects.filter(pk=job_id).get()
+            return JobOffer.objects.filter(pk=job_Id).get()
 
     @login_required
     def resolve_bookmarks(self, info):
@@ -501,9 +505,16 @@ class Query(graphene.AbstractType):
         
         return swipes
         
+    # returns all tags that got a reference to a job offer
     @login_required
     def resolve_all_tags(self, info):
-        return Tag.objects.all()
+        all_tags = list(Tag.objects.all())
+        active_tags = []
+        for tag in all_tags:
+            if tag.joboffer_set.all().first():
+                active_tags.append(tag)
+
+        return active_tags
 
     @login_required
     def resolve_job_offer_tag_search(self, info, tag_names):
