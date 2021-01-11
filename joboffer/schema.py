@@ -45,6 +45,7 @@ class JobOfferType(DjangoObjectType):
     class Meta:
         model = JobOffer
         description = 'This Type contains a singular Job offer posted'
+        convert_choices_to_enum = False
 
     created_at = graphene.DateTime(name='created_at')
     must_have = graphene.String(name='must_have')
@@ -83,7 +84,7 @@ class CreateJobOffer(graphene.Mutation):
         pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
-        start_date = graphene.String(description="Datum des ersten Arbeitstages")
+        start_date = graphene.Date(description="Datum des ersten Arbeitstages")
         trade = graphene.String(description="Jobkategorie")
 
     @login_required
