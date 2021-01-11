@@ -45,6 +45,7 @@ class JobOfferType(DjangoObjectType):
     class Meta:
         model = JobOffer
         description = 'This Type contains a singular Job offer posted'
+        convert_choices_to_enum = False
 
     created_at = graphene.DateTime(name='created_at')
     must_have = graphene.String(name='must_have')
