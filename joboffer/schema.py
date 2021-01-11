@@ -46,6 +46,7 @@ class JobOfferType(DjangoObjectType):
         model = JobOffer
         description = 'This Type contains a singular Job offer posted'
 
+    description = graphene.String(name='description')
     created_at = graphene.DateTime(name='created_at')
     must_have = graphene.String(name='must_have')
     company_logo = graphene.String()
