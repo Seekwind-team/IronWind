@@ -19,6 +19,7 @@ class Recommender:
         self.update()
 
     def update(self):
+        # swipes and job offers in relation
         self.df = pd.read_csv ('matching2.csv')
         #self.alljobs = pd.read_json(r'joblist.json')
         self.alljobs = JobOffer.objects.all()
