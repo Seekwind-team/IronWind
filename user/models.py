@@ -238,6 +238,7 @@ class UserData(models.Model):
     # can't use boolean as we'll define gender as (m/w/d)
     gender = models.TextField(
         max_length=20,
+        null=True,
         blank=True,
         help_text=_('gender of User, uses string to allow all genders')
     )
