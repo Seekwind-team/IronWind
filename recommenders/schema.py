@@ -4,7 +4,7 @@ import user.schema
 
 from graphql_jwt.decorators import login_required
 
-from recommenderClass import Recommender
+from recommender import Recommender
 from joboffer.models import JobOffer
 from joboffer.schema import JobOfferType
 
