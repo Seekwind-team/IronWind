@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.contrib.auth.hashers import make_password
 
 from user.models import *
 
@@ -6,23 +7,40 @@ class SimpleTest(TestCase):
     def setUp(self):
         self.email = "demo@user.de"
         self.pw = "123asdf"
-        self.create_user(self.email, self.pw)
+        #self.create_user(self.email, self.pw)
+        user = Authentication(is_superuser=False, password=self.pw, email=self.email)
+        user.save()
 
     def test_credentials(self):
         user_object = Authentication.objects.get(email=self.email)
-        if user_object != None:
-            print(user_object)
-        else:
-            print("lkashdöoifaäweibväoaivebäpaespaoskjlfjasd")
-            
+        self.assertEqual(user_object.email, self.email)
+        self.assertEqual(user_object.password, make_password(self.pw))
+
     def create_user(self, email, pw):
-        #if email in Authentication.objects.raw('SELECT email FROM user_authentication'):
-        #    raise Error('email already in use')
-            
+        # user with email already exists exception
+        
         Authentication.objects.raw('''
-            INSERT into user_authentication (password, email) 
-            VALUES ('{password}', '{email}')
-        '''.format(password = pw, email = email))
+            INSERT into user_authentication (
+                password, 
+                email, 
+                is_superuser, 
+                is_company, 
+                is_superuser,
+                is_active, 
+                is_staff, 
+                last_login, 
+                date_joined) 
+            VALUES (
+                '{password}',
+                '{email}', 
+                false, 
+                true, 
+                false, 
+                true, 
+                false, 
+                {now}, 
+                {now})
+        '''.format(password = make_password(pw), email = email, now = now))
         
         return True
 

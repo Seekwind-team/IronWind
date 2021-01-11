@@ -35,6 +35,7 @@ class Upload(graphene.types.Scalar):
 def is_company(user):
     return user.is_company is True
 
+AttributeError: type object 'Authentication' has no attribute 'create_user'
 
 # Imports User Profile from Models
 class UserType(DjangoObjectType):
