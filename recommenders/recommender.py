@@ -1,5 +1,4 @@
 import pandas as pd
-from random import randint
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
@@ -17,6 +16,9 @@ class Recommender:
 
     def __init__(self):
         self.update()
+
+    def print_alljobs(self):
+        print(self.alljobs)
 
     def update(self):
         self.df = pd.read_csv ('matching2.csv')
@@ -66,7 +68,7 @@ class Recommender:
         #find index of given job in matrix
         idx = self.id2index[jobid]
         score_series = pd.Series(self.cosine_sim[idx]).sort_values(ascending = False)
-        top_indices = list(score_series.iloc[1:3].index)
+        top_indices = list(score_series.iloc[1:2].index)
         for i in top_indices:
             topjobid = self.index2id[i] ## <- Tested: returns correct _id
             #print(topjobid)
@@ -107,7 +109,7 @@ class Recommender:
         for jobid, rating in userRatings:
             if rating == 1:
                 result += self.get_similar_jobs(jobid)
-            if jobid in result:
-                result.remove(jobid)   
+
+        result = result[:11]
         return result
         #return recommended_jobs
