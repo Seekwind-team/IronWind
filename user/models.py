@@ -77,6 +77,7 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         help_text=_('User creation DateTime')
     )
 
+    # returns model with user data belonging to user
     def get_data(self):
         if self.is_company:
             if not CompanyData.objects.filter(belongs_to=self):
@@ -93,66 +94,71 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
                 user_data.save()
             return UserData.objects.filter(belongs_to=self).get()
 
+    # returns model with badges belonging to current user
+    def get_badges(self):
+        if not Badges.objects.filter(user=self):
+            model = Badges(user=self)
+            model.save()
+        return Badges.objects.filter(user=self).get()
+
     def __str__(self):
         # will Return Name of self-objects as stated:
         return "(" + str(self.pk) + ") " + str(self.email)
 
-
 # saves soft-skill-slider values
 class SoftSkills(models.Model):
-    social_activity=models.SmallIntegerField(
+    social_activity = models.SmallIntegerField(
         default=0,
-        validators=[MinValueValidator(limit_value=-5), MaxValueValidator(limit_value=5)],
         help_text=_("Teamplayer --- Einzelgänger"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
-    motorskills=models.SmallIntegerField(
+    motorskills = models.SmallIntegerField(
         default=0,
         help_text=_("Muskeln --- Fingerspitzengefühl"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
-    creativity=models.SmallIntegerField(
+    creativity = models.SmallIntegerField(
         default=0,
         help_text=_("Kreativ --- Strikt nach Plan"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
-    artistic=models.SmallIntegerField(
+    artistic = models.SmallIntegerField(
         default=0,
         help_text=_("Technisch — Gestalterisch"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
-    customer_orientated=models.SmallIntegerField(
+    customer_orientated = models.SmallIntegerField(
         default=0,
         help_text=_("Hinter den Kulissen --- Kundenorientiert"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
-    innovativity=models.SmallIntegerField(
+    innovativity = models.SmallIntegerField(
         default=0,
         help_text=_("Innovation --- Tradition"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
-    routine=models.SmallIntegerField(
+    routine = models.SmallIntegerField(
         default=0,
         help_text=_("Routine --- Abwechslung"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
-    communicativity=models.SmallIntegerField(
+    communicativity = models.SmallIntegerField(
         default=0,
         help_text=_("Stiller Denker --- Kommunikativ"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
-    planning=models.SmallIntegerField(
+    planning = models.SmallIntegerField(
         default=0,
         help_text=_("Gleich ran an die Arbeit --- Detaillierte Planung zuerst"),
-        #copy paste
+        validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
 
@@ -230,6 +236,7 @@ class UserData(models.Model):
     # can't use boolean as we'll define gender as (m/w/d)
     gender = models.TextField(
         max_length=20,
+        null=True,
         blank=True,
         help_text=_('gender of User, uses string to allow all genders')
     )
@@ -337,7 +344,6 @@ class CompanyData(models.Model):
 
 
 class Note(models.Model):
-
     user_from = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE,
@@ -359,7 +365,44 @@ class Note(models.Model):
     )
 
 
+class Badges(models.Model):
+    # Badges are represented by their name and an integer-value representing their state and progress,
+    # usually starting off at 0 and progressing towards a higher number (usually the range will be 0-2 to represent a
+    # progression in 3 steps)
 
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text=_('User Reference'))
+
+    top_vorbereitet = models.IntegerField(
+        default=0,
+        null=True,
+        help_text=_('awarded for reading articles on the app')
+    )
+
+    articles_read = models.IntegerField(
+        default=0,
+        help_text="Number of articles read by user"
+    )
+
+    beliebt = models.IntegerField(
+        default=0,
+        null=True,
+        help_text=_('awarded for starting chats')
+    )
+
+    chats_started = models.IntegerField(
+        default=0,
+        null=True,
+        help_text=_('number of stats started')
+    )
+
+    profil_vollstaendig = models.IntegerField(
+        default=0,
+        null=True,
+        help_text=_('awarded for completing the user profile')
+    )
 
 
 '''
