@@ -498,11 +498,13 @@ class Query(graphene.AbstractType):
 
     @user_passes_test(lambda user: user.is_company)
     def resolve_candidates(self, info):
-        jobs = list(JobOffer.objects.filter(owner=info.context.user))
+        jobs = list(JobOffer.objects.filter(owner=info.context.user, is_deleted=False))
         swipes = []
         for job in jobs:
-            swipes.append(Swipe.objects.filter(job_offer=job, liked=True).get())
-        
+            query_set = Swipe.objects.filter(job_offer=job, liked=True)
+            for swipe in query_set:
+                swipes.append(swipe)
+                
         return swipes
         
     # returns all tags that got a reference to a job offer
