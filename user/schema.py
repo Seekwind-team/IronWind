@@ -1,4 +1,5 @@
 import os
+import uuid
 
 from django.contrib.auth import get_user_model
 
@@ -355,7 +356,7 @@ class UploadUserPicture(graphene.Mutation):
             raise GraphQLError("Provided invalid file format")
 
         extension = os.path.splitext(file_in.name)[1]
-        file_in.name = "" + str(c_user.pk) + "_profilePicture" + extension
+        file_in.name = "" + str(c_user.pk) + "_profilePicture_" + str(uuid.uuid4()) + extension
 
         if c_user.is_company:
             if not CompanyData.objects.filter(belongs_to=info.context.user):
@@ -400,7 +401,7 @@ class UploadMeisterbrief(graphene.Mutation):
             raise GraphQLError("Provided invalid file format")
 
         extension = os.path.splitext(file_in.name)[1]
-        file_in.name = "" + str(c_user.pk) + "_meisterbrief" + extension
+        file_in.name = "" + str(c_user.pk) + "_meisterbrief_" + str(uuid.uuid4()) + extension
 
         data = CompanyData.objects.filter(belongs_to=c_user).get()
         if data.meisterbrief:
