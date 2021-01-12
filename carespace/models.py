@@ -2,8 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-
-# Create your models here.
+from IronWind import settings
+from user.models import Authentication
 
 
 class CareSpace(models.Model):
@@ -77,3 +77,16 @@ class CareSpace(models.Model):
     def __str__(self):
         # will Return Name of self-objects as stated:
         return "ID " + str(self.pk) + ": " + self.headline
+
+
+class ArticleRead (models.Model):
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text=_('User Reference'))
+
+    article = models.ForeignKey(
+        CareSpace,
+        on_delete=models.CASCADE,
+        help_text=_('Article Reference'))
