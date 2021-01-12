@@ -14,7 +14,7 @@ from django.core.validators import validate_email
 from joboffer.models import JobOffer, Tag, Image, Swipe, Bookmark
 from user.models import CompanyData, UserData
 from user.schema import Upload
-
+from recommenders.recommender import Recommender
 
 class ImageType(DjangoObjectType):
     class Meta:
@@ -161,7 +161,7 @@ class AlterJobOffer(graphene.Mutation):
         pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
-        start_date = graphene.String(description="Datum des ersten Arbeitstages")
+        start_date = graphene.Date(description="Datum des ersten Arbeitstages, nutzt iso8601-Format (eg. 2006-01-02)")
         trade = graphene.String(description="Jobkategorie")
 
     @user_passes_test(lambda user: user.is_company)
@@ -500,11 +500,13 @@ class Query(graphene.AbstractType):
 
     @user_passes_test(lambda user: user.is_company)
     def resolve_candidates(self, info):
-        jobs = list(JobOffer.objects.filter(owner=info.context.user))
+        jobs = list(JobOffer.objects.filter(owner=info.context.user, is_deleted=False))
         swipes = []
         for job in jobs:
-            swipes.append(Swipe.objects.filter(job_offer=job, liked=True).get())
-        
+            query_set = Swipe.objects.filter(job_offer=job, liked=True)
+            for swipe in query_set:
+                swipes.append(swipe)
+                
         return swipes
         
     # returns all tags that got a reference to a job offer
@@ -521,6 +523,14 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_job_offer_tag_search(self, info, tag_names):
         jobs = []
+        
+        # if not working change to tag_names.first()
+        if not tag_names:
+            # this is a copy of recommenders/schema.py. import is not possible because of circular imports. 
+            user_id = info.context.user.id
+            r = Recommender()
+            return r.recommend(user_id)
+            
         for name in tag_names:
             tag = Tag.objects.filter(name=name).get()
             query_set = JobOffer.objects.filter(hashtags=tag)
