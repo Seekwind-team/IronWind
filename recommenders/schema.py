@@ -6,7 +6,7 @@ from graphql_jwt.decorators import login_required
 
 from recommenders.recommender import Recommender
 from joboffer.models import JobOffer
-#from joboffer.schema import JobOfferType
+from joboffer.schema import JobOfferType
 
 class Query(graphene.ObjectType):
     my_recommendations = graphene.List(JobOfferType)
