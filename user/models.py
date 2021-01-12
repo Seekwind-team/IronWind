@@ -202,10 +202,29 @@ class UserData(models.Model):
     )
 
     # TODO: Grades ?
-    # TODO: Graduation ?
+
+    graduation = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text=_('what sort of graduation does the user have?')
+    )
+
+    graduation_year = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text=_('year of graduation')
+    )
+
+    cv = models.JSONField(
+        encoder=None,
+        null=True,
+        blank=True,
+        help_text=_('Curriculum Vitae, or CV for short')
+    )
 
     profile_picture = models.ImageField(
-        upload_to='images',
+        upload_to='static/images/',
         null=True,
         blank=True,
         help_text=_('profile picture of user')
@@ -237,7 +256,7 @@ class UserData(models.Model):
         max_length=50,
         null=True,
         blank=True,
-        help_text=_('location of user in String (eg. Name of City)')
+        help_text=_('location of user in String (Name of City + ZIP Code)')
     )
 
     birth_date = models.DateField(
@@ -299,14 +318,14 @@ class CompanyData(models.Model):
     )
 
     company_picture = models.ImageField(
-        upload_to='images',
+        upload_to='static/images/',
         null=True,
         blank=True,
         help_text=_('eg. Picture of the company Logo')
     )
 
     meisterbrief = models.ImageField(
-        upload_to='images',
+        upload_to='static/images/',
         null=True,
         blank=True,
         help_text=_('Picture to validate the company as legally permitted to accept apprentices')
