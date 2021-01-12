@@ -14,7 +14,7 @@ from django.core.validators import validate_email
 from joboffer.models import JobOffer, Tag, Image, Swipe, Bookmark
 from user.models import CompanyData, UserData
 from user.schema import Upload
-from recommenders.recommender import Recommender
+#from recommenders.recommender import Recommender
 
 class ImageType(DjangoObjectType):
     class Meta:
@@ -47,11 +47,11 @@ class JobOfferType(DjangoObjectType):
         description = 'This Type contains a singular Job offer posted'
         convert_choices_to_enum = False
 
-    created_at = graphene.DateTime(name='created_at')
-    must_have = graphene.String(name='must_have')
+    created_at = graphene.DateTime(name='createdAt')
+    must_have = graphene.String(name='mustHave')
     company_logo = graphene.String()
     images = graphene.List(graphene.String)
-    nice_have = graphene.String(name='nice_have')
+    nice_have = graphene.String(name='niceHave')
 
     def resolve_company_logo(self, info):
         return CompanyData.objects.filter(belongs_to=self.owner).get().company_picture.url
@@ -61,8 +61,8 @@ class JobOfferType(DjangoObjectType):
             return Image.objects.filter(model=self).all()
         except Exception:
             return None
-            
- 
+
+
 # creates new Job offer
 class CreateJobOffer(graphene.Mutation):
     ok = graphene.Boolean(description="Will return on successful creation")
@@ -153,7 +153,7 @@ class AlterJobOffer(graphene.Mutation):
         nice_have = graphene.String(description="Conditions that arent required but would be nice to have")
         public_email = graphene.String(description="publicly visible email address")
         is_active = graphene.Boolean(description="Boolean, set to true will deactivate the public job offer")
-        
+
         add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
         remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
 
@@ -363,16 +363,16 @@ class SaveBookmark(graphene.Mutation):
         return SaveBookmark(ok=True, bookmark=bookmark)
 
 
-# used to store like or dislike from user on joboffer 
+# used to store like or dislike from user on joboffer
 class SaveSwipe(graphene.Mutation):
     ok = graphene.Boolean()
     swipe = graphene.Field(SwipeType, description="returns new swipe")
-    
+
     class Arguments:
         job_id = graphene.Int(required=True, description="ID of swiped job")
         like = graphene.Boolean(required=True, description="saves Like(true) or Dislike(false) between User and given job offer")
         reset = graphene.Boolean(description="set to true to reset swipe")
-    
+
     @login_required
     def mutate(self, info, **kwargs):
         try:
@@ -385,7 +385,7 @@ class SaveSwipe(graphene.Mutation):
             swipe = Swipe(candidate=info.context.user, job_offer=job)
             swipe.liked = kwargs['like']
             swipe.save()
-        elif Swipe.objects.filter(candidate=info.context.user, job_offer=job).get().liked != kwargs['like']: 
+        elif Swipe.objects.filter(candidate=info.context.user, job_offer=job).get().liked != kwargs['like']:
             # alter like attribute
             swipe = Swipe.objects.filter(candidate=info.context.user, job_offer=job).get()
             swipe.liked = kwargs['like']
@@ -403,14 +403,14 @@ class SaveBookmark(graphene.Mutation):
 
     class Arguments:
         job_id = graphene.Int(required=True, description="ID of job to be bookmarked")
-    
+
     @login_required
     def mutate(self, info, **kwargs):
         try:
             job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
         except Exception:
             raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
-        
+
         if not Bookmark.objects.filter(candidate=info.context.user, job_offer=job).exists():
             bookmark = Bookmark(candidate=info.context.user, job_offer=job)
             bookmark.save()
@@ -433,7 +433,7 @@ class DeleteBookmark(graphene.Mutation):
             bookmark.delete()
         else:
             raise Exception("bookmark with id {} is not owned by User.".format(bookmark_id))
-        
+
         return DeleteBookmark(ok=True)
 
 
@@ -468,7 +468,7 @@ class ReactivateSearch(graphene.Mutation):
 
 
 class Mutation(graphene.ObjectType):
-    create_job_offer = CreateJobOffer.Field() 
+    create_job_offer = CreateJobOffer.Field()
     alter_job_offer = AlterJobOffer.Field()
     delete_job_offer = DeleteJobOffer.Field()
     add_image = AddImage.Field()
@@ -512,7 +512,7 @@ class Query(graphene.AbstractType):
     all_tags = graphene.List(
         TagType,
     )
-    
+
     job_offer_tag_search = graphene.List(
         JobOfferType,
         tag_names = graphene.List(
@@ -549,9 +549,9 @@ class Query(graphene.AbstractType):
             query_set = Swipe.objects.filter(job_offer=job, liked=True)
             for swipe in query_set:
                 swipes.append(swipe)
-                
+
         return swipes
-        
+
     # returns all tags that got a reference to a job offer
     @login_required
     def resolve_all_tags(self, info):
@@ -570,14 +570,15 @@ class Query(graphene.AbstractType):
         # if not working change to tag_names.first()
         if not tag_names:
             # this is a copy of recommenders/schema.py. import is not possible because of circular imports. 
-            user_id = info.context.user.id
-            r = Recommender()
-            return r.recommend(user_id)
-            
+            #user_id = info.context.user.id
+            #r = Recommender()
+            #return r.recommend(user_id)
+            return JobOffer.objects.all()
+
         for name in tag_names:
             tag = Tag.objects.filter(name=name).get()
             query_set = JobOffer.objects.filter(hashtags=tag)
             for job in query_set:
-                jobs.append(job)    
-        
+                jobs.append(job)
+
         return list(dict.fromkeys(jobs))
