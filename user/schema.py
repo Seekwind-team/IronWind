@@ -239,7 +239,6 @@ class UpdatedProfile(graphene.Mutation):
             soft_skills_object.customer_orientated = soft_skills.customer_orientated
             soft_skills_object.motorskills = soft_skills.motorskills
             soft_skills_object.planning = soft_skills.planning
-            soft_skills_object.empathic = soft_skills.empathic
             soft_skills_object.creativity = soft_skills.creativity
             soft_skills_object.innovativity = soft_skills.innovativity
             soft_skills_object.routine = soft_skills.routine
