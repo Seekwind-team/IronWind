@@ -20,7 +20,7 @@ def min_int_val(cap, input):
     if input > cap:
         return True
     else:
-        raise ValidationError("{} to small.".format(input))
+        raise ValidationError("{} too small.".format(input))
 
 def max_int_val(cap, input):
     if not isinstance(input, int):
@@ -29,4 +29,4 @@ def max_int_val(cap, input):
     if input < cap:
         return True
     else:
-        raise ValidationError("{} to big.".format(input))
+        raise ValidationError("{} too big.".format(input))

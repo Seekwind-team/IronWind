@@ -116,8 +116,8 @@ class DeleteUser(graphene.Mutation):
 # holds User input for Soft-Skill-Slider Values
 class SoftSkillsArguments(graphene.InputObjectType):
     # defines minimal and maximal value to be stored in Arguments
-    MAXIMUM = 5
-    MINIMUM = -5
+    MAXIMUM = 6
+    MINIMUM = -6
 
     # Arguments
     artistic = graphene.Int()
