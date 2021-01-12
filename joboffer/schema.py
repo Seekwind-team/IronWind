@@ -520,6 +520,17 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_job_offer_tag_search(self, info, tag_names):
         jobs = []
+        
+        # TODO i did not test this, it looks pretty unstable but theres no easyer way to get recommendations.
+        # if not working change to tag_names.first()
+        if not tag_names:
+            return recommenders.resolve_my_recommendations(self, info)
+            
+            # ugly alternative
+            #user_id = info.context.user.id
+            #r = Recommender()
+            #return r.recommend(user_id)
+
         for name in tag_names:
             tag = Tag.objects.filter(name=name).get()
             query_set = JobOffer.objects.filter(hashtags=tag)
