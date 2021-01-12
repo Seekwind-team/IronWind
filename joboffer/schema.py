@@ -14,7 +14,7 @@ from django.core.validators import validate_email
 from joboffer.models import JobOffer, Tag, Image, Swipe, Bookmark
 from user.models import CompanyData, UserData
 from user.schema import Upload
-
+from recommenders.recommender import Recommender
 
 class ImageType(DjangoObjectType):
     class Meta:
@@ -45,6 +45,7 @@ class JobOfferType(DjangoObjectType):
     class Meta:
         model = JobOffer
         description = 'This Type contains a singular Job offer posted'
+        convert_choices_to_enum = False
 
     created_at = graphene.DateTime(name='created_at')
     must_have = graphene.String(name='must_have')
@@ -83,7 +84,7 @@ class CreateJobOffer(graphene.Mutation):
         pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
-        start_date = graphene.String(description="Datum des ersten Arbeitstages")
+        start_date = graphene.Date(description="Datum des ersten Arbeitstages")
         trade = graphene.String(description="Jobkategorie")
 
     @login_required
@@ -129,7 +130,8 @@ class CreateJobOffer(graphene.Mutation):
                 if Tag.objects.filter(name=tag).exists():
                     new_tag = Tag.objects.filter(name=tag).first()
                 else:
-                    new_tag = Tag(name=tag).save()
+                    new_tag = Tag(name=tag)
+                    new_tag.save()
 
                 job_object.hashtags.add(new_tag)
 
@@ -151,13 +153,14 @@ class AlterJobOffer(graphene.Mutation):
         nice_have = graphene.String(description="Conditions that arent required but would be nice to have")
         public_email = graphene.String(description="publicly visible email address")
         is_active = graphene.Boolean(description="Boolean, set to true will deactivate the public job offer")
+        
         add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
         remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
 
         pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
-        start_date = graphene.String(description="Datum des ersten Arbeitstages")
+        start_date = graphene.Date(description="Datum des ersten Arbeitstages, nutzt iso8601-Format (eg. 2006-01-02)")
         trade = graphene.String(description="Jobkategorie")
 
     @user_passes_test(lambda user: user.is_company)
@@ -206,11 +209,12 @@ class AlterJobOffer(graphene.Mutation):
                 if Tag.objects.filter(name=tag).exists():
                     new_tag = Tag.objects.filter(name=tag).first()
                 else:
-                    new_tag = Tag(name=tag).save()
+                    new_tag = Tag(name=tag)
+                    new_tag.save()
 
                 job_object.hashtags.add(new_tag)
 
-            # remove Tag
+            # remove Tag from job offer
             for tag in remove_hashtags:
                 if Tag.objects.filter(name=tag).exists():
                     tag = Tag.objects.filter(name=tag).get()
@@ -539,20 +543,37 @@ class Query(graphene.AbstractType):
 
     @user_passes_test(lambda user: user.is_company)
     def resolve_candidates(self, info):
-        jobs = list(JobOffer.objects.filter(owner=info.context.user))
+        jobs = list(JobOffer.objects.filter(owner=info.context.user, is_deleted=False))
         swipes = []
         for job in jobs:
-            swipes.append(Swipe.objects.filter(job_offer=job, liked=True).get())
-        
+            query_set = Swipe.objects.filter(job_offer=job, liked=True)
+            for swipe in query_set:
+                swipes.append(swipe)
+                
         return swipes
         
+    # returns all tags that got a reference to a job offer
     @login_required
     def resolve_all_tags(self, info):
-        return Tag.objects.all()
+        all_tags = list(Tag.objects.all())
+        active_tags = []
+        for tag in all_tags:
+            if tag.joboffer_set.all().first():
+                active_tags.append(tag)
+
+        return active_tags
 
     @login_required
     def resolve_job_offer_tag_search(self, info, tag_names):
         jobs = []
+        
+        # if not working change to tag_names.first()
+        if not tag_names:
+            # this is a copy of recommenders/schema.py. import is not possible because of circular imports. 
+            user_id = info.context.user.id
+            r = Recommender()
+            return r.recommend(user_id)
+            
         for name in tag_names:
             tag = Tag.objects.filter(name=name).get()
             query_set = JobOffer.objects.filter(hashtags=tag)
