@@ -14,7 +14,7 @@ from django.core.validators import validate_email
 from joboffer.models import JobOffer, Tag, Image, Swipe, Bookmark
 from user.models import CompanyData, UserData
 from user.schema import Upload
-f#rom recommenders.recommender import Recommender
+#from recommenders.recommender import Recommender
 
 class ImageType(DjangoObjectType):
     class Meta:
