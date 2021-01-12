@@ -76,40 +76,49 @@ def all_valids():
 	'''
 	print("testing all valids of createUser")
 
-	valid_emails = arguments["email"]["valid"]
-	valid_isCompanies = arguments["isCompany"]["valid"]
-	valid_passwords = arguments["password"]["valid"]
+	all_valids = {}
 
+	for arg_name in list(arguments):
+		all_valids[arg_name] = arguments[arg_name]["valid"]
 
-	maxlength = max(len(valid_emails),
-		len(valid_isCompanies),
-		len(valid_passwords))
+	maxlength = 0
+	for arg_name in all_valids:
+		if len(all_valids[arg_name]) > maxlength:
+			maxlength = len(all_valids[arg_name])
 
 	for i in range(maxlength):
 
-		current_values = {"email":		valid_emails[min(i, len(valid_emails)-1)],
-				  		  "isCompany":	valid_isCompanies[min(i, len(valid_isCompanies)-1)],
-				  		  "password":	valid_passwords[min(i, len(valid_passwords)-1)]}
+		current_values = {}
+
+		for arg_name in list(all_valids):
+			current_values[arg_name] = all_valids[arg_name][min(i, len(all_valids[arg_name])-1)]
 
 		filled_mutation = mutation.fill(current_values)
 
-		if  user_exists(current_values["email"], current_values["password"]):
-			delete_user(current_values["email"], current_values["password"])
-
-
 		response = helper.run_payload(helper, payload = filled_mutation)
 
-		if response.json() != None and list(response.json())[0] == 'data':
-			delete_user(current_values["email"], current_values["password"])
-			response_values = response.json()["data"]["createUser"]["user"]
+		try:
+			assert response.json() != None
+		except AssertionError as e:
+			print(filled_mutation + "\n response.json() == None")
+			raise e
 
-			for arg_name in response_values:
-				if str(current_values[arg_name]).lower() != str(response_values[arg_name]).lower():
-					log.test_failed(arg_name, current_values[arg_name], response_values[arg_name], filled_mutation)
-				assert str(current_values[arg_name]).lower() == str(response_values[arg_name]).lower()
+		try:
+			assert "errors" not in response.json()
+		except AssertionError as e:
+			print(filled_mutation + "\n" + str(response.json()))
+			raise e
 
+		response_values = response.json()["data"]["createUser"]["user"]
 
-
+		for arg_name in response_values:
+			try:
+				assert current_values[arg_name] == response_values[arg_name]
+			except AssertionError as e:
+				print("expected: " + arg_name + ": " + str(current_values[arg_name]))
+				print("actual: " + arg_name + ": " + str(response_values[arg_name]))
+				print(filled_mutation + "\n" + str(response.json()))
+				raise e
 
 
 def all_invalids():
@@ -149,18 +158,21 @@ def invalid_cases_of(invalid_argument):
 
 		response = helper.run_payload(helper, payload = filled_mutation)
 
-		if response.json() != None and list(response.json())[0] != 'errors':
-			delete_user(test_values["email"], test_values["password"])
-			log.expected_error(invalid_argument, invalid_value, filled_mutation)
-		assert list(response.json())[0] == 'errors'
+		try:
+			assert response.json() != None
+		except AssertionError as e:
+			print(filled_mutation + "\n response.json() == None")
+			raise e
+
+		try:
+			assert "errors" in response.json()
+		except AssertionError as e:
+			print("expected error from sending:")
+			print(filled_mutation + "\n" + str(response.json()))
+			print("because of " + invalid_argument + ": " + str(invalid_value))
+			raise e
 
 
 def test():
-	global log
-	log = __import__("testhub").logger
-
-	log.start("createUser")
 	all_valids()
 	all_invalids()
-
-# test(Logger())

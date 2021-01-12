@@ -145,12 +145,24 @@ def all_valids():
 		header = helper.build_header(helper, token = token)
 		response = helper.run_payload(helper, payload = filled_mutation, header = header)
 
-		if response.json() != None and list(response.json())[0] == 'data':
-			response_value = response.json()["data"]["sendMessage"]["ok"]
-			if str(response_value).lower() != "true":
-				log.test_failed("ok", "true", "false", filled_mutation)
-		assert list(response.json())[0] == 'data'
-		assert str(response.json()["data"]["sendMessage"]["ok"]).lower() == "true"
+		try:
+			assert response.json() != None
+		except AssertionError as e:
+			print(filled_mutation + "\n response.json() == None")
+			raise e
+
+		try:
+			assert "errors" not in response.json()
+		except AssertionError as e:
+			print(filled_mutation + "\n" + str(response.json()))
+			raise e
+
+
+		try:
+			assert response.json()["data"]["sendMessage"]["ok"] == True
+		except AssertionError as e:
+			print(filled_mutation + "\n" + str(response.json()))
+			raise e
 
 
 def all_invalids():
@@ -193,19 +205,25 @@ def invalid_cases_of(invalid_argument):
 		header = helper.build_header(helper, token = token)
 		response = helper.run_payload(helper, payload = filled_mutation, header = header)
 
-		if response.json() != None and list(response.json())[0] != 'errors':
-			log.expected_error(invalid_argument, invalid_value, filled_mutation)
-		assert list(response.json())[0] == 'errors'
+		try:
+			assert response.json() != None
+		except AssertionError as e:
+			print(filled_mutation + "\n response.json() == None")
+			raise e
+
+		try:
+			assert "errors" in response.json()
+		except AssertionError as e:
+			print("expected error from sending:")
+			print(filled_mutation + "\n" + str(response.json()))
+			print("because of " + invalid_argument + ": " + str(invalid_value))
+			raise e
 
 
 def test():
 	'''
 	creates test users and tests the mutation sendMessage on those users. deletes the users after
 	'''
-	global log
-	log = __import__("testhub").logger
-
-	log.start("sendMessage")
 
 	create_test_users()
 	try:

@@ -215,7 +215,7 @@ class UpdatedProfile(graphene.Mutation):
         data_object.graduation_year = graduation_year or data_object.graduation_year
         data_object.cv = cv or data_object.cv
 
-        if data_object.first_name and data_object.last_name and data_object.short_bio and short_bio.gender and short_bio.birth_date and data_object.soft_skills and data_object.looking:
+        if data_object.first_name and data_object.last_name and data_object.short_bio and data_object.gender and data_object.birth_date and data_object.soft_skills and data_object.looking:
             badge_obj = info.context.user.get_badges()
             badge_obj.profil_vollstaendig = 2
             badge_obj.save()

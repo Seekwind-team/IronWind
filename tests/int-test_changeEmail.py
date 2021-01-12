@@ -104,14 +104,27 @@ def all_valids():
 		header = helper.build_header(helper, token = token)
 		response = helper.run_payload(helper, payload = filled_mutation, header = header)
 
-		if response.json() != None and list(response.json())[0] == 'data':
-			response_value = response.json()["data"]["changeEmail"]["ok"]
-			if str(response_value).lower() != "true":
-				log.test_failed("ok", "true", str(response_value).lower(), filled_mutation)
-			else:
-				active_email = valid_emails[i]
-		assert list(response.json())[0] == 'data'
-		assert str(response.json()["data"]["changeEmail"]["ok"]).lower() == "true"
+		try:
+			assert response.json() != None
+		except AssertionError as e:
+			print(filled_mutation + "\n response.json() == None")
+			raise e
+
+		try:
+			assert "errors" not in response.json()
+		except AssertionError as e:
+			print(filled_mutation + "\n" + str(response.json()))
+			raise e
+
+		try:
+			assert response.json()["data"]["changeEmail"]["ok"] == True
+		except AssertionError as e:
+			print("expected: ok: " + str(current_values["ok"]))
+			print("actual: ok: " + str(response.json()["data"]["changeEmail"]["ok"]))
+			print(filled_mutation + "\n" + str(response.json()))
+			raise e
+
+		active_email = valid_emails[i]
 
 
 def all_invalids():
@@ -148,24 +161,26 @@ def all_invalids():
 		header = helper.build_header(helper, token = token)
 		response = helper.run_payload(helper, payload = filled_mutation, header = header)
 
-		if response.json() != None and list(response.json())[0] != 'errors':
-			log.expected_error("newEmail", inv_email, filled_mutation)
-			active_email = inv_email
-		assert list(response.json())[0] == 'errors'
+		try:
+			assert response.json() != None
+		except AssertionError as e:
+			print(filled_mutation + "\n response.json() == None")
+			raise e
 
+		try:
+			assert "errors" in response.json()
+		except AssertionError as e:
+			print("expected error from sending:")
+			print(filled_mutation + "\n" + str(response.json()))
+			print("because of newPassword: " + inv_email)
+			active_email = inv_email
+			raise e
 
 def test():
 
-	global log
-	log = __import__("testhub").logger
-	log.start("changeEmail")
 	try:
 		create_test_user()
 		all_valids()
 		all_invalids()
-	# except Exception as e:
-	# 	print(e)
-	# 	print("active_email: " + active_email)
-	# 	print("password: " + PASSWORD)
 	finally:
 		delete_test_user()

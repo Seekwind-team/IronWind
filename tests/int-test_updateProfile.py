@@ -118,28 +118,22 @@ def all_valids():
 
 	print("testing all valids of updateProfile")
 
-	valid_birthdates	= arguments["birthDate"]["valid"]
-	valid_firstnames	= arguments["firstName"]["valid"]
-	valid_genders		= arguments["gender"]["valid"]
-	valid_lastnames		= arguments["lastName"]["valid"]
-	valid_phonenumbers	= arguments["phoneNumber"]["valid"]
-	valid_shortbios		= arguments["shortBio"]["valid"]
+	all_valids = {}
 
-	maxlength = max(len(valid_birthdates),
-		len(valid_firstnames),
-		len(valid_genders),
-		len(valid_lastnames),
-		len(valid_phonenumbers),
-		len(valid_shortbios))
+	for arg_name in list(arguments):
+		all_valids[arg_name] = arguments[arg_name]["valid"]
+
+	maxlength = 0
+	for arg_name in all_valids:
+		if len(all_valids[arg_name]) > maxlength:
+			maxlength = len(all_valids[arg_name])
 
 	for i in range(maxlength):
 
-		current_values = {"birthDate":	valid_birthdates[min(i, len(valid_birthdates)-1)],
-				  		 "firstName":	valid_firstnames[min(i, len(valid_firstnames)-1)],
-				  		 "gender":		valid_genders[min(i, len(valid_genders)-1)],
-				  		 "lastName":	valid_lastnames[min(i, len(valid_lastnames)-1)],
-				  		 "phoneNumber":	valid_phonenumbers[min(i, len(valid_phonenumbers)-1)],
-				  		 "shortBio":	valid_shortbios[min(i, len(valid_shortbios)-1)]}
+		current_values = {}
+
+		for arg_name in list(all_valids):
+			current_values[arg_name] = all_valids[arg_name][min(i, len(all_valids[arg_name])-1)]
 
 		filled_mutation = mutation.fill(current_values)
 
@@ -147,14 +141,28 @@ def all_valids():
 		header = helper.build_header(helper, token = token)
 		response = helper.run_payload(helper, payload = filled_mutation, header = header)
 
+		try:
+			assert response.json() != None
+		except AssertionError as e:
+			print(filled_mutation + "\n response.json() == None")
+			raise e
 
-		if response.json() != None and list(response.json())[0] == 'data':
-			response_values = response.json()["data"]["updateProfile"]["updatedProfile"]
+		try:
+			assert "errors" not in response.json()
+		except AssertionError as e:
+			print(filled_mutation + "\n" + str(response.json()))
+			raise e
 
-			for arg_name in response_values:
-				if current_values[arg_name] != response_values[arg_name]:
-					log.test_failed(arg_name, current_values[arg_name], response_values[arg_name], filled_mutation)
+		response_values = response.json()["data"]["updateProfile"]["updatedProfile"]
+
+		for arg_name in response_values:
+			try:
 				assert current_values[arg_name] == response_values[arg_name]
+			except AssertionError as e:
+				print("expected: " + arg_name + ": " + str(current_values[arg_name]))
+				print("actual: " + arg_name + ": " + str(response_values[arg_name]))
+				print(filled_mutation + "\n" + str(response.json()))
+				raise e
 
 
 
@@ -168,9 +176,6 @@ def all_invalids():
 	print("testing all invalids of updateProfile")
 	for invalid_argument in list(arguments):
 		invalid_cases_of(invalid_argument)
-
-
-
 
 
 def invalid_cases_of(invalid_argument):
@@ -200,9 +205,19 @@ def invalid_cases_of(invalid_argument):
 		header = helper.build_header(helper, token = token)
 		response = helper.run_payload(helper, payload = filled_mutation, header = header)
 
-		if response.json() != None and list(response.json())[0] != 'errors':
-			log.expected_error(invalid_argument, invalid_value, filled_mutation)
-		assert list(response.json())[0] == 'errors'
+		try:
+			assert response.json() != None
+		except AssertionError as e:
+			print(filled_mutation + "\n response.json() == None")
+			raise e
+
+		try:
+			assert "errors" in response.json()
+		except AssertionError as e:
+			print("expected error from sending:")
+			print(filled_mutation + "\n" + str(response.json()))
+			print("because of " + invalid_argument + ": " + str(invalid_value))
+			raise e
 
 
 
@@ -210,10 +225,6 @@ def test():
 	'''
 	creates a user and tests the mutation updateProfile on that user. deletes the user after
 	'''
-	global log
-	log = __import__("testhub").logger
-
-	log.start("updateProfile")
 
 	create_test_user()
 	try:

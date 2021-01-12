@@ -114,9 +114,9 @@ class Mutation(Query):
 
             for arg in self.arguments:
                 if self.arguments[arg]:
-                    mutation += arg + ":\"" + values[arg] + "\","
+                    mutation += arg + ":\"" + str(values[arg]) + "\","
                 else:
-                    mutation += arg + ":" + values[arg] + ","
+                    mutation += arg + ":" + str(values[arg]) + ","
 
             mutation += ")"
 
@@ -129,42 +129,42 @@ class Mutation(Query):
         return mutation
 
 
-class Logger:
+# class Logger:
 
-    def __init__(self, filename: str = None):
-        if filename == None:
-            self.filename = os.path.dirname(os.path.abspath(__file__)) + "\\logs\\testlog-" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +".txt"
-        else:
-            self.filename = filename
-        f = open(self.filename, "w+")
-        f.close()
-
-
-
-    def start(self, name: str):
-        with open(self.filename, "a") as f:
-	        f.write("############################################################ " + name + " ############################################################\n")
-	        f.write("#"*len(name) + "##########################################################################################################################\n")
+#     def __init__(self, filename: str = None):
+#         if filename == None:
+#             self.filename = os.path.dirname(os.path.abspath(__file__)) + "\\logs\\testlog-" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +".txt"
+#         else:
+#             self.filename = filename
+#         f = open(self.filename, "w+")
+#         f.close()
 
 
-    def test_failed(self, arg_name: str, expected, actual, query: str):
-        with open(self.filename, "a") as f:
-	        f.write("expected\t" + arg_name + ":\t'" + str(expected) + "'\nbut was\t\t" + arg_name + ":\t'" + str(actual) + "'\n")
-	        f.write("when sending:\t" + query + "\n\n")
 
-        # print("expected:\t" + expected + "\nbut was:\t" + str(actual) + "\n")
+#     def start(self, name: str):
+#         with open(self.filename, "a") as f:
+# 	        f.write("############################################################ " + name + " ############################################################\n")
+# 	        f.write("#"*len(name) + "##########################################################################################################################\n")
 
 
-    def expected_error(self, arg_name: str, arg_value,  query: str):
-        with open(self.filename, "a") as f:
-	        f.write("expected an error when sending: " + query + "\n")
-	        f.write("but got no error \n")
-	        f.write("because of: \"" + arg_name + "\": '" + arg_value + "'\n\n")
+#     def test_failed(self, arg_name: str, expected, actual, query: str):
+#         with open(self.filename, "a") as f:
+# 	        f.write("expected\t" + arg_name + ":\t'" + str(expected) + "'\nbut was\t\t" + arg_name + ":\t'" + str(actual) + "'\n")
+# 	        f.write("when sending:\t" + query + "\n\n")
 
-        # print("expected an error when sending: " + query)
-        # print("because of: \"" + arg_name + "\": " + arg_value)
+#         # print("expected:\t" + expected + "\nbut was:\t" + str(actual) + "\n")
 
-    def exception_raised(e):
-        with open(self.filename, "a") as f:
-            f.write("an unknown exception was raised during testing:")
-            f.write(str(e))
+
+#     def expected_error(self, arg_name: str, arg_value,  query: str):
+#         with open(self.filename, "a") as f:
+# 	        f.write("expected an error when sending: " + query + "\n")
+# 	        f.write("but got no error \n")
+# 	        f.write("because of: \"" + arg_name + "\": '" + arg_value + "'\n\n")
+
+#         # print("expected an error when sending: " + query)
+#         # print("because of: \"" + arg_name + "\": " + arg_value)
+
+#     def exception_raised(e):
+#         with open(self.filename, "a") as f:
+#             f.write("an unknown exception was raised during testing:")
+#             f.write(str(e))

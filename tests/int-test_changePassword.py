@@ -91,11 +91,6 @@ def delete_user(password):
 			""".format(password)
 	response = helper.run_payload(helper, header = header, payload = payload)
 
-	if response.json() != None:
-		if str(response.json()["data"]["deleteUser"]["ok"]).lower() != "true":
-			log.test_failed("ok", "True", response.json()["data"]["deleteUser"]["ok"], payload)
-
-
 ################################################## TEST FUNCTIONS ##################################################
 
 
@@ -133,14 +128,27 @@ def all_valids():
 		header = helper.build_header(helper, token = token)
 		response = helper.run_payload(helper, payload = filled_mutation, header = header)
 
-		if response.json() != None and list(response.json())[0] == 'data':
-			response_value = response.json()["data"]["changePassword"]["ok"]
-			if str(response_value).lower() != "true":
-				log.test_failed("ok", "true", "false", filled_mutation)
-			else:
-				active_password = valid_passwords[i]
-		assert list(response.json())[0] == 'data'
-		assert str(response.json()["data"]["changePassword"]["ok"]).lower() == "true"
+		try:
+			assert response.json() != None
+		except AssertionError as e:
+			print(filled_mutation + "\n response.json() == None")
+			raise e
+
+		try:
+			assert "errors" not in response.json()
+		except AssertionError as e:
+			print(filled_mutation + "\n" + str(response.json()))
+			raise e
+
+		try:
+			assert response.json()["data"]["changePassword"]["ok"] == True
+		except AssertionError as e:
+			print("expected: ok: " + str(current_values["ok"]))
+			print("actual: ok: " + str(response.json()["data"]["changePassword"]["ok"]))
+			print(filled_mutation + "\n" + str(response.json()))
+			raise e
+
+		active_password = valid_passwords[i]
 
 
 def all_invalids():
@@ -177,20 +185,24 @@ def all_invalids():
 		header = helper.build_header(helper, token = token)
 		response = helper.run_payload(helper, payload = filled_mutation, header = header)
 
-		if response.json() != None and list(response.json())[0] != 'errors':
-			log.expected_error("new_password", inv_password, filled_mutation)
+		try:
+			assert response.json() != None
+		except AssertionError as e:
+			print(filled_mutation + "\n response.json() == None")
+			raise e
+
+		try:
+			assert "errors" in response.json()
+		except AssertionError as e:
+			print("expected error from sending:")
+			print(filled_mutation + "\n" + str(response.json()))
+			print("because of newPassword: " + inv_password)
 			active_password = inv_password
-		assert list(response.json())[0] == 'errors'
-
-
-
+			raise e
 
 
 def test():
 
-    global log
-    log = __import__("testhub").logger
-    log.start("changePassword")
     try:
 	    create_user(passwords["valid"][0])
 	    all_valids()

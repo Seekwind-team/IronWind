@@ -1,3 +1,5 @@
+from datetime import datetime
+
 arguments = {
 	"email": {
 	# validation done by django
@@ -36,7 +38,7 @@ arguments = {
 
 	"lastName": {
 	# same as firstName + can be empty
-		"valid":	["", "a", "Z"*50, "-", "'"],
+		"valid":	[ "a", "Z"*50, "-", "'"],
 		"invalid":	["*", "0", "a"*51]
 	},
 
@@ -85,14 +87,14 @@ arguments = {
 
 	"city":{
 	# [a-Z] + special characters, length: 0-100
-		"valid":	[],
-		"invalid":	[]
+		"valid":	["", "Z"*100, "*"],
+		"invalid":	["Z"*101, "0"]
 	},
 
 	"location":{
-    # [a-Z]
-		"valid":	[],
-		"invalid":	[]
+    # [a-Z] + special characters, length: 0-100
+		"valid":	["", "Z"*100, "*"],
+		"invalid":	["Z"*101, "0"]
 	},
 
 ###############################################
@@ -106,7 +108,7 @@ arguments = {
 
 	"jobType":{
 	#
-		"valid":	["", "Vollzeit", "Teilzeit", "Ausbildung", "Praktikum", "Volunteer"],
+		"valid":	["Vollzeit", "Teilzeit", "Ausbildung", "Praktikum", "Volunteer"],
 		"invalid":	["invalid"]
 	},
 
@@ -146,20 +148,26 @@ arguments = {
 	},
 
 	"payPerYear":{
-    # integer list separated by comma, values [1-max_int], list length 0-100
-		"valid": 	["", "1", "9999999999, "*99 + "9999999999"],
-		"invalid":	["9999999999, "*100 + "9999999999"]
+    # string list separated by commas, list length 0-100
+		"valid": 	[ "[\"1\"]", "[" + "\"9999999999\", "*99 + "\"9999999999\"]"],
+		"invalid":	["[" + "\"9999999999\", "*100 + "\"9999999999\"]"]
 	},
 
 	"payPerHour":{
-    # integer, can be blank
-		"valid": 	["", "0"],
+    # integer
+		"valid": 	[0],
 		"invalid":	["a", "*"]
 	},
 
 	"startDate":{
-    # same as birthDate
-    # declared after argument-dict initialization
+    # dates according to iso 8601
+	# YYYY-MM-DD
+	# Y: [0001-9999]
+	# M: [01-12]
+	# D: [01-31]
+	# must be after current date
+    	"valid":	["0001-01-01", "9999-12-31"],
+		"invalid":	["","0000-01-01", "0001-00-01", "0001-01-00", "10000-12-31", "9999-13-31", "9999-12-32"]
 	},
 
 	"trade":{
@@ -168,12 +176,16 @@ arguments = {
 		"invalid":	["Z"*256]
 	},
 
+	"isActive":{
+		"valid":	["true", "false"],
+		"invalid":	[""]
+	},
+
 
 
 }
 
 arguments["publicEmail"] = arguments["email"]
-arguments["startDate"] = arguments["birthDate"]
 
 def get(*arg_names: str):
     file_args = {}
