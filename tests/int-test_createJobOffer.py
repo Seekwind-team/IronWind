@@ -165,8 +165,6 @@ def all_valids():
 				if arg_name == "hashtags":
 					for tag in response_values["hashtags"]:
 						assert tag["name"] in current_values["hashtags"]
-				elif arg_name == "jobType":
-					assert current_values[arg_name].upper() == response_values[arg_name]
 				elif arg_name == "payPerYear":
 					assert current_values[arg_name].replace('"', "'") == response_values[arg_name]
 				elif arg_name == "id":
