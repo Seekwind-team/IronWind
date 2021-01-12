@@ -89,6 +89,15 @@ class SendMessage(graphene.Mutation):
             receiver_obj = Authentication.objects.filter(pk=receiver_id).get()
         except Exception as e:
             raise GraphQLError('Can\'t resolve receiver!', e)
+
+        if not Message.objects.filter(sender=info.context.user, receiver=receiver_obj):
+            badges = info.context.user.get_badges()
+            badges.chats_started += 1
+            if badges.chats_started > 2:
+                badges.beliebt = 2
+            elif badges.chats_started > 0:
+                badges.beliebt = 1
+            badges.save()
         message = Message(
             sender=info.context.user,
             receiver=receiver_obj,
