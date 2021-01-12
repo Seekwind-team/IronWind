@@ -2,14 +2,12 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
-
-from joboffer.models import JobOffer
+from joboffer.models import *
 
 class Recommender:
 
     df = None
     corrMatrix = None
-    alljobs = None
     id2index = {}
     index2id = {}
     cosine_sim = None
@@ -17,24 +15,40 @@ class Recommender:
     def __init__(self):
         self.update()
 
-    def print_alljobs(self):
-        print(self.alljobs)
-
     def update(self):
-        self.df = pd.read_csv ('matching2.csv')
-        #self.alljobs = pd.read_json(r'joblist.json')
-        self.alljobs = JobOffer.objects.all()
+        self.df = pd.DataFrame()       
+        swipes = Swipe.objects.all()
+        jobidlist = []
+        useridlist = []
+        likelist = []
+        descriptionlist = []
+        locationlist = []
+        titlelist = []
         
+        for s in swipes:
+            jobidlist.append(s.job_offer.id)
+            useridlist.append(s.candidate.id)
+            likelist.append(s.liked)
+            descriptionlist.append(s.job_offer.description)
+            locationlist.append(s.job_offer.location)
+            titlelist.append(s.job_offer.job_title)
+
+        self.df["job_id"] = jobidlist
+        self.df["user_id"] = useridlist
+        self.df["like"] = likelist
+        self.df["description"] = descriptionlist
+        self.df["location"] = locationlist
+        self.df["jobtitle"] = titlelist
         self.preprocessing()
         self.createBow()
         self.createSimilarityMatrix()
-        allUserRatings = self.df.pivot_table(index=['userID'],columns=['jobID'],values='like')
+        allUserRatings = self.df.pivot_table(index=['user_id'],columns=['job_id'],values='like')
         self.corrMatrix = allUserRatings.corr(method="pearson")
 
     def preprocessing(self):
         
         for index, row in self.df.iterrows():
-            columns = ["description", "hashtags"]
+            columns = ["description"]
             for col in columns:
                 #cleaning data
                 row[col] = str(row[col]).replace("­","")
@@ -42,12 +56,12 @@ class Recommender:
     def createBow(self):
         
         #choose important columns
-        columns = ["description","jobTitle","location"]
+        columns = ["description","jobtitle","location"]
         wordlist = []
         for index, row in self.df.iterrows():
             #create Dictionaries for matrix
-            self.id2index[row["jobID"]] = index
-            self.index2id[index] = row["jobID"]
+            self.id2index[row["job_id"]] = index
+            self.index2id[index] = row["job_id"]
             words = ""
             for col in columns:
                 if row[col] is not None:
@@ -81,10 +95,10 @@ class Recommender:
         return similar_ratings
     
     def get_rated_jobs(self, user_id):
-        rated_jobs = self.df[self.df["userID"] == user_id]
+        rated_jobs = self.df[self.df["user_id"] == user_id]
         ratings = []
         for index, row in rated_jobs.iterrows():
-            tmp = [row["jobID"],row["like"]]
+            tmp = [row["job_id"],row["like"]]
             ratings.append(tmp)
         return ratings
 
@@ -93,7 +107,7 @@ class Recommender:
         userRatings = self.get_rated_jobs(user_id)
         #User didnt rate enough jobs for identifying similar users
         if len(userRatings) < 10:
-            fewrated = self.df.groupby(by="jobID")["like"].count().sort_values(ascending = True)
+            fewrated = self.df.groupby(by="job_id")["like"].count().sort_values(ascending = True)
             result = list(fewrated.iloc[:10].index)
         #User already rated enough jobs
         else:
