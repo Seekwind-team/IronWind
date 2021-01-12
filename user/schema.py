@@ -35,7 +35,6 @@ class Upload(graphene.types.Scalar):
 def is_company(user):
     return user.is_company is True
 
-AttributeError: type object 'Authentication' has no attribute 'create_user'
 
 # Imports User Profile from Models
 class UserType(DjangoObjectType):
@@ -161,11 +160,7 @@ class UpdatedProfile(graphene.Mutation):
         short_bio = graphene.String(description="short bio (self description) of user, 5000 characters maximum")
         gender = graphene.String(description="gender of user")
         birth_date = graphene.Date(description="birthdate of user, uses iso8601-Format (eg. 2006-01-02)")
-        graduation = graphene.String(description="graduation of user")
-        graduation_year = graphene.Int(description="graduation year of user")
-        cv = graphene.JSONString(description="CV of user")
-        location = graphene.String(description="location of user")
-
+        #  profile_picture = Upload(description="Uploaded File") #
 
         soft_skills = graphene.Argument(SoftSkillsArguments,
             description="List of slider values for softskills. eg. \"creativity\":2"
@@ -180,11 +175,7 @@ class UpdatedProfile(graphene.Mutation):
                short_bio=None,
                gender=None,
                birth_date=None,
-               soft_skills=None,
-               location=None,
-               graduation=None,
-               graduation_year=None,
-               cv=None):
+               soft_skills=None):
         # creates new Database entry, if none exists
         if not UserData.objects.filter(belongs_to=info.context.user):
             user_data = UserData(
@@ -202,10 +193,6 @@ class UpdatedProfile(graphene.Mutation):
         data_object.short_bio = short_bio or data_object.short_bio
         data_object.gender = gender or data_object.gender
         data_object.birth_date = birth_date or data_object.birth_date
-        data_object.location = location or data_object.location
-        data_object.graduation = graduation or data_object.graduation
-        data_object.graduation_year = graduation_year or data_object.graduation_year
-        data_object.cv = cv or data_object.cv
 
         # test if soft skills are set
         if soft_skills:

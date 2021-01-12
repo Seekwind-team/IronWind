@@ -14,7 +14,7 @@ from django.core.validators import validate_email
 from joboffer.models import JobOffer, Tag, Image, Swipe, Bookmark
 from user.models import CompanyData, UserData
 from user.schema import Upload
-from recommenders.schema import Query
+
 
 class ImageType(DjangoObjectType):
     class Meta:
@@ -47,7 +47,6 @@ class JobOfferType(DjangoObjectType):
         description = 'This Type contains a singular Job offer posted'
         convert_choices_to_enum = False
 
-    description = graphene.String(name='description')
     created_at = graphene.DateTime(name='created_at')
     must_have = graphene.String(name='must_have')
     company_logo = graphene.String()
@@ -469,7 +468,7 @@ class Query(graphene.AbstractType):
     all_tags = graphene.List(
         TagType,
     )
-
+    
     job_offer_tag_search = graphene.List(
         JobOfferType,
         tag_names = graphene.List(
@@ -521,17 +520,6 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_job_offer_tag_search(self, info, tag_names):
         jobs = []
-        
-        # TODO i did not test this, it looks pretty unstable but theres no easyer way to get recommendations.
-        # if not working change to tag_names.first()
-        if not tag_names:
-            return recommenders.resolve_my_recommendations(self, info)
-            
-            # ugly alternativ
-            #user_id = info.context.user.id
-            #r = Recommender()
-            #return r.recommend(user_id)
-
         for name in tag_names:
             tag = Tag.objects.filter(name=name).get()
             query_set = JobOffer.objects.filter(hashtags=tag)

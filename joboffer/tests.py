@@ -1,14 +1,20 @@
 from django.test import TestCase, Client
 
 from joboffer.models import JobOffer, Authentication
+from user.tests import CreateUser
 
 class JobOfferTestCase(TestCase):
     def setUp(self):
-    
+        self.email = "joboffer_user@de.mo"
+        self.pw = "12oi3u"
+
+        CreateUser.create_user(CreateUser, email=self.email, pw=self.pw)
+        self.owner = Authentication.objects.get(email=self.email)
+
         # maximal filled JobOffer
         max_joboffer = JobOffer.objects.create(
-            #owner = TBD
-            #hashtags = TBD,
+            owner = self.owner,
+            #hashtags = TBD, 
             filled = False,
             is_deleted = False,
             job_type = 'Vollzeit',
@@ -18,7 +24,7 @@ class JobOfferTestCase(TestCase):
             highlights = 'ganz viele',
             must_have = 'alle bitte',
             nice_have = 'öalsidhf',
-            public_email = owner.email,
+            public_email = self.email,
             pay_per_year = '777,1230,13',
             city = 'Engelsberg',
             start_date = '2020-11-23',
@@ -28,7 +34,7 @@ class JobOfferTestCase(TestCase):
 
         # minimal filled JobOffer
         min_joboffer = JobOffer.objects.create(
-            owner = owner,
+            owner = self.owner,
             job_title = 'min Jobangebot',
             # created_at and last_modified are set to default (now),
         )
