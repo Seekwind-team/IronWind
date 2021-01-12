@@ -261,5 +261,3 @@ def test():
 		all_invalids()
 	finally:
 		delete_test_user()
-
-test()
