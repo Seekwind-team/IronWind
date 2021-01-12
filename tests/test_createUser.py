@@ -8,6 +8,9 @@ arguments = __import__("int-test-arguments").get("email",
                                                  "isCompany",
                                                  "password")
 
+active_email = arguments["email"]["valid"][0]
+active_password = arguments["password"]["valid"][0]
+
 
 ################################################## MUTATION ##################################################
 
@@ -109,16 +112,27 @@ def all_valids():
 			print(filled_mutation + "\n" + str(response.json()))
 			raise e
 
+		global active_email
+		global active_password
+
+		active_email = current_values["email"]
+		active_password = current_values["password"]
+
 		response_values = response.json()["data"]["createUser"]["user"]
 
 		for arg_name in response_values:
 			try:
-				assert current_values[arg_name] == response_values[arg_name]
+				if arg_name == "isCompany":
+					assert current_values[arg_name] == str(response_values[arg_name]).lower()
+				else:
+					assert current_values[arg_name] == response_values[arg_name]
 			except AssertionError as e:
 				print("expected: " + arg_name + ": " + str(current_values[arg_name]))
 				print("actual: " + arg_name + ": " + str(response_values[arg_name]))
 				print(filled_mutation + "\n" + str(response.json()))
 				raise e
+
+		delete_user(active_email, active_password)
 
 
 def all_invalids():
@@ -167,6 +181,10 @@ def invalid_cases_of(invalid_argument):
 		try:
 			assert "errors" in response.json()
 		except AssertionError as e:
+			global active_email
+			global active_password
+			active_email = test_values["email"]
+			active_password = test_values["password"]
 			print("expected error from sending:")
 			print(filled_mutation + "\n" + str(response.json()))
 			print("because of " + invalid_argument + ": " + str(invalid_value))
@@ -174,5 +192,9 @@ def invalid_cases_of(invalid_argument):
 
 
 def test():
-	all_valids()
-	all_invalids()
+	try:
+		all_valids()
+		all_invalids()
+	finally:
+		if user_exists(active_email, active_password):
+			delete_user(active_email, active_password)

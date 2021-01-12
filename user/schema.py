@@ -116,14 +116,14 @@ class DeleteUser(graphene.Mutation):
 # holds User input for Soft-Skill-Slider Values
 class SoftSkillsArguments(graphene.InputObjectType):
     # defines minimal and maximal value to be stored in Arguments
-    MAXIMUM = 5
-    MINIMUM = -5
+    MAXIMUM = 6
+    MINIMUM = -6
 
     # Arguments
     artistic = graphene.Int()
     social_activity = graphene.Int()
     customer_orientated = graphene.Int()
-    motorskills = graphene.Int() 
+    motorskills = graphene.Int()
     planning = graphene.Int()
     creativity = graphene.Int()
     innovativity = graphene.Int()
@@ -238,7 +238,6 @@ class UpdatedProfile(graphene.Mutation):
             soft_skills_object.customer_orientated = soft_skills.customer_orientated
             soft_skills_object.motorskills = soft_skills.motorskills
             soft_skills_object.planning = soft_skills.planning
-            soft_skills_object.empathic = soft_skills.empathic
             soft_skills_object.creativity = soft_skills.creativity
             soft_skills_object.innovativity = soft_skills.innovativity
             soft_skills_object.routine = soft_skills.routine

@@ -71,6 +71,30 @@ arguments = {
 		"invalid":	["", "Z"*101]
 	},
 
+	"softSkills": {
+    # 10 values each from -5 to 5
+		"valid":	["""{artistic: -5,
+socialActivity: -5,
+customerOrientated: -5,
+motorskills: -5,
+planning: -5,
+creativity: -5,
+innovativity: -5,
+routine: -5,
+communicativity: -5}""",
+
+            		 """{artistic: 5,
+socialActivity: 5,
+customerOrientated: 5,
+motorskills: 5,
+planning: 5,
+creativity: 5,
+innovativity: 5,
+routine: 5,
+communicativity: 5}"""],
+		"invalid":	["{artistic: -6}", "{artistic: 6}"]
+	},
+
 	"message": {
     # [a-Z] + [0-9] + special characters, length: 1-255
 		"valid":	["a", "Z"*255, "0", "*"],

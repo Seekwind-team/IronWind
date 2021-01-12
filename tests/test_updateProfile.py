@@ -1,6 +1,7 @@
 from importlib import __import__
 Mutation = __import__("helper").Mutation
 helper = __import__("helper").GraphQLHelper
+import yaml
 
 ################################################## GET ARGUMENTS ##################################################
 
@@ -9,7 +10,8 @@ arguments = __import__("int-test-arguments").get("birthDate",
                                                  "gender",
                                                  "lastName",
                                                  "phoneNumber",
-                                                 "shortBio")
+                                                 "shortBio",
+                                                 "softSkills")
 
 ################################################## TEST USER ##################################################
 
@@ -101,8 +103,30 @@ mutation = Mutation("updateProfile",
 					 "gender": True,
 					 "lastName": True,
 					 "phoneNumber": True,
-					 "shortBio": True},
-					"{updatedProfile{birthDate firstName gender lastName phoneNumber shortBio}}")
+					 "shortBio": True,
+      				 "softSkills": False},
+					"""{
+					    updatedProfile{
+					      birthDate
+					      firstName
+					      gender
+					      lastName
+					      phoneNumber
+					      shortBio
+					      softSkills{
+					        artistic
+					        socialActivity
+					        customerOrientated
+					        motorskills
+					        planning
+					        creativity
+					        innovativity
+					        routine
+					        communicativity
+					      }
+					    }
+         			  }"""
+					)
 
 
 
@@ -157,7 +181,12 @@ def all_valids():
 
 		for arg_name in response_values:
 			try:
-				assert current_values[arg_name] == response_values[arg_name]
+				if arg_name == "softSkills":
+					for skill in response_values["softSkills"]:
+						softSkills = yaml.load(current_values["softSkills"])
+						assert softSkills[skill] == response_values["softSkills"][skill]
+				else:
+					assert current_values[arg_name] == response_values[arg_name]
 			except AssertionError as e:
 				print("expected: " + arg_name + ": " + str(current_values[arg_name]))
 				print("actual: " + arg_name + ": " + str(response_values[arg_name]))
@@ -232,3 +261,5 @@ def test():
 		all_invalids()
 	finally:
 		delete_test_user()
+
+test()

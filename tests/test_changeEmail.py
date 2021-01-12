@@ -172,7 +172,7 @@ def all_invalids():
 		except AssertionError as e:
 			print("expected error from sending:")
 			print(filled_mutation + "\n" + str(response.json()))
-			print("because of newPassword: " + inv_email)
+			print("because of newEmail: " + inv_email)
 			active_email = inv_email
 			raise e
 
