@@ -98,12 +98,6 @@ class JobOffer(models.Model):
     )
 
     pay_per_year = models.CharField(
-        validators=[
-            int_list_validator(
-                sep=',',
-                allow_negative=False
-            )
-        ],
         max_length = 100,
         blank = True,
         null = True,
