@@ -1,12 +1,13 @@
 # IronWind
 Backend section for WhiteWater
 
-## Getting Started KI (Tensorflow):
+#Getting Started
+### Getting Started KI (Tensorflow):
 
 - Python 3.8.6 installieren https://www.python.org/downloads/release/python-386/
 - tensorflow-gpu 2.3.x installieren https://www.tensorflow.org/install/pip
 
-## Getting Started Controller/DB
+### Getting Started Controller/DB
 
 required imports (pip):
 ```py
@@ -20,6 +21,17 @@ $ python manage.py migrate
 $ python manage.py createsuperuser
 $ python manage.py runserver
 ```
+
+### running the SQLite Database/Dev environment locally
+If you are running the Dev environment on Windows you will be most like to run into this Error 
+```SystemCheckError: System check identified some issues:
+ERRORS:
+user.UserData: (fields.E180) SQLite does not support JSONFields.
+```
+
+To remedy this issue you will need the steps provided in https://code.djangoproject.com/wiki/JSON1Extension.
+
+Should you be on Mac or Linux, this most likely won't apply to you, so you can ignore this step. 
 
 ## Structure
 ```py
