@@ -11,9 +11,10 @@ from joboffer.schema import JobOfferType
 class Query(graphene.ObjectType):
     my_recommendations = graphene.List(JobOfferType)
     
-    # needs testing
     @login_required
     def resolve_my_recommendations(self, info):
-        user_id = info.context.user.id
-        r = Recommender()
-        return r.recommend(user_id)
+        return JobOffer.objects.all()
+
+        #user_id = info.context.user.id
+        #r = Recommender().update()
+        #return r.recommend(user_id)
