@@ -104,6 +104,7 @@ class DeleteUser(graphene.Mutation):
                     if data.profile_picture:
                         data.profile_picture.storage.delete(data.profile_picture.name)
             # Not a real error, only means user hasn't updated profile with any information yet
+            # TODO Refactoring: Move this into Delete function
             except Exception:
                 None
 
@@ -405,6 +406,23 @@ class UploadMeisterbrief(graphene.Mutation):
         return UploadMeisterbrief(ok=True)
 
 
+class DeleteMeisterbrief(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    @user_passes_test(lambda u: u.is_company)
+    def mutate(self, info):
+        try:
+            user = info.context.user
+            cmpnydata = CompanyData.objects.get(belongs_to=user)
+            if cmpnydata.profile_picture:
+                cmpnydata.profile_picture.storage.delete(cmpnydata.meisterbrief.name)
+            cmpnydata.meisterbrief.delete()
+        except Exception as e:
+            raise GraphQLError("something went wrong lol", e)
+
+        return DeleteMeisterbrief(ok=True)
+
+
 class AddNote(graphene.Mutation):
     note = graphene.Field(NoteType)
     ok = graphene.Boolean()
@@ -439,6 +457,8 @@ class Mutation(graphene.ObjectType):
     change_email = ChangeEmail.Field()
     upload_file = UploadUserPicture.Field()
     add_note = AddNote.Field()
+    add_meisterbrief = UploadMeisterbrief.Field()
+    delete_meisterbrief = DeleteMeisterbrief.Field()
 
 
 # Read functions for all Profiles

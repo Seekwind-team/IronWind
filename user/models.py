@@ -325,7 +325,7 @@ class CompanyData(models.Model):
     )
 
     meisterbrief = models.ImageField(
-        upload_to='static/images/',
+        upload_to='static/meisterbriefe/',
         null=True,
         blank=True,
         help_text=_('Picture to validate the company as legally permitted to accept apprentices')
@@ -403,9 +403,30 @@ class Badges(models.Model):
         null=True,
         help_text=_('awarded for completing the user profile')
     )
+    
 
+class UserFiles (models.Model):
 
-'''
+    owner = models.ForeignKey(
+        UserData,
+        on_delete=models.CASCADE
+    )
+
+    file = models.ImageField(
+        upload_to='static/userfiles/',
+        null=True,
+        blank=True,
+        help_text=_('user files uploaded by user')
+    )
+    
+    def delete(self, instance):
+        try:
+            self.file.delete()
+            self.file.storage.delete(self.file.name)
+        finally:
+            super(UserFiles, self).delete()
+
+    '''
 # class Image(models.Model):
     """ProfileImage"""
     user = models.ForeignKey(Authentication, on_delete=models.CASCADE)
