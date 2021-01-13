@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from user.models import *
 
-class SimpleTest(TestCase):
+class UserTests(TestCase):
     def setUp(self):
         self.email = "demo@user.de"
         self.pw = "123asdf"
