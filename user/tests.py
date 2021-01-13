@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import check_password
 
 from user.models import *
 
-class SimpleTest(TestCase):
+class UserTests(TestCase):
     def setUp(self):
         self.email = "demo@user.de"
         self.pw = "123asdf"
