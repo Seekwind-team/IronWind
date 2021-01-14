@@ -23,7 +23,8 @@ class JobOfferTestCase(TestCase):
 
     # test every accepted job_type
     def test_job_type():
-        pass
+        job_types = JobOffer.JOBTYPE_CHOICES
+    
 
     def test_invalid_parameters(self):
         int_default = 42
