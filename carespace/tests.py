@@ -1,5 +1,6 @@
 from django.test import TestCase
 from carespace.models import CareSpace 
+from django.db import IntegrityError
 
 class CareSpaceTestCase(TestCase):
     def setUp(self):
@@ -26,50 +27,52 @@ class CareSpaceTestCase(TestCase):
         
 
     def test_carespace_invalid_creation(self):
-        #TODO assertRaise ersetzen/reparieren
+
         int_default = 42
         string_default = "text"
         boolean_default = False
         flaot_default = 4.2
 
         # None 
-        self.assertRaise(create_carespace(self, headline = None))
-        self.assertRaise(create_carespace(self, paid = None))
-        self.assertRaise(create_carespace(self, rich_text = None))
+        with self.assertRaises(IntegrityError):
+            self.create_carespace(headline = None)
+            self.create_carespace(paid = None)
+            self.create_carespace(rich_text = None)
 
         # invalid Type
-        self.assertRaise(create_carespace(self, headline = int_default))
-        self.assertRaise(create_carespace(self, headline = boolean_default))
-        self.assertRaise(create_carespace(self, headline = flaot_default))
+        """
+        self.assertRaises(self.create_carespace(headline = int_default))
+        self.assertRaises(self.create_carespace(headline = boolean_default))
+        self.assertRaises(self.create_carespace(headline = flaot_default))
         
-        self.assertRaise(create_carespace(self, body = int_default))
-        self.assertRaise(create_carespace(self, body = boolean_default))
-        self.assertRaise(create_carespace(self, body = flaot_default))
+        self.assertRaises(self.create_carespace(body = int_default))
+        self.assertRaises(self.create_carespace(body = boolean_default))
+        self.assertRaises(self.create_carespace(body = flaot_default))
 
-        self.assertRaise(create_carespace(self, author = int_default))
-        self.assertRaise(create_carespace(self, author = boolean_default))
-        self.assertRaise(create_carespace(self, author = flaot_default))
+        self.assertRaises(self.create_carespace(author = int_default))
+        self.assertRaises(self.create_carespace(author = boolean_default))
+        self.assertRaises(self.create_carespace(author = flaot_default))
 
-        self.assertRaise(create_carespace(self, publisher = int_default))
-        self.assertRaise(create_carespace(self, publisher = boolean_default))
-        self.assertRaise(create_carespace(self, publisher = flaot_default))
+        self.assertRaises(self.create_carespace(publisher = int_default))
+        self.assertRaises(self.create_carespace(publisher = boolean_default))
+        self.assertRaises(self.create_carespace(publisher = flaot_default))
 
-        self.assertRaise(create_carespace(self, paid = int_default))
-        self.assertRaise(create_carespace(self, paid = string_default))
-        self.assertRaise(create_carespace(self, paid = float_default))
+        self.assertRaises(self.create_carespace(paid = int_default))
+        self.assertRaises(self.create_carespace(paid = string_default))
+        self.assertRaises(self.create_carespace(paid = float_default))
 
-        self.assertRaise(create_carespace(self, rich_text = int_default))
-        self.assertRaise(create_carespace(self, rich_text = string_default))
-        self.assertRaise(create_carespace(self, rich_text = float_default))
+        self.assertRaises(self.create_carespace(rich_text = int_default))
+        self.assertRaises(self.create_carespace(rich_text = string_default))
+        self.assertRaises(self.create_carespace(rich_text = float_default))
 
-        self.assertRaise(create_carespace(self, img_description = int_default))
-        self.assertRaise(create_carespace(self, img_description = boolean_default))
-        self.assertRaise(create_carespace(self, img_description = flaot_default))
+        self.assertRaises(self.create_carespace(img_description = int_default))
+        self.assertRaises(self.create_carespace(img_description = boolean_default))
+        self.assertRaises(self.create_carespace(img_description = flaot_default))
 
-        self.assertRaise(create_carespace(self, introduction = int_default))
-        self.assertRaise(create_carespace(self, introduction = boolean_default))
-        self.assertRaise(create_carespace(self, introduction = flaot_default))
-        
+        self.assertRaises(self.create_carespace(introduction = int_default))
+        self.assertRaises(self.create_carespace(introduction = boolean_default))
+        self.assertRaises(self.create_carespace(introduction = flaot_default))
+        """
 
     def test_carespace_to_string(self):
         max_str = "ID {}: {}".format(self.max_carespace.pk, self.max_carespace.headline)
@@ -90,7 +93,7 @@ class CareSpaceTestCase(TestCase):
         img_description = "no image provided yet",
         introduction = "This is a Demo CareSpace"
         ):
-        return CareSpace.objects.create(
+        cs = CareSpace.objects.create(
             headline = headline,
             body = body,
             author = author,
@@ -100,3 +103,7 @@ class CareSpaceTestCase(TestCase):
             img_description = img_description,
             introduction = introduction,
         )
+
+        cs.save()
+
+        return cs
