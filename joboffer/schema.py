@@ -465,6 +465,14 @@ class Query(graphene.AbstractType):
         description="returns list of Swipes for logged in company"
     )
 
+    candidates_by_job_id = graphene.List(
+        SwipeType,
+        description="returns list of Swipes for logged in company",
+        job_Id = graphene.Int(
+            description="ID of Job offer to be returned with this request"
+        )
+    )
+
     all_tags = graphene.List(
         TagType,
     )
