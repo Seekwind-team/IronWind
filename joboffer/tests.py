@@ -28,6 +28,7 @@ class JobOfferTests(TestCase):
             job_offer = self.create_joboffer(owner=self.user, job_type=choice)
             self.assertEqual(job_offer.job_type, choice)
         
+        
     def test_none_parameters(self):
         with self.assertRaises(IntegrityError):
             self.create_joboffer(owner=self.user, filled=None)
