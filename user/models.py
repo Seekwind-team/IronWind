@@ -107,6 +107,7 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
 
 # saves soft-skill-slider values
 class SoftSkills(models.Model):
+    """"Soft Skills helping Users to find better Job Offers via the implemented Recommender System"""
     social_activity = models.SmallIntegerField(
         default=0,
         help_text=_("Teamplayer --- Einzelgänger"),
@@ -184,6 +185,7 @@ class SoftSkills(models.Model):
 
 
 class UserData(models.Model):
+    """Data Class representing all additional Data on Non-Company-Users"""
     belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, help_text=_('User Reference'))
 
     first_name = models.CharField(
@@ -295,6 +297,7 @@ class UserData(models.Model):
 
 
 class CompanyData(models.Model):
+    """Data Class representing all additional Data on Campany-Users"""
     belongs_to = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -365,6 +368,7 @@ class CompanyData(models.Model):
 
 
 class Note(models.Model):
+    """"Companies can add notes about users for their convenience"""
     user_from = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE,
@@ -387,9 +391,9 @@ class Note(models.Model):
 
 
 class Badges(models.Model):
-    # Badges are represented by their name and an integer-value representing their state and progress,
-    # usually starting off at 0 and progressing towards a higher number (usually the range will be 0-2 to represent a
-    # progression in 3 steps)
+    """ Badges are represented by their name and an integer-value representing their state and progress,
+     usually starting off at 0 and progressing towards a higher number (usually the range will be 0-2 to represent a
+     progression in 3 steps) """
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -426,11 +430,18 @@ class Badges(models.Model):
     )
     
 
-class UserFiles (models.Model):
+class UserFile(models.Model):
 
     owner = models.ForeignKey(
         UserData,
         on_delete=models.CASCADE
+    )
+
+    description = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Description of file uploaded (e.g. \"Lebenslauf\"), 255 chars max."
     )
 
     file = models.ImageField(
@@ -439,13 +450,14 @@ class UserFiles (models.Model):
         blank=True,
         help_text=_('user files uploaded by user')
     )
-    
+
+    # deletes local storage before class is deleted
     def delete(self, instance):
         try:
             self.file.delete()
             self.file.storage.delete(self.file.name)
         finally:
-            super(UserFiles, self).delete()
+            super(UserFile, self).delete()
 
     '''
 # class Image(models.Model):

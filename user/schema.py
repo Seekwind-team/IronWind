@@ -11,7 +11,7 @@ from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
-from user.models import UserData, CompanyData, SoftSkills, Authentication, Note, Badges
+from user.models import UserData, CompanyData, SoftSkills, Authentication, Note, Badges, UserFile
 
 from validators import soft_skills_validator
 
@@ -77,6 +77,11 @@ class BadgesType(DjangoObjectType):
     class Meta:
         model = Badges
         exclude_fields = ('user', 'id')
+
+
+class UserFileType(DjangoObjectType):
+    class Meta:
+        model = UserFile
 
 
 # Deletes currently logged in account
@@ -446,6 +451,55 @@ class AddNote(graphene.Mutation):
         note.save()
         return AddNote(note=note, ok=True)
 
+class UploadUserfile(graphene.Mutation):
+
+    ok = graphene.Boolean()
+    userfile = graphene.Field(UserFileType)
+
+    class Arguments:
+        file_in = Upload(required=True, description="Uploaded File")
+        description = graphene.String(description="add description to the file uploaded")
+
+
+    @user_passes_test(lambda u: u.is_company and u.is_authenticated)
+    def mutate(self, info, file_in, description, **kwargs):
+        # do something with your file
+        user = info.context.user
+        print(file_in.content_type)
+
+        if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png", "application/pdf"]:
+            raise GraphQLError("Provided invalid file format")
+
+        extension = os.path.splitext(file_in.name)[1]
+        file_in.name = "" + str(user.pk) + "_userfile_" + str(uuid.uuid4()) + extension
+
+        data = UserFile(owner=user)
+        data.file = file_in
+        data.description = description
+
+        return UploadUserfile(ok=True, userfile=data)
+
+
+class DeleteUserfile(graphene.Mutation):
+
+    ok = graphene.Boolean()
+
+    class Arguments:
+        delete = graphene.Int(required=True)
+
+    @user_passes_test(lambda u: u.is_authenticated and not u.is_company)
+    def mutate(self, info, delete):
+        try:
+            to_del = UserFile.objects.get(pk=delete)
+        except Exception:
+            raise GraphQLError("couldn't reference gived ID")
+
+        if to_del.owner is info.context.user:
+            to_del.delete()
+
+            return DeleteUserfile(ok=True)
+        return DeleteUserfile(ok=False)
+
 
 # Create - Update - Delete for all User-Profiles
 class Mutation(graphene.ObjectType):
@@ -459,6 +513,8 @@ class Mutation(graphene.ObjectType):
     add_note = AddNote.Field()
     add_meisterbrief = UploadMeisterbrief.Field()
     delete_meisterbrief = DeleteMeisterbrief.Field()
+    upload_userfile = UploadUserfile.Field()
+    delete_userfile = DeleteUserfile.Field()
 
 
 # Read functions for all Profiles
