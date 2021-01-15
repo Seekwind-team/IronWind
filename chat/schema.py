@@ -137,7 +137,8 @@ class Mutation(graphene.ObjectType):
 class Query(graphene.ObjectType):
     get_messages = graphene.List(
         MessageType,
-        partner=graphene.Int(description="ID of partner messages are loaded on"),
+        partner=graphene.Int(description="ID of partner messages are loaded on",
+                             required=True),
         n_from=graphene.Int(
             description="selects messages from n, where 0 ist the last message received. Defaults to 0"),
         n_to=graphene.Int(description="will return n last messages, defaults to 25"),

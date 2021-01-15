@@ -161,6 +161,27 @@ class SoftSkills(models.Model):
         validators=[MinValueValidator(limit_value=-6), MaxValueValidator(limit_value=6)],
     )
 
+    def save(self):
+        if self.social_activity is None:
+            self.social_activity = 0
+        if self.motorskills is None:
+            self.motorskills = 0
+        if self.creativity is None:
+            self.creativity = 0
+        if self.artistic is None:
+            self.artistic = 0
+        if self.customer_orientated is None:
+            self.customer_orientated = 0
+        if self.innovativity is None:
+            self.innovativity = 0
+        if self.routine is None:
+            self.routine = 0
+        if self.planning is None:
+            self.planning = 0
+        if self.communicativity is None:
+            self.communicativity = 0
+        super(SoftSkills, self).save()
+
 
 class UserData(models.Model):
     belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, help_text=_('User Reference'))
