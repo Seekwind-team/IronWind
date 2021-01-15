@@ -13,6 +13,7 @@ class Recommender:
     id2index = {} ### 2 dictionaries to look up real job ids and their indexes in a matrix
     index2id = {} ###
     cosine_sim = None # Matrix of all jobs and their similarity based on NLP
+    inactivejobs = [] # Swipe data includes inactive jobs to keep the rating history --> remove inactive jobs from result list 
 
     def __init__(self):
         self.update()
@@ -41,6 +42,8 @@ class Recommender:
             jobidlist.append(s.job_offer.id)
             useridlist.append(s.candidate.id)
             likelist.append(s.liked)
+            if s.job_offer.is_active == False:
+                self.inactivejobs += s.job_offer.id
         
         #store data of lists in DataFrame
         self.swipesdf["job_id"] = jobidlist
@@ -179,5 +182,11 @@ class Recommender:
         #Remove duplicates, in case jobs are recommended due to content similarity and like history
         result = [i for j, i in enumerate(result) if i not in result[:j]] 
 
+        #Remove inactive jobs from results
+        for r in result:
+            if r in self.inactivejobs:
+                result.remove(r)
+
+        #Return top 10
         result = result[:10]
         return result
