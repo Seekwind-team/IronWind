@@ -20,15 +20,40 @@ class JobOfferTests(TestCase):
         self.user = Authentication.objects.filter(email=self.email).get()
 
 
+    def test_valid_boundary_values(self):
+        
+        filled_job_offer = self.create_joboffer(owner=self.user, filled=True)
+        filled_job_offer = self.create_joboffer(owner=self.user, filled=False)
+        
+        id_deleted_job_offer = self.create_joboffer(owner=self.user, is_deleted=True)
+        id_deleted_job_offer = self.create_joboffer(owner=self.user, is_deleted=False)
+
+        self.valid_job_types()
+
+        title_job_offer = self.create_joboffer(owner=self.user, job_title="aaaaa")
+        title_job_offer = self.create_joboffer(owner=self.user, job_title="ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ")
+
+        location_job_offer = self.create_joboffer(owner=self.user, location=)
+        description_job_offer = self.create_joboffer(owner=self.user, description=None)
+        highlights_job_offer = self.create_joboffer(owner=self.user, highlights=None)
+        must_have_job_offer = self.create_joboffer(owner=self.user, must_have=None)
+        nice_have_job_offer = self.create_joboffer(owner=self.user, nice_have=None)
+        public_email_job_offer = self.create_joboffer(owner=self.user, public_email=None)
+        pph_job_offer = self.create_joboffer(owner=self.user, pay_per_year=None)
+        city_job_offer = self.create_joboffer(owner=self.user, city=None)
+        start_date_job_offer = self.create_joboffer(owner=self.user, start_date=None)
+        trade_job_offer = self.create_joboffer(owner=self.user, trade=None)
+
     # test every accepted job_type
-    def test_job_type(self):
+    def valid_job_type(self):
         job_types = JobOffer.JOBTYPE_CHOICES
         
+        # loop with every accepted
         for choice in job_types:
             job_offer = self.create_joboffer(owner=self.user, job_type=choice)
             self.assertEqual(job_offer.job_type, choice)
         
-        
+
     def test_none_parameters(self):
         with self.assertRaises(IntegrityError):
             self.create_joboffer(owner=self.user, filled=None)
@@ -46,7 +71,7 @@ class JobOfferTests(TestCase):
             self.create_joboffer(owner=self.user, start_date=None)
             self.create_joboffer(owner=self.user, trade=None)
 
-    def test_invalid_parameters(self):
+    def test_invalid_boundary_values(self):
         int_default = 42
         # if you want to change demo_string do not use a String that matches any entry in job_type ENUM or any email (just avoid @ and .).
         string_default = "demostring"

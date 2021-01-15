@@ -152,7 +152,7 @@ class AlterJobOffer(graphene.Mutation):
         must_have = graphene.String(description="Must-haves for the job offered, eg Drivers License")
         nice_have = graphene.String(description="Conditions that arent required but would be nice to have")
         public_email = graphene.String(description="publicly visible email address")
-        is_active = graphene.Boolean(description="Boolean, set to true will deactivate the public job offer")
+        filled = graphene.Boolean(description="Boolean, set to true will deactivate the public job offer")
 
         add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
         remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
@@ -173,7 +173,7 @@ class AlterJobOffer(graphene.Mutation):
                must_have=None,
                nice_have=None,
                public_email=None,
-               is_active=True,
+               filled=True,
                add_hashtags=[],
                remove_hashtags=[],
                pay_per_year=None,
@@ -186,6 +186,7 @@ class AlterJobOffer(graphene.Mutation):
             job_object = JobOffer.objects.filter(pk=job_id).get()
         except Exception:
             raise GraphQLError('Cannot reference Object')
+        
         if job_object.owner == info.context.user:
             job_object.job_type = job_type or job_object.job_type
             job_object.job_title = job_title or job_object.job_title
@@ -195,7 +196,7 @@ class AlterJobOffer(graphene.Mutation):
             job_object.must_have = must_have or job_object.must_have
             job_object.nice_have = nice_have or job_object.nice_have
             job_object.public_email = public_email or job_object.public_email
-            job_object.is_active = is_active or job_object.is_active
+            job_object.filled = filled or job_object.filled
             job_object.last_modified = timezone.now()
 
             job_object.pay_per_year = pay_per_year or job_object.pay_per_year
