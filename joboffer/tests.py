@@ -19,7 +19,7 @@ class JobOfferTests(TestCase):
         self.email = "user{}@demo.de".format(email_nr)
         self.user = Authentication.objects.filter(email=self.email).get()
 
-
+    # asserts and None replacements
     def test_valid_boundary_values(self):
         
         is_active_job_offer = self.create_joboffer(owner=self.user, is_active=True)
