@@ -110,8 +110,10 @@ class Recommender:
         recommended_jobs = []
         #find index of given job in matrix
         idx = self.id2index[jobid]
+        #extract indices and similarity from matrix by using the index, sort them descending
         score_series = pd.Series(self.cosine_sim[idx]).sort_values(ascending = False)
         top_indices = list(score_series.iloc[1:3].index)
+        #convert those found indices to the original jobid, add them to the list and return it
         for i in top_indices:
             topjobid = self.index2id[i] #<-- convert matrix index to job_id
             recommended_jobs.append(topjobid)
@@ -130,8 +132,10 @@ class Recommender:
     
     #get all jobs rated by one user
     def get_rated_jobs(self, user_id):
+        #limit DataFrame 'swipes', so that only ratings by user himself appear
         rated_jobs = self.swipesdf[self.swipesdf["user_id"] == user_id]
         ratings = []
+        #add all jobids and ratings of this user to a list and return it
         for index, row in rated_jobs.iterrows():
             tmp = [row["job_id"],row["like"]]
             ratings.append(tmp)
@@ -143,24 +147,36 @@ class Recommender:
         result = []
         recommended_jobs = pd.DataFrame()
         userRatings = self.get_rated_jobs(user_id)
-        #User didnt rate enough jobs for identifying similar users
-        if len(userRatings) < 10:
-            fewrated = self.swipesdf.groupby(by="job_id")["like"].count().sort_values(ascending = True)
-            result = list(fewrated.iloc[:10].index)
-        #User already rated enough jobs
+        #User didnt rate jobs yet
+        if len(userRatings) == 0:
+            #get often rated jobs, unless there are no swipes at all yet, then get random offers
+            if not self.swipesdf.empty:
+                jobs = self.swipesdf.groupby(by="job_id")["like"].count().sort_values(ascending = False)
+            else: 
+                #special case: no one has ever rated anything yet
+                jobs = shuffle(self.jobsdf)
+            #create top10 result list of ids of selected jobs
+            result = list(jobs.iloc[:10].index)
+        
+        #User rated jobs already
         else:
             for jobid, rating in userRatings:
+                #add evaluated jobs and their like rating to recommended jobs
                 recommended_jobs = recommended_jobs.append(self.evaluate(jobid, rating), ignore_index = True)
 
+            #Sum up ratings of recommended jobs, then sort ratings descending and add them to result list
             recommended_jobs = recommended_jobs.sum().sort_values(ascending=False)
-            recommended_jobs = list(recommended_jobs.iloc[:10].index)
-            result = recommended_jobs
+            result = list(recommended_jobs.iloc[:10].index)
         
-        #Add jobs to list, that are similar to jobs user already liked
-        for jobid, rating in userRatings:
-            if rating == 1:
-                result += self.get_similar_jobs(jobid)
+            #Add jobs to list, that are similar to jobs a user liked and different to jobs he didnt like
+            for jobid, rating in userRatings:
+                if rating == 1: #like
+                    result += self.get_similar_jobs(jobid)
+                else: #dislike
+                    result += self.get_similar_jobs(jobid,ascend=True)
+
+        #Remove duplicates, in case jobs are recommended due to content similarity and like history
+        result = [i for j, i in enumerate(result) if i not in result[:j]] 
 
         result = result[:10]
         return result
-        #return recommended_jobs
