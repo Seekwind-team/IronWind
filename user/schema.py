@@ -83,6 +83,8 @@ class UserFileType(DjangoObjectType):
     class Meta:
         model = UserFile
 
+    exclude_fields = ('user', '')
+
 
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
@@ -179,7 +181,6 @@ class UpdatedProfile(graphene.Mutation):
         graduation_year = graphene.Int(description="graduation year of user")
         cv = graphene.JSONString(description="CV of user")
         location = graphene.String(description="location of user")
-
 
         soft_skills = graphene.Argument(SoftSkillsArguments,
                                         description="List of slider values for softskills. eg. \"creativity\":2"
@@ -452,7 +453,6 @@ class AddNote(graphene.Mutation):
 
 
 class UploadUserFile(graphene.Mutation):
-
     ok = graphene.Boolean()
     user_file = graphene.Field(UserFileType)
 

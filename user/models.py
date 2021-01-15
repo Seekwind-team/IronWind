@@ -105,6 +105,7 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         # will Return Name of self-objects as stated:
         return "(" + str(self.pk) + ") " + str(self.email)
 
+
 # saves soft-skill-slider values
 class SoftSkills(models.Model):
     """"Soft Skills helping Users to find better Job Offers via the implemented Recommender System"""
@@ -289,8 +290,13 @@ class UserData(models.Model):
     )
 
     def delete(self, using=None, keep_parents=False):
-        self.profile_picture.storage.delete(self.profile_picture.name)
-        super().delete()
+        try:
+            if self.profile_picture:
+                self.profile_picture.storage.delete(self.profile_picture.name)
+            self.profile_picture.delete()
+
+        finally:
+            super().delete()
 
     def __str__(self):
         return "(" + str(self.pk) + "): " + self.belongs_to.email + " User data"
@@ -348,7 +354,7 @@ class CompanyData(models.Model):
         help_text=_('eg. Picture of the company Logo')
     )
 
-    meisterbrief = models.ImageField(
+    meisterbrief = models.FileField(
         upload_to='static/meisterbriefe/',
         null=True,
         blank=True,
@@ -359,9 +365,15 @@ class CompanyData(models.Model):
         return self.company_picture.url
 
     def delete(self, using=None, keep_parents=False):
-        self.company_picture.storage.delete(self.song.name)
-        self.meisterbrief.storage.delete(self.song.name)
-        super().delete()
+        try:
+            if self.company_picture:
+                self.company_picture.storage.delete(self.company_picture.name)
+            self.company_picture.delete()
+            if self.meisterbrief:
+                self.meisterbrief.storage.delete(self.meisterbrief.name)
+            self.meisterbrief.delete()
+        finally:
+            super().delete()
 
     def __str__(self):
         return "(" + str(self.pk) + "): " + self.belongs_to.email + " company data"
@@ -428,6 +440,9 @@ class Badges(models.Model):
         null=True,
         help_text=_('awarded for completing the user profile')
     )
+
+    def __str__(self):
+        return "" + str(self.user.__str__()) + "_badges"
     
 
 class UserFile(models.Model):
@@ -444,7 +459,7 @@ class UserFile(models.Model):
         help_text="Description of file uploaded (e.g. \"Lebenslauf\"), 255 chars max."
     )
 
-    file = models.ImageField(
+    file = models.FileField(
         upload_to='static/userfiles/',
         null=True,
         blank=True,
@@ -454,8 +469,9 @@ class UserFile(models.Model):
     # deletes local storage before class is deleted
     def delete(self, instance):
         try:
+            if self.file:
+                self.file.storage.delete(self.file.name)
             self.file.delete()
-            self.file.storage.delete(self.file.name)
         finally:
             super(UserFile, self).delete()
 
