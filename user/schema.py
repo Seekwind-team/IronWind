@@ -452,17 +452,16 @@ class AddNote(graphene.Mutation):
         return AddNote(note=note, ok=True)
 
 
-class UploadUserfile(graphene.Mutation):
+class UploadUserFile(graphene.Mutation):
 
     ok = graphene.Boolean()
-    userfile = graphene.Field(UserFileType)
+    user_file = graphene.Field(UserFileType)
 
     class Arguments:
         file_in = Upload(required=True, description="Uploaded File")
         description = graphene.String(description="add description to the file uploaded")
 
-
-    @user_passes_test(lambda u: u.is_company and u.is_authenticated)
+    @user_passes_test(lambda u: (not u.is_company) and u.is_authenticated)
     def mutate(self, info, file_in, description, **kwargs):
         # do something with your file
         user = info.context.user
@@ -477,11 +476,38 @@ class UploadUserfile(graphene.Mutation):
         data = UserFile(owner=user)
         data.file = file_in
         data.description = description
+        data.save()
 
-        return UploadUserfile(ok=True, userfile=data)
+        return UploadUserFile(ok=True, user_file=data)
 
 
-class DeleteUserfile(graphene.Mutation):
+class ChangeUserFile(graphene.Mutation):
+
+    ok = graphene.Boolean()
+    user_file = graphene.Field(UserFileType)
+
+    class Arguments:
+        file_id = graphene.Int(required=True, description="ID of file-description being changed")
+        new_description = graphene.String(required=True, description="New description")
+
+    @user_passes_test(lambda u: u.is_authenticated and not u.is_company)
+    def mutate(self, info, file_id, new_description):
+
+        try:
+            user_file = UserFile.objects.get(pk=file_id)
+        except Exception:
+            raise GraphQLError("Could reference Object with given ID")
+
+        if user_file.owner is not info.context.user:
+            raise GraphQLError("Current User does not own this file")
+
+        user_file.description = new_description
+        user_file.save()
+
+        return ChangeUserFile(user_file=user_file, ok=True)
+
+
+class DeleteUserFile(graphene.Mutation):
 
     ok = graphene.Boolean()
 
@@ -498,8 +524,8 @@ class DeleteUserfile(graphene.Mutation):
         if to_del.owner is info.context.user:
             to_del.delete()
 
-            return DeleteUserfile(ok=True)
-        return DeleteUserfile(ok=False)
+            return DeleteUserFile(ok=True)
+        return DeleteUserFile(ok=False)
 
 
 # Create - Update - Delete for all User-Profiles
@@ -514,8 +540,9 @@ class Mutation(graphene.ObjectType):
     add_note = AddNote.Field()
     add_meisterbrief = UploadMeisterbrief.Field()
     delete_meisterbrief = DeleteMeisterbrief.Field()
-    upload_userfile = UploadUserfile.Field()
-    delete_userfile = DeleteUserfile.Field()
+    upload_userfile = UploadUserFile.Field()
+    change_userfile_description = ChangeUserFile.Field()
+    delete_userfile = DeleteUserFile.Field()
 
 
 # Read functions for all Profiles
