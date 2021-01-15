@@ -451,6 +451,7 @@ class AddNote(graphene.Mutation):
         note.save()
         return AddNote(note=note, ok=True)
 
+
 class UploadUserfile(graphene.Mutation):
 
     ok = graphene.Boolean()
