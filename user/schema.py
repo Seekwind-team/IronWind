@@ -394,7 +394,6 @@ class UploadMeisterbrief(graphene.Mutation):
     def mutate(self, info, file_in, **kwargs):
         # do something with your file
         c_user = info.context.user
-        print(file_in.content_type)
 
         if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png", "application/pdf"]:
             raise GraphQLError("Provided invalid file format")
@@ -463,7 +462,7 @@ class UploadUserFile(graphene.Mutation):
 
     @user_passes_test(lambda u: (not u.is_company) and u.is_authenticated)
     def mutate(self, info, file_in, description, **kwargs):
-        # do something with your file
+
         user = info.context.user
         print(file_in.content_type)
 
