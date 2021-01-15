@@ -22,8 +22,8 @@ class JobOfferTests(TestCase):
 
     def test_valid_boundary_values(self):
         
-        filled_job_offer = self.create_joboffer(owner=self.user, filled=True)
-        filled_job_offer = self.create_joboffer(owner=self.user, filled=False)
+        is_active_job_offer = self.create_joboffer(owner=self.user, is_active=True)
+        is_active_job_offer = self.create_joboffer(owner=self.user, is_active=False)
         
         id_deleted_job_offer = self.create_joboffer(owner=self.user, is_deleted=True)
         id_deleted_job_offer = self.create_joboffer(owner=self.user, is_deleted=False)
@@ -33,7 +33,7 @@ class JobOfferTests(TestCase):
         title_job_offer = self.create_joboffer(owner=self.user, job_title="aaaaa")
         title_job_offer = self.create_joboffer(owner=self.user, job_title="ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ")
 
-        location_job_offer = self.create_joboffer(owner=self.user, location=)
+        location_job_offer = self.create_joboffer(owner=self.user, location=None)
         description_job_offer = self.create_joboffer(owner=self.user, description=None)
         highlights_job_offer = self.create_joboffer(owner=self.user, highlights=None)
         must_have_job_offer = self.create_joboffer(owner=self.user, must_have=None)
@@ -45,7 +45,7 @@ class JobOfferTests(TestCase):
         trade_job_offer = self.create_joboffer(owner=self.user, trade=None)
 
     # test every accepted job_type
-    def valid_job_type(self):
+    def valid_job_types(self):
         job_types = JobOffer.JOBTYPE_CHOICES
         
         # loop with every accepted
@@ -56,7 +56,7 @@ class JobOfferTests(TestCase):
 
     def test_none_parameters(self):
         with self.assertRaises(IntegrityError):
-            self.create_joboffer(owner=self.user, filled=None)
+            self.create_joboffer(owner=self.user, is_active=None)
             self.create_joboffer(owner=self.user, is_deleted=None)
             self.create_joboffer(owner=self.user, job_type=None)
             self.create_joboffer(owner=self.user, job_title=None)
@@ -79,9 +79,9 @@ class JobOfferTests(TestCase):
         float_default = 4.2
             
         with self.assertRaises(ValidationError):
-            self.create_joboffer(owner=self.user, filled=int_default)
-            self.create_joboffer(owner=self.user, filled=string_default)
-            self.create_joboffer(owner=self.user, filled=float_default)
+            self.create_joboffer(owner=self.user, is_active=int_default)
+            self.create_joboffer(owner=self.user, is_active=string_default)
+            self.create_joboffer(owner=self.user, is_active=float_default)
 
             self.create_joboffer(owner=self.user, is_deleted=int_default)
             self.create_joboffer(owner=self.user, is_deleted=string_default)
@@ -163,7 +163,7 @@ class JobOfferTests(TestCase):
         self,
         owner,
         public_email = None,
-        filled = False,
+        is_active = False,
         is_deleted = False,
         job_type = 'Vollzeit',
         job_title = 'max Jobangebot',
@@ -182,7 +182,7 @@ class JobOfferTests(TestCase):
 
         job_offer = JobOffer.objects.create(
             owner = owner,
-            filled = filled,
+            is_active = is_active,
             is_deleted = is_deleted,
             job_type = job_type,
             job_title = job_title,
