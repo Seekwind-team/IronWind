@@ -18,6 +18,9 @@ class UserTests(TestCase):
 
 class CreateUser():
     def create_user(self, email, pw):
-        user = Authentication(is_superuser=False, password=pw, email=email)
-        user.save()
-        
+        try:
+            user = Authentication(is_superuser=False, password=pw, email=email)
+            user.save()
+            return True
+        except:
+            return False

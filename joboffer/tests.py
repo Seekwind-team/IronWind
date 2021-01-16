@@ -1,16 +1,17 @@
 from django.test import TestCase, Client
 
 from joboffer.models import JobOffer, Authentication
-from user.tests import UserTests
-
-class JobOfferTestCase(TestCase):
+from user.tests import CreateUser
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
+class JobOfferTests(TestCase):
     def setUp(self):
         user_created = False
         email_nr = 0
         self.pw = "123"
 
         while not user_created: 
-            if UserTests.create_user(email = "user{}@demo.de".format(email_nr), pw = self.pw):
+            if CreateUser.create_user(self, email = "user{}@demo.de".format(email_nr), pw = self.pw):
                 user_created = True
             else:
                 email_nr += 1
@@ -18,82 +19,128 @@ class JobOfferTestCase(TestCase):
         self.email = "user{}@demo.de".format(email_nr)
         self.user = Authentication.objects.filter(email=self.email).get()
 
-        max_joboffer.save()
-        min_joboffer.save()
+    # asserts and None replacements
+    def test_valid_boundary_values(self):
+        
+        is_active_job_offer = self.create_joboffer(owner=self.user, is_active=True)
+        is_active_job_offer = self.create_joboffer(owner=self.user, is_active=False)
+        
+        id_deleted_job_offer = self.create_joboffer(owner=self.user, is_deleted=True)
+        id_deleted_job_offer = self.create_joboffer(owner=self.user, is_deleted=False)
+
+        self.valid_job_types()
+
+        title_job_offer = self.create_joboffer(owner=self.user, job_title="aaaaa")
+        title_job_offer = self.create_joboffer(owner=self.user, job_title="ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ")
+
+        location_job_offer = self.create_joboffer(owner=self.user, location=None)
+        description_job_offer = self.create_joboffer(owner=self.user, description=None)
+        highlights_job_offer = self.create_joboffer(owner=self.user, highlights=None)
+        must_have_job_offer = self.create_joboffer(owner=self.user, must_have=None)
+        nice_have_job_offer = self.create_joboffer(owner=self.user, nice_have=None)
+        public_email_job_offer = self.create_joboffer(owner=self.user, public_email=None)
+        pph_job_offer = self.create_joboffer(owner=self.user, pay_per_year=None)
+        city_job_offer = self.create_joboffer(owner=self.user, city=None)
+        start_date_job_offer = self.create_joboffer(owner=self.user, start_date=None)
+        trade_job_offer = self.create_joboffer(owner=self.user, trade=None)
 
     # test every accepted job_type
-    def test_job_type():
-        pass
+    def valid_job_types(self):
+        job_types = JobOffer.JOBTYPE_CHOICES
+        
+        # loop with every accepted
+        for choice in job_types:
+            job_offer = self.create_joboffer(owner=self.user, job_type=choice)
+            self.assertEqual(job_offer.job_type, choice)
+        
 
-    def test_invalid_parameters(self):
+    def test_none_parameters(self):
+        with self.assertRaises(IntegrityError):
+            self.create_joboffer(owner=self.user, is_active=None)
+            self.create_joboffer(owner=self.user, is_deleted=None)
+            self.create_joboffer(owner=self.user, job_type=None)
+            self.create_joboffer(owner=self.user, job_title=None)
+            self.create_joboffer(owner=self.user, location=None)
+            self.create_joboffer(owner=self.user, description=None)
+            self.create_joboffer(owner=self.user, highlights=None)
+            self.create_joboffer(owner=self.user, must_have=None)
+            self.create_joboffer(owner=self.user, nice_have=None)
+            self.create_joboffer(owner=self.user, public_email=None)
+            self.create_joboffer(owner=self.user, pay_per_year=None)
+            self.create_joboffer(owner=self.user, city=None)
+            self.create_joboffer(owner=self.user, start_date=None)
+            self.create_joboffer(owner=self.user, trade=None)
+
+    def test_invalid_boundary_values(self):
         int_default = 42
         # if you want to change demo_string do not use a String that matches any entry in job_type ENUM or any email (just avoid @ and .).
         string_default = "demostring"
         boolean_default = False
         float_default = 4.2
-        
-        # TODO commenting
-        self.assertRaise(create_joboffer(owner=self.user, filled=int_default)) 
-        self.assertRaise(create_joboffer(owner=self.user, filled=string_default)) 
-        self.assertRaise(create_joboffer(owner=self.user, filled=float_default)) 
+            
+        with self.assertRaises(ValidationError):
+            self.create_joboffer(owner=self.user, is_active=int_default)
+            self.create_joboffer(owner=self.user, is_active=string_default)
+            self.create_joboffer(owner=self.user, is_active=float_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, is_deleted=int_default)) 
-        self.assertRaise(create_joboffer(owner=self.user, is_deleted=string_default)) 
-        self.assertRaise(create_joboffer(owner=self.user, is_deleted=float_default)) 
+            self.create_joboffer(owner=self.user, is_deleted=int_default)
+            self.create_joboffer(owner=self.user, is_deleted=string_default)
+            self.create_joboffer(owner=self.user, is_deleted=float_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, job_type=int_default)) 
-        self.assertRaise(create_joboffer(owner=self.user, job_type=)) 
-        self.assertRaise(create_joboffer(owner=self.user, job_type=)) 
-        self.assertRaise(create_joboffer(owner=self.user, job_type=)) 
+            self.create_joboffer(owner=self.user, job_type=int_default)
+            self.create_joboffer(owner=self.user, job_type=string_default)
+            self.create_joboffer(owner=self.user, job_type=boolean_default)
+            self.create_joboffer(owner=self.user, job_type=float_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, job_title=)) 
-        self.assertRaise(create_joboffer(owner=self.user, job_title=)) 
-        self.assertRaise(create_joboffer(owner=self.user, job_title=)) 
+            self.create_joboffer(owner=self.user, job_title=int_default)
+            self.create_joboffer(owner=self.user, job_title=string_default)
+            self.create_joboffer(owner=self.user, job_title=float_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, location=)) 
-        self.assertRaise(create_joboffer(owner=self.user, location=)) 
-        self.assertRaise(create_joboffer(owner=self.user, location=)) 
+            self.create_joboffer(owner=self.user, location=int_default)
+            self.create_joboffer(owner=self.user, location=string_default)
+            self.create_joboffer(owner=self.user, location=boolean_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, description=)) 
-        self.assertRaise(create_joboffer(owner=self.user, description=)) 
-        self.assertRaise(create_joboffer(owner=self.user, description=)) 
+            self.create_joboffer(owner=self.user, description=int_default)
+            self.create_joboffer(owner=self.user, description=boolean_default)
+            self.create_joboffer(owner=self.user, description=float_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, highlights=)) 
-        self.assertRaise(create_joboffer(owner=self.user, highlights=)) 
-        self.assertRaise(create_joboffer(owner=self.user, highlights=)) 
+            self.create_joboffer(owner=self.user, highlights=int_default)
+            self.create_joboffer(owner=self.user, highlights=boolean_default)
+            self.create_joboffer(owner=self.user, highlights=float_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, must_have=)) 
-        self.assertRaise(create_joboffer(owner=self.user, must_have=)) 
-        self.assertRaise(create_joboffer(owner=self.user, must_have=)) 
+            self.create_joboffer(owner=self.user, must_have=int_default)
+            self.create_joboffer(owner=self.user, must_have=boolean_default)
+            self.create_joboffer(owner=self.user, must_have=float_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, nice_have=)) 
-        self.assertRaise(create_joboffer(owner=self.user, nice_have=)) 
-        self.assertRaise(create_joboffer(owner=self.user, nice_have=)) 
+            self.create_joboffer(owner=self.user, nice_have=int_default)
+            self.create_joboffer(owner=self.user, nice_have=boolean_default)
+            self.create_joboffer(owner=self.user, nice_have=float_default)
+            
+            self.create_joboffer(owner=self.user, public_email=int_default)
+            self.create_joboffer(owner=self.user, public_email=string_default)
+            self.create_joboffer(owner=self.user, public_email=boolean_default)
+            self.create_joboffer(owner=self.user, public_email=float_default)
+            
+            self.create_joboffer(owner=self.user, pay_per_year=int_default)
+            self.create_joboffer(owner=self.user, pay_per_year=string_default)
+            self.create_joboffer(owner=self.user, pay_per_year=boolean_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, public_email=)) 
-        self.assertRaise(create_joboffer(owner=self.user, public_email=)) 
-        self.assertRaise(create_joboffer(owner=self.user, public_email=)) 
-        self.assertRaise(create_joboffer(owner=self.user, public_email=)) 
+            self.create_joboffer(owner=self.user, city=int_default)
+            self.create_joboffer(owner=self.user, city=string_default)
+            self.create_joboffer(owner=self.user, city=boolean_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, pay_per_year=)) 
-        self.assertRaise(create_joboffer(owner=self.user, pay_per_year=)) 
-        self.assertRaise(create_joboffer(owner=self.user, pay_per_year=)) 
+            self.create_joboffer(owner=self.user, start_date=int_default)
+            self.create_joboffer(owner=self.user, start_date=string_default)
+            self.create_joboffer(owner=self.user, start_date=boolean_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, city=)) 
-        self.assertRaise(create_joboffer(owner=self.user, city=)) 
-        self.assertRaise(create_joboffer(owner=self.user, city=)) 
+            self.create_joboffer(owner=self.user, trade=int_default)
+            self.create_joboffer(owner=self.user, trade=string_default)
+            self.create_joboffer(owner=self.user, trade=boolean_default)
 
-        self.assertRaise(create_joboffer(owner=self.user, start_date=)) 
-        self.assertRaise(create_joboffer(owner=self.user, start_date=)) 
-        self.assertRaise(create_joboffer(owner=self.user, start_date=)) 
-
-        self.assertRaise(create_joboffer(owner=self.user, trade=)) 
-        self.assertRaise(create_joboffer(owner=self.user, trade=)) 
-        self.assertRaise(create_joboffer(owner=self.user, trade=)) 
 
     def test_job_offer_to_string(self):
         # maximal filled JobOffer
-        max_joboffer = create_joboffer(self, owner = self.user)
+        max_joboffer = self.create_joboffer( owner = self.user)
         
         # minimal filled JobOffer
         min_joboffer = JobOffer.objects.create(
@@ -107,6 +154,7 @@ class JobOfferTestCase(TestCase):
         self.assertEqual(max_str, max_joboffer.__str__())
         self.assertEqual(min_str, min_joboffer.__str__())
 
+
     # creates JobOffer
     # self and owner parameter are neccesary. To create an owner use create_user from user/tests.py
     # created_at and last_modified are set to default (now)
@@ -114,8 +162,8 @@ class JobOfferTestCase(TestCase):
     def create_joboffer(
         self,
         owner,
-        #hashtags = TBD,
-        filled = False,
+        public_email = None,
+        is_active = False,
         is_deleted = False,
         job_type = 'Vollzeit',
         job_title = 'max Jobangebot',
@@ -124,20 +172,21 @@ class JobOfferTestCase(TestCase):
         highlights = 'ganz viele',
         must_have = 'alle bitte',
         nice_have = 'öalsidhf',
-        public_email = owner.email,
         pay_per_year = '777,1230,13',
         city = 'Engelsberg',
         start_date = '2020-11-23',
         trade = 'Arbeiter',
         ):
-        return JobOffer.objects.create(
+        if public_email is None:
+            public_email = owner.email
+
+        job_offer = JobOffer.objects.create(
             owner = owner,
-            #hashtags = TBD,
-            filled = filled,
+            is_active = is_active,
             is_deleted = is_deleted,
             job_type = job_type,
             job_title = job_title,
-            location = locations,
+            location = location,
             description = description,
             highlights = highlights,
             must_have = must_have,
@@ -148,3 +197,7 @@ class JobOfferTestCase(TestCase):
             start_date = start_date,
             trade = trade
         )
+        
+        job_offer.save()
+
+        return job_offer
