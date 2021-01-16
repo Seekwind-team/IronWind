@@ -183,12 +183,10 @@ class Image(models.Model):
 class Swipe(models.Model):
     candidate = models.ForeignKey(
         Authentication,
-        on_delete=models.CASCADE
     )
 
     job_offer = models.ForeignKey(
-        JobOffer, 
-        on_delete=models.CASCADE
+        JobOffer,
     )
 
     liked = models.BooleanField(
