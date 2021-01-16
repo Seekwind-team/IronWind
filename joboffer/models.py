@@ -179,14 +179,16 @@ class Image(models.Model):
         return self.image.url
 
 
-# used to store like or dislike from user on joboffer
+# used to store like or dislike from user on job offer
 class Swipe(models.Model):
     candidate = models.ForeignKey(
         Authentication,
+        on_delete=models.CASCADE
     )
 
     job_offer = models.ForeignKey(
         JobOffer,
+        on_delete=models.CASCADE
     )
 
     liked = models.BooleanField(
@@ -194,7 +196,7 @@ class Swipe(models.Model):
     )
 
 
-# used to store joboffer for user as bookmarks
+# used to store job offer for user as bookmarks
 class Bookmark(models.Model):
     candidate = models.ForeignKey(
         Authentication,
