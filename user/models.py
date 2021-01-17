@@ -448,7 +448,7 @@ class Badges(models.Model):
 class UserFile(models.Model):
 
     owner = models.ForeignKey(
-        UserData,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
 
@@ -475,7 +475,7 @@ class UserFile(models.Model):
         finally:
             super(UserFile, self).delete()
 
-    '''
+'''
 # class Image(models.Model):
     """ProfileImage"""
     user = models.ForeignKey(Authentication, on_delete=models.CASCADE)
