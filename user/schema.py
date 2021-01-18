@@ -248,10 +248,10 @@ class UpdatedProfile(graphene.Mutation):
                 counter += 1
 
         badge_obj = info.context.user.get_badges()
-        if counter > 8:
+        if counter > 7:
             badge_obj.profil_vollstaendig = 1
             badge_obj.save()
-        elif counter > 12:
+        elif counter > 10:
             badge_obj.profil_vollstaendig = 2
             badge_obj.save()
 
