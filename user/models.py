@@ -13,12 +13,6 @@ from django.utils.translation import gettext_lazy as _
 from IronWind import settings
 
 
-class FileManager(models.Manager):
-    def delete(self):
-        for obj in self.get_queryset():
-            obj.delete()
-
-
 class UserManager(BaseUserManager):
     def create_user(self, email, password):
         if not email:
@@ -298,17 +292,6 @@ class UserData(models.Model):
         help_text=_('Birth date of user, uses iso8601-Format (eg. 2006-01-02)')
     )
 
-    objects = FileManager()
-
-    def delete(self, using=None, keep_parents=False):
-        try:
-            if self.profile_picture:
-                self.profile_picture.storage.delete(self.profile_picture.name)
-            self.profile_picture.delete()
-
-        finally:
-            super().delete()
-
     def __str__(self):
         return "(" + str(self.pk) + "): " + self.belongs_to.email + " User data"
 
@@ -333,8 +316,6 @@ class CompanyData(models.Model):
         blank=True,
         help_text=_('short description of the company, 2000 characters maximum')
     )
-
-    objects = FileManager()
 
     first_name = models.CharField(
         max_length=40,
@@ -376,17 +357,6 @@ class CompanyData(models.Model):
 
     def get_company_picture(self):
         return self.company_picture.url
-
-    def delete(self, using=None, keep_parents=False):
-        try:
-            if self.company_picture:
-                self.company_picture.storage.delete(self.company_picture.name)
-            self.company_picture.delete()
-            if self.meisterbrief:
-                self.meisterbrief.storage.delete(self.meisterbrief.name)
-            self.meisterbrief.delete()
-        finally:
-            super().delete()
 
     def __str__(self):
         return "(" + str(self.pk) + "): " + self.belongs_to.email + " company data"
@@ -479,19 +449,8 @@ class UserFile(models.Model):
         help_text=_('user files uploaded by user')
     )
 
-    objects = FileManager()
-
     def __str__(self):
         return "(" + str(self.pk) + ") " + ",  \"" + str(self.description) + "\"" + " user: " + str(self.owner.email)
-
-    # deletes local storage before class is deleted
-    def delete(self, using=None, keep_parents=False):
-        try:
-            if self.file:
-                self.file.storage.delete(self.file.name)
-            self.file.delete()
-        finally:
-            super().delete()
 
 
 @receiver(pre_delete, sender=UserFile)
