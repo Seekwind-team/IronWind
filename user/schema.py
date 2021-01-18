@@ -521,7 +521,7 @@ class Mutation(graphene.ObjectType):
     delete_user = DeleteUser.Field()
     change_password = ChangePassword.Field()
     change_email = ChangeEmail.Field()
-    upload_file = UploadUserPicture.Field()
+    upload_file = UploadUserPicture.Field() #TODO: Rename this, confusing af.
     add_note = AddNote.Field()
     add_meisterbrief = UploadMeisterbrief.Field()
     delete_meisterbrief = DeleteMeisterbrief.Field()
