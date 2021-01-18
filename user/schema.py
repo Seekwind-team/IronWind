@@ -240,20 +240,21 @@ class UpdatedProfile(graphene.Mutation):
 
         data_object.save()
 
-        counter = 0
+        if info.context.user.get_badges().profil_vollstaendig < 2:
+            counter = 0
 
-        vals = UserData.objects.filter(belongs_to=info.context.user).values()
-        for ob in vals[0]:
-            if vals[0][ob]:
-                counter += 1
+            vals = UserData.objects.filter(belongs_to=info.context.user).values()
+            for ob in vals[0]:
+                if vals[0][ob]:
+                    counter += 1
 
-        badge_obj = info.context.user.get_badges()
-        if counter > 7:
-            badge_obj.profil_vollstaendig = 1
-            badge_obj.save()
-        elif counter > 10:
-            badge_obj.profil_vollstaendig = 2
-            badge_obj.save()
+            badge_obj = info.context.user.get_badges()
+            if counter > 7:
+                badge_obj.profil_vollstaendig = 1
+                badge_obj.save()
+            elif counter > 10:
+                badge_obj.profil_vollstaendig = 2
+                badge_obj.save()
 
         return UpdatedProfile(updated_profile=data_object)
 
