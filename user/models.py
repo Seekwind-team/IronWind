@@ -425,7 +425,7 @@ class Badges(models.Model):
     )
 
     def __str__(self):
-        return "" + str(self.user.__str__()) + "_badges"
+        return "" + str(self.user.__str__()) + "'s Badges"
     
 
 class UserFile(models.Model):
