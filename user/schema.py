@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 
@@ -118,7 +119,7 @@ class SoftSkillsArguments(graphene.InputObjectType):
     artistic = graphene.Int()
     social_activity = graphene.Int()
     customer_orientated = graphene.Int()
-    motorskills = graphene.Int() 
+    motorskills = graphene.Int()
     planning = graphene.Int()
     creativity = graphene.Int()
     innovativity = graphene.Int()
@@ -239,8 +240,18 @@ class UpdatedProfile(graphene.Mutation):
 
         data_object.save()
 
-        if data_object.first_name and data_object.last_name and data_object.short_bio and data_object.gender and data_object.birth_date and data_object.soft_skills and data_object.looking:
-            badge_obj = info.context.user.get_badges()
+        counter = 0
+
+        vals = UserData.objects.filter(belongs_to=info.context.user).values()
+        for ob in vals[0]:
+            if vals[0][ob]:
+                counter += 1
+
+        badge_obj = info.context.user.get_badges()
+        if counter > 8:
+            badge_obj.profil_vollstaendig = 1
+            badge_obj.save()
+        elif counter > 12:
             badge_obj.profil_vollstaendig = 2
             badge_obj.save()
 
@@ -448,7 +459,6 @@ class UploadUserFile(graphene.Mutation):
 
     @user_passes_test(lambda u: (not u.is_company) and u.is_authenticated)
     def mutate(self, info, file_in, description="", **kwargs):
-
         user = info.context.user
         print(file_in.content_type)
 
@@ -467,7 +477,6 @@ class UploadUserFile(graphene.Mutation):
 
 
 class ChangeUserFile(graphene.Mutation):
-
     ok = graphene.Boolean()
     user_file = graphene.Field(UserFileType)
 
@@ -493,7 +502,6 @@ class ChangeUserFile(graphene.Mutation):
 
 
 class DeleteUserFile(graphene.Mutation):
-
     ok = graphene.Boolean()
 
     class Arguments:
@@ -523,7 +531,7 @@ class Mutation(graphene.ObjectType):
     delete_user = DeleteUser.Field()
     change_password = ChangePassword.Field()
     change_email = ChangeEmail.Field()
-    upload_file = UploadUserPicture.Field() #TODO: Rename this, confusing af.
+    upload_file = UploadUserPicture.Field()  # TODO: Rename this, confusing af.
     add_note = AddNote.Field()
     add_meisterbrief = UploadMeisterbrief.Field()
     delete_meisterbrief = DeleteMeisterbrief.Field()
