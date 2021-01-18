@@ -5,6 +5,9 @@ from django.contrib.auth.models import (
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
+from django.db.models.signals import pre_delete
+from django.dispatch.dispatcher import receiver
+
 from django.utils.translation import gettext_lazy as _
 
 from IronWind import settings
@@ -478,6 +481,9 @@ class UserFile(models.Model):
 
     objects = FileManager()
 
+    def __str__(self):
+        return "" + str(self.owner.__str__()) + ":  \"" + str(self.description) + "\""
+
     # deletes local storage before class is deleted
     def delete(self, instance):
         try:
@@ -486,6 +492,25 @@ class UserFile(models.Model):
             self.file.delete()
         finally:
             super(UserFile, self).delete()
+
+
+@receiver(pre_delete, sender=UserFile)
+def file_delete(sender, instance, **kwargs):
+    # Pass false so FileField doesn't save the model.
+    instance.file.delete(False)
+
+
+@receiver(pre_delete, sender=UserData)
+def img_delete(sender, instance, **kwargs):
+    # Pass false so FileField doesn't save the model.
+    instance.profile_picture.delete(False)
+
+
+@receiver(pre_delete, sender=CompanyData)
+def cimg_delete(sender, instance, **kwargs):
+    # Pass false so FileField doesn't save the model.
+    instance.company_picture.delete(False)
+    instance.meisterbrief.delete(False)
 
 '''
 # class Image(models.Model):

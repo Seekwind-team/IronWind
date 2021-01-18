@@ -4,6 +4,9 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import int_list_validator
 
+from django.db.models.signals import pre_delete
+from django.dispatch.dispatcher import receiver
+
 
 # used for storing hashtags non-redundant
 class Tag(models.Model):
@@ -177,6 +180,12 @@ class Image(models.Model):
 
     def __str__(self):
         return self.image.url
+
+
+@receiver(pre_delete, sender=Image)
+def file_delete(sender, instance, **kwargs):
+    # Pass false so FileField doesn't save the model.
+    instance.image.delete(False)
 
 
 # used to store like or dislike from user on joboffer
