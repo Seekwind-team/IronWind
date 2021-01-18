@@ -12,7 +12,10 @@ def soft_skills_validator(soft_skills, max, min):
     for n in numbers:
         min_int_val(min, n)
         max_int_val(max, n)
-
+ 
+# checks if input is an Integer-Type and its value is above cap. If one check fails an ValidationError is raises
+# cap: minimal value input is allowed to store
+# input: value to check
 def min_int_val(cap, input):
     if not isinstance(input, int):
         raise ValidationError("{} not a Number".format(input))

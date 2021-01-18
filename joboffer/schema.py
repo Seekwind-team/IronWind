@@ -186,6 +186,7 @@ class AlterJobOffer(graphene.Mutation):
             job_object = JobOffer.objects.filter(pk=job_id).get()
         except Exception:
             raise GraphQLError('Cannot reference Object')
+        
         if job_object.owner == info.context.user:
             job_object.job_type = job_type or job_object.job_type
             job_object.job_title = job_title or job_object.job_title
@@ -573,7 +574,7 @@ class Query(graphene.AbstractType):
             #user_id = info.context.user.id
             #r = Recommender()
             #return r.recommend(user_id)
-            return JobOffer.objects.all()
+            return JobOffer.objects.filter(is_deleted=False)
 
         for name in tag_names:
             tag = Tag.objects.filter(name=name).get()
