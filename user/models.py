@@ -491,7 +491,7 @@ class UserFile(models.Model):
                 self.file.storage.delete(self.file.name)
             self.file.delete()
         finally:
-            super(UserFile, self).delete()
+            super().delete()
 
 
 @receiver(pre_delete, sender=UserFile)
