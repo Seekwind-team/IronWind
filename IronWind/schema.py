@@ -17,6 +17,7 @@ import joboffer.schema
 import user.schema
 import recommenders.schema
 
+
 # Overwrites tokenAuth decorator to always interpret given username as lowercase
 def token_auth(f):
     @wraps(f)
