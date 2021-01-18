@@ -65,6 +65,8 @@ class Recommender:
             descriptionlist.append(j.description)
             locationlist.append(j.location)
             titlelist.append(j.job_title)
+            if j.is_deleted == True:
+                self.inactivejobs += j.id
 
         #store data of lists in DataFrame
         self.jobsdf["job_id"] = jobidlist
