@@ -112,12 +112,13 @@ class Recommender:
         self.cosine_sim = cosine_similarity(cm)
 
     #get similar jobs to liked jobs
-    def get_similar_jobs(self, jobid):
+    #if used with ascend = True, jobs different to job with jobid are added
+    def get_similar_jobs(self, jobid, ascend=False):
         recommended_jobs = []
         #find index of given job in matrix
         idx = self.id2index[jobid]
         #extract indices and similarity from matrix by using the index, sort them descending
-        score_series = pd.Series(self.cosine_sim[idx]).sort_values(ascending = False)
+        score_series = pd.Series(self.cosine_sim[idx]).sort_values(ascending = ascend)
         top_indices = list(score_series.iloc[1:3].index)
         #convert those found indices to the original jobid, add them to the list and return it
         for i in top_indices:
