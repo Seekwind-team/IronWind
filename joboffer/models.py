@@ -29,14 +29,14 @@ class JobOffer(models.Model):
 
     # job_cats = models.TextField()
     
-    filled = models.BooleanField(
+    is_active = models.BooleanField(
         default=False,
-        help_text=_('Definmiert, ob ein Jobangebot besetzt ist')
+        help_text=_('Definmiert, ob ein Jobangebot besetzt ist. Wird neuen Bewerbern nicht vorgeschlagen.')
     )
 
     is_deleted = models.BooleanField(
         default=False,
-        help_text=_('definiert, ob ein Jobangebot "gelöscht" ist')
+        help_text=_('definiert, ob ein Jobangebot gelöscht ist. Wird nicht mehr angezeigt.')
     )
 
     JOBTYPE_CHOICES = [
