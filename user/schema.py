@@ -444,10 +444,10 @@ class UploadUserFile(graphene.Mutation):
 
     class Arguments:
         file_in = Upload(required=True, description="Uploaded File")
-        description = graphene.String(description="add description to the file uploaded", required=False)
+        description = graphene.String(description="add description to the file uploaded")
 
     @user_passes_test(lambda u: (not u.is_company) and u.is_authenticated)
-    def mutate(self, info, file_in, description = "", **kwargs):
+    def mutate(self, info, file_in, description="", **kwargs):
 
         user = info.context.user
         print(file_in.content_type)
