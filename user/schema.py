@@ -444,10 +444,10 @@ class UploadUserFile(graphene.Mutation):
 
     class Arguments:
         file_in = Upload(required=True, description="Uploaded File")
-        description = graphene.String(description="add description to the file uploaded")
+        description = graphene.String(description="add description to the file uploaded", required=False)
 
     @user_passes_test(lambda u: (not u.is_company) and u.is_authenticated)
-    def mutate(self, info, file_in, description, **kwargs):
+    def mutate(self, info, file_in, description = "", **kwargs):
 
         user = info.context.user
         print(file_in.content_type)
@@ -506,10 +506,12 @@ class DeleteUserFile(graphene.Mutation):
         except Exception:
             raise GraphQLError("couldn't reference gived ID")
 
-        if to_del.owner is info.context.user:
+        if to_del.owner.pk is info.context.user.pk:
             to_del.delete()
 
             return DeleteUserFile(ok=True)
+        else:
+            raise GraphQLError("Logged in user does not own this file!")
         return DeleteUserFile(ok=False)
 
 

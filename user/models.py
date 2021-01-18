@@ -482,10 +482,10 @@ class UserFile(models.Model):
     objects = FileManager()
 
     def __str__(self):
-        return "" + str(self.owner.__str__()) + ":  \"" + str(self.description) + "\""
+        return "(" + str(self.pk) + ") " + ",  \"" + str(self.description) + "\"" + " user: " + str(self.owner.email)
 
     # deletes local storage before class is deleted
-    def delete(self, instance):
+    def delete(self, using=None, keep_parents=False):
         try:
             if self.file:
                 self.file.storage.delete(self.file.name)
