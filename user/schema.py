@@ -259,12 +259,13 @@ class UpdatedProfile(graphene.Mutation):
         """
 
         if info.context.user.get_badges().profil_vollstaendig < 2:
+            badge = info.context.user.get_badges()
             """Cheap Ass alternate solution for Badge"""
-            if data_object.cv and data_object.soft_skills:
-                info.context.user.get_badges().profil_vollstaendig = 2
-            elif data_object.cv or data_object.soft_skills:
-                info.context.user.get_badges().profil_vollstaendig = 1
-            info.context.user.get_badges().save()
+            if data_object.cv is not None and data_object.soft_skills is not None:
+                badge.profil_vollstaendig = 2
+            elif data_object.cv is not None or data_object.soft_skills is not None:
+                badge.profil_vollstaendig = 1
+            badge.save()
 
         return UpdatedProfile(updated_profile=data_object)
 
