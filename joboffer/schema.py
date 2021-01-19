@@ -412,7 +412,7 @@ class EndSearch(graphene.Mutation):
         userdata = info.context.user.get_data()
         userdata.looking = False
         userdata.save()
-        swipes = Swipe.objects.filter(candidate__swipe=userdata).all()
+        swipes = Swipe.objects.filter(candidate__swipe=info.context.user).all()
 
         for swipe in swipes:
             swipe.delete()
