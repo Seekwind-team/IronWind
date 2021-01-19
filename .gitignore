@@ -144,10 +144,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-static/images/*.jpg
-static/images/*.png
-static/images/*.jpeg
+# images
+media/*.jpg
+media/*.jpeg
+media/*.png
 
-media/images/*.jpg
-media/images/*.png
-media/images/*.jpeg
+media/*/*.jpg
+media/*/*.jpeg
+media/*/*.png
+
+# Server Settings
+settings.py
