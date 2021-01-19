@@ -38,7 +38,6 @@ Should you be on Mac or Linux, this most likely won't apply to you, so you can i
 IronWind/
 ├─ recommenders/ # Folder for connecting the ML-Framework
 ├─ static/ # Folder for static files (eg. HTML, CSS)
-├─ media/ # Folder for media files (eg. Images)
 ├─ user/
 │  ├─ migrations/ # folder that holds all informatiion colected by ORM
 │  ├─ admin.py # file for referencing data models in admin view

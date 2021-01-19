@@ -175,12 +175,3 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
     '/var/www/static/',
 ]
-
-MEDIA_URL = '/media/'
-
-MEDIA_ROOT = []
-
-MEDIA_FILES_DIRS = [
-    BASE_DIR / "media",
-    '/var/www/media/',
-]
