@@ -245,7 +245,7 @@ class UpdatedProfile(graphene.Mutation):
 
             vals = UserData.objects.filter(belongs_to=info.context.user).values()
             for ob in vals[0]:
-                if vals[0][ob]:
+                if vals[0][ob] is not None:
                     counter += 1
 
             badge_obj = info.context.user.get_badges()
