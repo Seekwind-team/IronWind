@@ -154,4 +154,5 @@ media/*/*.jpeg
 media/*/*.png
 
 # Server Settings
-settings.py
+IronWind/settings.py
+

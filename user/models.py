@@ -443,7 +443,7 @@ class UserFile(models.Model):
     )
 
     file = models.FileField(
-        upload_to='media/userfiles/',
+        upload_to='static/userfiles/',
         null=True,
         blank=True,
         help_text=_('user files uploaded by user')
