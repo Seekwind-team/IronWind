@@ -30,13 +30,13 @@ class Query(graphene.AbstractType):
         user = info.context.user
         if not ArticleRead.objects.filter(user=user, article=article):
             badges = user.get_badges()
-            badges.articles_read += 1
             num_badges = badges.articles_read
+            badges.articles_read = num_badges + 1
             a = ArticleRead(user=user, article=article)
             a.save()
             if num_badges > 2:
-                user.get_badges().top_vorbereitet = 2
+                badges.top_vorbereitet = 2
             elif num_badges > 0:
-                user.get_badges().top_vorbereitet = 1
+                badges.top_vorbereitet = 1
             badges.save()
         return article
