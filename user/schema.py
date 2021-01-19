@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 
@@ -11,7 +12,7 @@ from graphene_django import DjangoObjectType
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
-from user.models import UserData, CompanyData, SoftSkills, Authentication, Note, Badges
+from user.models import UserData, CompanyData, SoftSkills, Authentication, Note, Badges, UserFile
 
 from validators import soft_skills_validator
 
@@ -79,6 +80,13 @@ class BadgesType(DjangoObjectType):
         exclude_fields = ('user', 'id')
 
 
+class UserFileType(DjangoObjectType):
+    class Meta:
+        model = UserFile
+
+    exclude_fields = ('user', '')
+
+
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
     # returns boolean indicating success of the operation
@@ -94,19 +102,6 @@ class DeleteUser(graphene.Mutation):
         user = info.context.user
         # checks whether provided password is correct
         if user.check_password(raw_password=kwargs["password"]):
-            try:
-                if user.is_company:
-                    data = CompanyData.objects.filter(belongs_to=user).get()
-                    if data.company_picture:
-                        data.company_picture.storage.delete(data.company_picture.name)
-                else:
-                    data = UserData.objects.filter(belongs_to=user).get()
-                    if data.profile_picture:
-                        data.profile_picture.storage.delete(data.profile_picture.name)
-            # Not a real error, only means user hasn't updated profile with any information yet
-            except Exception:
-                None
-
             user.delete()
             return DeleteUser(ok=True)
         else:
@@ -124,7 +119,7 @@ class SoftSkillsArguments(graphene.InputObjectType):
     artistic = graphene.Int()
     social_activity = graphene.Int()
     customer_orientated = graphene.Int()
-    motorskills = graphene.Int() 
+    motorskills = graphene.Int()
     planning = graphene.Int()
     creativity = graphene.Int()
     innovativity = graphene.Int()
@@ -174,7 +169,6 @@ class UpdatedProfile(graphene.Mutation):
         cv = graphene.JSONString(description="CV of user")
         location = graphene.String(description="location of user")
 
-
         soft_skills = graphene.Argument(SoftSkillsArguments,
                                         description="List of slider values for softskills. eg. \"creativity\":2"
                                         )
@@ -215,11 +209,6 @@ class UpdatedProfile(graphene.Mutation):
         data_object.graduation_year = graduation_year or data_object.graduation_year
         data_object.cv = cv or data_object.cv
 
-        if data_object.first_name and data_object.last_name and data_object.short_bio and data_object.gender and data_object.birth_date and data_object.soft_skills and data_object.looking:
-            badge_obj = info.context.user.get_badges()
-            badge_obj.profil_vollstaendig = 2
-            badge_obj.save()
-
         # test if soft skills are set
         if soft_skills:
             # validate slider values
@@ -250,6 +239,22 @@ class UpdatedProfile(graphene.Mutation):
                 data_object.soft_skills = soft_skills_object
 
         data_object.save()
+
+        if info.context.user.get_badges().profil_vollstaendig < 2:
+            counter = 0
+
+            vals = UserData.objects.filter(belongs_to=info.context.user).values()
+            for ob in vals[0]:
+                if vals[0][ob]:
+                    counter += 1
+
+            badge_obj = info.context.user.get_badges()
+            if counter > 7:
+                badge_obj.profil_vollstaendig = 1
+                badge_obj.save()
+            elif counter > 10:
+                badge_obj.profil_vollstaendig = 2
+                badge_obj.save()
 
         return UpdatedProfile(updated_profile=data_object)
 
@@ -388,7 +393,6 @@ class UploadMeisterbrief(graphene.Mutation):
     def mutate(self, info, file_in, **kwargs):
         # do something with your file
         c_user = info.context.user
-        print(file_in.content_type)
 
         if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png", "application/pdf"]:
             raise GraphQLError("Provided invalid file format")
@@ -403,6 +407,23 @@ class UploadMeisterbrief(graphene.Mutation):
         data.save()
 
         return UploadMeisterbrief(ok=True)
+
+
+class DeleteMeisterbrief(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    @user_passes_test(lambda u: u.is_company)
+    def mutate(self, info):
+        try:
+            user = info.context.user
+            cmpnydata = CompanyData.objects.get(belongs_to=user)
+            if cmpnydata.meisterbrief:
+                cmpnydata.meisterbrief.storage.delete(cmpnydata.meisterbrief.name)
+            cmpnydata.meisterbrief.delete()
+        except Exception as e:
+            raise GraphQLError("Could not delete Item", e)
+
+        return DeleteMeisterbrief(ok=True)
 
 
 class AddNote(graphene.Mutation):
@@ -429,6 +450,80 @@ class AddNote(graphene.Mutation):
         return AddNote(note=note, ok=True)
 
 
+class UploadUserFile(graphene.Mutation):
+    ok = graphene.Boolean()
+    user_file = graphene.Field(UserFileType)
+
+    class Arguments:
+        file_in = Upload(required=True, description="Uploaded File")
+        description = graphene.String(description="add description to the file uploaded")
+
+    @user_passes_test(lambda u: (not u.is_company) and u.is_authenticated)
+    def mutate(self, info, file_in, description="", **kwargs):
+        user = info.context.user
+        print(file_in.content_type)
+
+        if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png", "application/pdf"]:
+            raise GraphQLError("Provided invalid file format")
+
+        extension = os.path.splitext(file_in.name)[1]
+        file_in.name = "" + str(user.pk) + "_userfile_" + str(uuid.uuid4()) + extension
+
+        data = UserFile(owner=user)
+        data.file = file_in
+        data.description = description
+        data.save()
+
+        return UploadUserFile(ok=True, user_file=data)
+
+
+class ChangeUserFile(graphene.Mutation):
+    ok = graphene.Boolean()
+    user_file = graphene.Field(UserFileType)
+
+    class Arguments:
+        file_id = graphene.Int(required=True, description="ID of file-description being changed")
+        new_description = graphene.String(required=True, description="New description")
+
+    @user_passes_test(lambda u: u.is_authenticated and not u.is_company)
+    def mutate(self, info, file_id, new_description):
+
+        try:
+            user_file = UserFile.objects.get(pk=file_id)
+        except Exception:
+            raise GraphQLError("Could reference Object with given ID")
+
+        if user_file.owner is not info.context.user:
+            raise GraphQLError("Current User does not own this file")
+
+        user_file.description = new_description
+        user_file.save()
+
+        return ChangeUserFile(user_file=user_file, ok=True)
+
+
+class DeleteUserFile(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    class Arguments:
+        delete = graphene.Int(required=True)
+
+    @user_passes_test(lambda u: u.is_authenticated and not u.is_company)
+    def mutate(self, info, delete):
+        try:
+            to_del = UserFile.objects.get(pk=delete)
+        except Exception:
+            raise GraphQLError("couldn't reference gived ID")
+
+        if to_del.owner.pk is info.context.user.pk:
+            to_del.delete()
+
+            return DeleteUserFile(ok=True)
+        else:
+            raise GraphQLError("Logged in user does not own this file!")
+        return DeleteUserFile(ok=False)
+
+
 # Create - Update - Delete for all User-Profiles
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
@@ -437,8 +532,13 @@ class Mutation(graphene.ObjectType):
     delete_user = DeleteUser.Field()
     change_password = ChangePassword.Field()
     change_email = ChangeEmail.Field()
-    upload_file = UploadUserPicture.Field()
+    upload_file = UploadUserPicture.Field()  # TODO: Rename this, confusing af.
     add_note = AddNote.Field()
+    add_meisterbrief = UploadMeisterbrief.Field()
+    delete_meisterbrief = DeleteMeisterbrief.Field()
+    upload_userfile = UploadUserFile.Field()
+    change_userfile_description = ChangeUserFile.Field()
+    delete_userfile = DeleteUserFile.Field()
 
 
 # Read functions for all Profiles

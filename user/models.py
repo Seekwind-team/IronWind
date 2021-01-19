@@ -5,6 +5,9 @@ from django.contrib.auth.models import (
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
+from django.db.models.signals import pre_delete
+from django.dispatch.dispatcher import receiver
+
 from django.utils.translation import gettext_lazy as _
 
 from IronWind import settings
@@ -105,8 +108,10 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
         # will Return Name of self-objects as stated:
         return "(" + str(self.pk) + ") " + str(self.email)
 
+
 # saves soft-skill-slider values
 class SoftSkills(models.Model):
+    # Soft Skills helping Users to find better Job Offers via the implemented Recommender System
     social_activity = models.SmallIntegerField(
         default=0,
         help_text=_("Teamplayer --- Einzelgänger"),
@@ -184,6 +189,7 @@ class SoftSkills(models.Model):
 
 
 class UserData(models.Model):
+    # Data Class representing all additional Data on Non-Company-Users
     belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, help_text=_('User Reference'))
 
     first_name = models.CharField(
@@ -245,7 +251,7 @@ class UserData(models.Model):
     )
 
     profile_picture = models.ImageField(
-        upload_to='static/images/',
+        upload_to='media/images/',
         null=True,
         blank=True,
         help_text=_('profile picture of user')
@@ -286,15 +292,12 @@ class UserData(models.Model):
         help_text=_('Birth date of user, uses iso8601-Format (eg. 2006-01-02)')
     )
 
-    def delete(self, using=None, keep_parents=False):
-        self.profile_picture.storage.delete(self.profile_picture.name)
-        super().delete()
-
     def __str__(self):
         return "(" + str(self.pk) + "): " + self.belongs_to.email + " User data"
 
 
 class CompanyData(models.Model):
+    # Data Class representing all additional Data on Campany-Users
     belongs_to = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -339,14 +342,14 @@ class CompanyData(models.Model):
     )
 
     company_picture = models.ImageField(
-        upload_to='static/images/',
+        upload_to='media/images/',
         null=True,
         blank=True,
         help_text=_('eg. Picture of the company Logo')
     )
 
-    meisterbrief = models.ImageField(
-        upload_to='static/images/',
+    meisterbrief = models.FileField(
+        upload_to='media/meisterbriefe/',
         null=True,
         blank=True,
         help_text=_('Picture to validate the company as legally permitted to accept apprentices')
@@ -355,16 +358,12 @@ class CompanyData(models.Model):
     def get_company_picture(self):
         return self.company_picture.url
 
-    def delete(self, using=None, keep_parents=False):
-        self.company_picture.storage.delete(self.song.name)
-        self.meisterbrief.storage.delete(self.song.name)
-        super().delete()
-
     def __str__(self):
         return "(" + str(self.pk) + "): " + self.belongs_to.email + " company data"
 
 
 class Note(models.Model):
+    # Companies can add notes about users for their convenience
     user_from = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE,
@@ -387,9 +386,9 @@ class Note(models.Model):
 
 
 class Badges(models.Model):
-    # Badges are represented by their name and an integer-value representing their state and progress,
-    # usually starting off at 0 and progressing towards a higher number (usually the range will be 0-2 to represent a
-    # progression in 3 steps)
+    """ Badges are represented by their name and an integer-value representing their state and progress,
+     usually starting off at 0 and progressing towards a higher number (usually the range will be 0-2 to represent a
+     progression in 3 steps) """
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -425,6 +424,52 @@ class Badges(models.Model):
         help_text=_('awarded for completing the user profile')
     )
 
+    def __str__(self):
+        return "" + str(self.user.__str__()) + "'s Badges"
+    
+
+class UserFile(models.Model):
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    description = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Description of file uploaded (e.g. \"Lebenslauf\"), 255 chars max."
+    )
+
+    file = models.FileField(
+        upload_to='media/userfiles/',
+        null=True,
+        blank=True,
+        help_text=_('user files uploaded by user')
+    )
+
+    def __str__(self):
+        return "(" + str(self.pk) + ") " + ",  \"" + str(self.description) + "\"" + " user: " + str(self.owner.email)
+
+
+@receiver(pre_delete, sender=UserFile)
+def file_delete(sender, instance, **kwargs):
+    # Pass false so FileField doesn't save the model.
+    instance.file.delete(False)
+
+
+@receiver(pre_delete, sender=UserData)
+def img_delete(sender, instance, **kwargs):
+    # Pass false so FileField doesn't save the model.
+    instance.profile_picture.delete(False)
+
+
+@receiver(pre_delete, sender=CompanyData)
+def cimg_delete(sender, instance, **kwargs):
+    # Pass false so FileField doesn't save the model.
+    instance.company_picture.delete(False)
+    instance.meisterbrief.delete(False)
 
 '''
 # class Image(models.Model):
