@@ -239,7 +239,8 @@ class UpdatedProfile(graphene.Mutation):
                 data_object.soft_skills = soft_skills_object
 
         data_object.save()
-
+        """"
+        More complicated solution that for some reason did not work reliably at times
         if info.context.user.get_badges().profil_vollstaendig < 2:
             counter = 0
 
@@ -247,7 +248,7 @@ class UpdatedProfile(graphene.Mutation):
             for ob in vals[0]:
                 if vals[0][ob] is not None:
                     counter += 1
-
+            print("counter " + str(counter))
             badge_obj = info.context.user.get_badges()
             if counter > 7:
                 badge_obj.profil_vollstaendig = 1
@@ -255,6 +256,15 @@ class UpdatedProfile(graphene.Mutation):
             elif counter > 10:
                 badge_obj.profil_vollstaendig = 2
                 badge_obj.save()
+        """
+
+        if info.context.user.get_badges().profil_vollstaendig < 2:
+            """Cheap Ass alternate solution for Badge"""
+            if data_object.cv and data_object.soft_skills:
+                info.context.user.get_badges().profil_vollstaendig = 2
+            elif data_object.cv or data_object.soft_skills:
+                info.context.user.get_badges().profil_vollstaendig = 1
+            info.context.user.get_badges().save()
 
         return UpdatedProfile(updated_profile=data_object)
 
