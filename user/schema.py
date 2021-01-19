@@ -417,11 +417,11 @@ class DeleteMeisterbrief(graphene.Mutation):
         try:
             user = info.context.user
             cmpnydata = CompanyData.objects.get(belongs_to=user)
-            if cmpnydata.profile_picture:
-                cmpnydata.profile_picture.storage.delete(cmpnydata.meisterbrief.name)
+            if cmpnydata.meisterbrief:
+                cmpnydata.meisterbrief.storage.delete(cmpnydata.meisterbrief.name)
             cmpnydata.meisterbrief.delete()
         except Exception as e:
-            raise GraphQLError("something went wrong lol", e)
+            raise GraphQLError("Could not delete Item", e)
 
         return DeleteMeisterbrief(ok=True)
 
