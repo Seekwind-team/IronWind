@@ -28,14 +28,16 @@ class Query(graphene.AbstractType):
     def resolve_get_care_space_item(self, info, care_space_item_id):
         article = CareSpace.objects.filter(pk=care_space_item_id).get()
         user = info.context.user
-        if not ArticleRead.objects.filter(user=user, article=article):
-            badges = user.get_badges()
-            badges.articles_read += 1
-            num_badges = badges.articles_read
-            ArticleRead(user=user, article=article)
-            if num_badges > 2:
-                user.get_badges.top_vorbereitet = 2
-            elif num_badges > 0:
-                user.get_badges.top_vorbereitet = 1
-            badges.save()
+        if user.is_authenticated:
+            if not ArticleRead.objects.filter(user=user, article=article):
+                badges = user.get_badges()
+                num_badges = badges.articles_read
+                badges.articles_read = num_badges + 1
+                a = ArticleRead(user=user, article=article)
+                a.save()
+                if num_badges > 2:
+                    badges.top_vorbereitet = 2
+                elif num_badges > 0:
+                    badges.top_vorbereitet = 1
+                badges.save()
         return article
