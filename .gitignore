@@ -145,3 +145,7 @@ dmypy.json
 static/images/*.jpg
 static/images/*.png
 static/images/*.jpeg
+
+static/userfiles/*.jpg
+static/userfiles/*.png
+static/userfiles/*.jpeg
