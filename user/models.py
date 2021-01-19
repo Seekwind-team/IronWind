@@ -111,7 +111,7 @@ class Authentication(AbstractBaseUser, PermissionsMixin):
 
 # saves soft-skill-slider values
 class SoftSkills(models.Model):
-    """"Soft Skills helping Users to find better Job Offers via the implemented Recommender System"""
+    # Soft Skills helping Users to find better Job Offers via the implemented Recommender System
     social_activity = models.SmallIntegerField(
         default=0,
         help_text=_("Teamplayer --- Einzelgänger"),
@@ -189,7 +189,7 @@ class SoftSkills(models.Model):
 
 
 class UserData(models.Model):
-    """Data Class representing all additional Data on Non-Company-Users"""
+    # Data Class representing all additional Data on Non-Company-Users
     belongs_to = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, help_text=_('User Reference'))
 
     first_name = models.CharField(
@@ -297,7 +297,7 @@ class UserData(models.Model):
 
 
 class CompanyData(models.Model):
-    """Data Class representing all additional Data on Campany-Users"""
+    # Data Class representing all additional Data on Campany-Users
     belongs_to = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -363,7 +363,7 @@ class CompanyData(models.Model):
 
 
 class Note(models.Model):
-    """"Companies can add notes about users for their convenience"""
+    # Companies can add notes about users for their convenience
     user_from = models.ForeignKey(
         Authentication,
         on_delete=models.CASCADE,

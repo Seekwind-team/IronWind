@@ -68,7 +68,7 @@ class JobOfferType(DjangoObjectType):
 
 # creates new Job offer
 class CreateJobOffer(graphene.Mutation):
-    """Method used to add a new Job offer to the system"""
+    # Method used to add a new Job offer to the system
     ok = graphene.Boolean(description="Will return on successful creation")
     job_offer = graphene.Field(JobOfferType, description="returns created joboffer")
 
@@ -417,7 +417,7 @@ class EndSearch(graphene.Mutation):
 
 
 class ReactivateSearch(graphene.Mutation):
-    """"Used to reactivate the Account as looking for an Apprenticeship"""
+    # Used to reactivate the Account as looking for an Apprenticeship
     ok = graphene.Boolean()
 
     class Arguments:

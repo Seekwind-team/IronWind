@@ -39,7 +39,7 @@ class Subscription(graphene.ObjectType):
                                      )
 
     def resolve_message_created(self, info, *args, token, **kwargs):
-        """creates an observable to receive all messages sent to logged in user"""
+        # creates an observable to receive all messages sent to logged in user
 
         # this is a REALLY shitty workaround, see https://github.com/flavors/django-graphql-jwt/issues/239 for any
         # development of the roots issue
@@ -74,7 +74,7 @@ class Subscription(graphene.ObjectType):
 
 
 class SendMessage(graphene.Mutation):
-    """Function Used to send a message to selected recipient"""
+    # Function Used to send a message to selected recipient
     ok = graphene.Boolean()
 
     class Arguments:
@@ -151,7 +151,7 @@ class Query(graphene.ObjectType):
 
     @login_required
     def resolve_get_messages(self, info, partner, n_from=0, n_to=25):
-        """Function Used to get n-last messages with stated partner"""
+        # Function Used to get n-last messages with stated partner
         messages_loaded = Message.objects \
                               .filter((Q(sender=partner) & Q(receiver=info.context.user)) | (
                 Q(receiver=partner) & Q(sender=info.context.user))) \
@@ -160,7 +160,7 @@ class Query(graphene.ObjectType):
 
     @login_required
     def resolve_get_chats(self, info):
-        """Function Used to get all partners that logged in user has a chat-history with"""
+        # Function Used to get all partners that logged in user has a chat-history with
         partners = set()  # set to save all chat partners, avoids duplicates
         last_messages = set()  # array used to collect messages to form response
 
