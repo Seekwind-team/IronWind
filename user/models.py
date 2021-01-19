@@ -251,7 +251,7 @@ class UserData(models.Model):
     )
 
     profile_picture = models.ImageField(
-        upload_to='static/images/',
+        upload_to='media/images/',
         null=True,
         blank=True,
         help_text=_('profile picture of user')
@@ -342,14 +342,14 @@ class CompanyData(models.Model):
     )
 
     company_picture = models.ImageField(
-        upload_to='static/images/',
+        upload_to='media/images/',
         null=True,
         blank=True,
         help_text=_('eg. Picture of the company Logo')
     )
 
     meisterbrief = models.FileField(
-        upload_to='static/meisterbriefe/',
+        upload_to='media/meisterbriefe/',
         null=True,
         blank=True,
         help_text=_('Picture to validate the company as legally permitted to accept apprentices')
@@ -443,7 +443,7 @@ class UserFile(models.Model):
     )
 
     file = models.FileField(
-        upload_to='static/userfiles/',
+        upload_to='media/userfiles/',
         null=True,
         blank=True,
         help_text=_('user files uploaded by user')
