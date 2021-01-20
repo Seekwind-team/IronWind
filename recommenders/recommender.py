@@ -184,6 +184,10 @@ class Recommender:
 
         #Remove duplicates, in case jobs are recommended due to content similarity and like history
         result = [i for j, i in enumerate(result) if i not in result[:j]] 
+        for index, row in self.jobsdf.iterrows():
+            if row["job_id"] not in result and row["job_id"] not in self.inactivejobs:
+                result.append(row["job_id"])
+
 
         #Remove inactive jobs from results
         for r in result:
