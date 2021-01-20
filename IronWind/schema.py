@@ -13,9 +13,10 @@ from django.contrib.auth import get_user_model
 
 import carespace.schema
 import chat.schema
-import joboffer.schema
 import user.schema
+import joboffer.schema
 import recommenders.schema
+
 
 # Overwrites tokenAuth decorator to always interpret given username as lowercase
 def token_auth(f):

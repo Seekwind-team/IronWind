@@ -14,7 +14,9 @@ from django.core.validators import validate_email
 from joboffer.models import JobOffer, Tag, Image, Swipe, Bookmark
 from user.models import CompanyData, UserData
 from user.schema import Upload
-#from recommenders.recommender import Recommender
+
+
+# from recommenders.recommender import Recommender
 
 class ImageType(DjangoObjectType):
     class Meta:
@@ -28,6 +30,7 @@ class SwipeType(DjangoObjectType):
     class Meta:
         model = Swipe
         description = 'Meta Object to hold information for Swipes between User and Job Offers'
+
 
 class BookmarkType(DjangoObjectType):
     class Meta:
@@ -65,6 +68,7 @@ class JobOfferType(DjangoObjectType):
 
 # creates new Job offer
 class CreateJobOffer(graphene.Mutation):
+    # Method used to add a new Job offer to the system
     ok = graphene.Boolean(description="Will return on successful creation")
     job_offer = graphene.Field(JobOfferType, description="returns created joboffer")
 
@@ -81,7 +85,8 @@ class CreateJobOffer(graphene.Mutation):
         hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
 
         # not relevant for Recommenders
-        pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
+        pay_per_year = graphene.List(graphene.String,
+                                     description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.Date(description="Datum des ersten Arbeitstages")
@@ -157,7 +162,8 @@ class AlterJobOffer(graphene.Mutation):
         add_hashtags = graphene.List(graphene.String, description="Tags to describe Joboffer")
         remove_hashtags = graphene.List(graphene.String, description="Tags that should be removed")
 
-        pay_per_year = graphene.List(graphene.String, description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
+        pay_per_year = graphene.List(graphene.String,
+                                     description="Zu erwartendes Gehalt und des einzelnen Ausbildungsjahren")
         pay_per_hour = graphene.Int(description="Stundenlohn")
         city = graphene.String(description="Ort des Jobangebots")
         start_date = graphene.Date(description="Datum des ersten Arbeitstages, nutzt iso8601-Format (eg. 2006-01-02)")
@@ -186,6 +192,7 @@ class AlterJobOffer(graphene.Mutation):
             job_object = JobOffer.objects.filter(pk=job_id).get()
         except Exception:
             raise GraphQLError('Cannot reference Object')
+        
         if job_object.owner == info.context.user:
             job_object.job_type = job_type or job_object.job_type
             job_object.job_title = job_title or job_object.job_title
@@ -230,7 +237,7 @@ class DeleteJobOffer(graphene.Mutation):
     ok = graphene.Boolean(description="Returns True on successful operation")
 
     class Arguments:
-        job_ID = graphene.Int(required=True,description="ID of Job to be deleted")
+        job_ID = graphene.Int(required=True, description="ID of Job to be deleted")
 
     @login_required
     def mutate(self, info, **kwargs):
@@ -273,6 +280,7 @@ class AddImage(graphene.Mutation):
         if file_in.content_type not in ['image/jpg', 'image/jpeg', "image/png"]:
             raise GraphQLError("Provided invalid file format")
 
+        # TODO: Move naming of files of Models.py
         extension = os.path.splitext(file_in.name)[1]
         file_in.name = "" + str(c_user.pk) + "_" + str(job.pk) + "_" + str(uuid.uuid4()) + extension
 
@@ -309,10 +317,6 @@ class DeleteImage(graphene.Mutation):
         except Exception:
             raise GraphQLError("can't Query Picture-ID '" + str(kwargs['picture_ID']) + " on job " + str(job))
 
-        try:
-            picture.image.storage.delete(picture.image.name)
-        except Exception:
-            print("WARNING: COULD NOT DELETE REFERENCED IMAGE FROM LOCAL STORAGE")
         # finally delete picture from database
         picture.delete()
 
@@ -326,7 +330,8 @@ class SaveSwipe(graphene.Mutation):
 
     class Arguments:
         job_id = graphene.Int(required=True, description="ID of swiped job")
-        like = graphene.Boolean(required=True, description="saves Like(true) or Dislike(false) between User and given job offer")
+        like = graphene.Boolean(required=True,
+                                description="saves Like(true) or Dislike(false) between User and given job offer")
         reset = graphene.Boolean(description="set to true to reset swipe")
 
     @login_required
@@ -394,6 +399,8 @@ class DeleteBookmark(graphene.Mutation):
 
 
 class EndSearch(graphene.Mutation):
+    """Function used for \"Ausbildungssucher Beenden\", Indicates that User is no longer looking for an
+    apprenticeship, thus deleting all swipes from the System """
 
     ok = graphene.Boolean()
 
@@ -405,11 +412,16 @@ class EndSearch(graphene.Mutation):
         userdata = info.context.user.get_data()
         userdata.looking = False
         userdata.save()
-        JobOffer.objects.filter(swipe__candidate=info.context.user).all().delete()
+        swipes = Swipe.objects.filter(candidate=info.context.user).all()
+
+        for swipe in swipes:
+            swipe.delete()
+
         return EndSearch(ok=True)
 
 
 class ReactivateSearch(graphene.Mutation):
+    # Used to reactivate the Account as looking for an Apprenticeship
     ok = graphene.Boolean()
 
     class Arguments:
@@ -471,7 +483,7 @@ class Query(graphene.AbstractType):
 
     job_offer_tag_search = graphene.List(
         JobOfferType,
-        tag_names = graphene.List(
+        tag_names=graphene.List(
             graphene.String,
             description="tagnames to search for in joboffers"
         ),
@@ -522,14 +534,15 @@ class Query(graphene.AbstractType):
     @login_required
     def resolve_job_offer_tag_search(self, info, tag_names):
         jobs = []
-        
+
         # if not working change to tag_names.first()
         if not tag_names:
             # this is a copy of recommenders/schema.py. import is not possible because of circular imports. 
+
             #user_id = info.context.user.id
             #r = Recommender()
             #return r.recommend(user_id)
-            return JobOffer.objects.all()
+            return JobOffer.objects.filter(is_deleted=False)
 
         for name in tag_names:
             tag = Tag.objects.filter(name=name).get()
