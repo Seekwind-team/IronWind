@@ -43,7 +43,7 @@ class Recommender:
             useridlist.append(s.candidate.id)
             likelist.append(s.liked)
             if s.job_offer.is_active == False:
-                self.inactivejobs += s.job_offer.id
+                self.inactivejobs.append(s.job_offer.id)
         
         #store data of lists in DataFrame
         self.swipesdf["job_id"] = jobidlist
@@ -66,7 +66,7 @@ class Recommender:
             locationlist.append(j.location)
             titlelist.append(j.job_title)
             if j.is_deleted == True:
-                self.inactivejobs += j.id
+                self.inactivejobs.append(j.id)
 
         #store data of lists in DataFrame
         self.jobsdf["job_id"] = jobidlist
@@ -191,5 +191,11 @@ class Recommender:
                 result.remove(r)
 
         #Return top 10
-        result = result[:10]
-        return result
+        result = result[:10] 
+
+        #Turn IDs into job offers
+        recommendations = [] 
+        for r in result:
+            recommendations.append(JobOffer.objects.filter(id=r).get())
+
+        return recommendations

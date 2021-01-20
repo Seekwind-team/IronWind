@@ -1,4 +1,4 @@
-#Recommender interface
+
 import graphene
 import user.schema
 
@@ -13,8 +13,8 @@ class Query(graphene.ObjectType):
     
     @login_required
     def resolve_my_recommendations(self, info):
-        return JobOffer.objects.filter(is_deleted=False)
+        #return JobOffer.objects.filter(is_deleted=False)
 
-        #user_id = info.context.user.id
-        #r = Recommender().update()
-        #return r.recommend(user_id)
+        user_id = info.context.user.id
+        r = Recommender()
+        return r.recommend(user_id)
