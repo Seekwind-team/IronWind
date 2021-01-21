@@ -81,7 +81,7 @@ class CareSpace(models.Model):
 
 class ArticleRead (models.Model):
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         help_text=_('User Reference'))
