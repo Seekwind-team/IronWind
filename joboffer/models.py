@@ -204,6 +204,11 @@ class Swipe(models.Model):
         blank=False,
     )
 
+    rejected = models.BooleanField(
+        default=False,
+        blank=False,
+    )
+
 
 # used to store job offer for user as bookmarks
 class Bookmark(models.Model):
