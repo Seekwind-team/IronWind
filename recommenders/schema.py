@@ -2,7 +2,7 @@
 import graphene
 import user.schema
 
-from graphql_jwt.decorators import login_required
+from graphql_jwt.decorators import user_passes_test
 
 from recommenders.recommender import Recommender
 from joboffer.models import JobOffer
