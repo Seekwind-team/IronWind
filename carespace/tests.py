@@ -40,39 +40,38 @@ class CareSpaceTestCase(TestCase):
             self.create_carespace(rich_text = None)
 
         # invalid Type
-        """
-        self.assertRaises(self.create_carespace(headline = int_default))
-        self.assertRaises(self.create_carespace(headline = boolean_default))
-        self.assertRaises(self.create_carespace(headline = flaot_default))
+            self.create_carespace(headline = int_default)
+            self.create_carespace(headline = boolean_default)
+            self.create_carespace(headline = flaot_default)
+            
+            self.create_carespace(body = int_default)
+            self.create_carespace(body = boolean_default)
+            self.create_carespace(body = flaot_default)
+
+            self.create_carespace(author = int_default)
+            self.create_carespace(author = boolean_default)
+            self.create_carespace(author = flaot_default)
+
+            self.create_carespace(publisher = int_default)
+            self.create_carespace(publisher = boolean_default)
+            self.create_carespace(publisher = flaot_default)
+
+            self.create_carespace(paid = int_default)
+            self.create_carespace(paid = string_default)
+            self.create_carespace(paid = float_default)
+
+            self.create_carespace(rich_text = int_default)
+            self.create_carespace(rich_text = string_default)
+            self.create_carespace(rich_text = float_default)
+
+            self.create_carespace(img_description = int_default)
+            self.create_carespace(img_description = boolean_default)
+            self.create_carespace(img_description = flaot_default)
+
+            self.create_carespace(introduction = int_default)
+            self.create_carespace(introduction = boolean_default)
+            self.create_carespace(introduction = flaot_default)
         
-        self.assertRaises(self.create_carespace(body = int_default))
-        self.assertRaises(self.create_carespace(body = boolean_default))
-        self.assertRaises(self.create_carespace(body = flaot_default))
-
-        self.assertRaises(self.create_carespace(author = int_default))
-        self.assertRaises(self.create_carespace(author = boolean_default))
-        self.assertRaises(self.create_carespace(author = flaot_default))
-
-        self.assertRaises(self.create_carespace(publisher = int_default))
-        self.assertRaises(self.create_carespace(publisher = boolean_default))
-        self.assertRaises(self.create_carespace(publisher = flaot_default))
-
-        self.assertRaises(self.create_carespace(paid = int_default))
-        self.assertRaises(self.create_carespace(paid = string_default))
-        self.assertRaises(self.create_carespace(paid = float_default))
-
-        self.assertRaises(self.create_carespace(rich_text = int_default))
-        self.assertRaises(self.create_carespace(rich_text = string_default))
-        self.assertRaises(self.create_carespace(rich_text = float_default))
-
-        self.assertRaises(self.create_carespace(img_description = int_default))
-        self.assertRaises(self.create_carespace(img_description = boolean_default))
-        self.assertRaises(self.create_carespace(img_description = flaot_default))
-
-        self.assertRaises(self.create_carespace(introduction = int_default))
-        self.assertRaises(self.create_carespace(introduction = boolean_default))
-        self.assertRaises(self.create_carespace(introduction = flaot_default))
-        """
 
     def test_carespace_to_string(self):
         max_str = "ID {}: {}".format(self.max_carespace.pk, self.max_carespace.headline)
