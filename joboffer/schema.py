@@ -356,6 +356,28 @@ class SaveSwipe(graphene.Mutation):
 
         return SaveSwipe(ok=True, swipe=swipe)
 
+class RejectCandidate(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    class Arguments:
+        #job_id = graphene.Int(required=True, description="ID of job to be bookmarked")
+        candidate_id = graphene.Int(required=True, description="ID of candidate to be rejected")
+        swipe_id = graphene.Int(required=True, description="ID of candidate swipe on job offer")
+
+    @user_passes_test(lambda user: user.is_company)
+    def mutate(self, info, **kwargs):
+        try:
+            swipe = Swipe.objects.filter(id=kwargs['swipe_id']).get()
+        except Exception:
+            err = "can\'t find Swipe with ID {}".format(kwargs['job_id'])
+            raise GraphQLError(err)
+        
+        if swipe.candidate.id == kwargs['candidate_id'] and swipe.liked:
+            swipe.rejected = True
+        else:
+            raise GraphQLError("This Candidate did not apply for your job offer.")
+        
+        return RejectCandidate(ok=True)
 
 # used to store joboffer for user as bookmarks
 class SaveBookmark(graphene.Mutation):
@@ -442,6 +464,7 @@ class Mutation(graphene.ObjectType):
     add_image = AddImage.Field()
     delete_image = DeleteImage.Field()
     save_swipe = SaveSwipe.Field()
+    reject_candidate = RejectCandidate.Field()
     save_bookmark = SaveBookmark.Field()
     delete_bookmark = DeleteBookmark.Field()
     end_search = EndSearch.Field()
