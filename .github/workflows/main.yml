@@ -2,9 +2,9 @@ name: main-tests
 
 on:
   push:
-    branches: [ dev, production ]
+    branches: [ dev, production]
   pull_request:
-    branches: [ dev, production ]
+    branches: [ dev ]
  
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -20,9 +20,19 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install -U pip
-          pip install flake8 pytest
+          pip install flake8 pytest coverage Django
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: test carespace
+        run: |
+          python manage.py run test carespace
+      - name: test joboffer
+        run: |
+          python manage.py run test joboffer
+      - name: test user
+        run: |
+          python manage.py run test user
+          
