@@ -28,11 +28,11 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: test carespace
         run: |
-          python manage.py run test carespace
+          python manage.py test carespace
       - name: test joboffer
         run: |
-          python manage.py run test joboffer
+          python manage.py test joboffer
       - name: test user
         run: |
-          python manage.py run test user
+          python manage.py test user
           
