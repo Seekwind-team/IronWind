@@ -26,8 +26,6 @@ class JobOffer(models.Model):
         Tag,
         blank=True
     )
-
-    # job_cats = models.TextField()
     
     is_active = models.BooleanField(
         default=False,
@@ -196,7 +194,7 @@ class Swipe(models.Model):
     )
 
     job_offer = models.ForeignKey(
-        JobOffer, 
+        JobOffer,
         on_delete=models.CASCADE
     )
 
@@ -204,8 +202,13 @@ class Swipe(models.Model):
         blank=False,
     )
 
+    rejected = models.BooleanField(
+        default=False,
+        blank=False,
+    )
 
-# used to store joboffer for user as bookmarks
+
+# used to store job offer for user as bookmarks
 class Bookmark(models.Model):
     candidate = models.ForeignKey(
         Authentication,
