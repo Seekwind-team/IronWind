@@ -14,7 +14,7 @@ from django.core.validators import validate_email
 from joboffer.models import JobOffer, Tag, Image, Swipe, Bookmark
 from user.models import CompanyData, UserData
 from user.schema import Upload
-
+from recommenders.recommender import Recommender
 
 # from recommenders.recommender import Recommender
 
@@ -561,11 +561,10 @@ class Query(graphene.AbstractType):
         # if not working change to tag_names.first()
         if not tag_names:
             # this is a copy of recommenders/schema.py. import is not possible because of circular imports. 
-
-            #user_id = info.context.user.id
-            #r = Recommender()
-            #return r.recommend(user_id)
-            return JobOffer.objects.filter(is_deleted=False)
+            
+            user_id = info.context.user.id
+            r = Recommender()
+            return r.recommend(user_id)
 
         for name in tag_names:
             tag = Tag.objects.filter(name=name).get()
