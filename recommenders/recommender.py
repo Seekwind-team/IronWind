@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.utils import shuffle
-from joboffer.models import *
+from joboffer.models import Swipe, JobOffer
 
 
 class Recommender:

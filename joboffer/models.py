@@ -26,8 +26,6 @@ class JobOffer(models.Model):
         Tag,
         blank=True
     )
-
-    # job_cats = models.TextField()
     
     is_active = models.BooleanField(
         default=False,
