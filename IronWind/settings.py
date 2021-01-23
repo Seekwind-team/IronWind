@@ -17,7 +17,7 @@ DEBUG = False
 
 AUTH_USER_MODEL = 'user.Authentication'
 
-ALLOWED_HOSTS = ['141.19.142.7']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'channels',
 
     # Temporary
-    'corsheaders',
+    #' corsheaders',
 
     # Required for GraphiQL
     "django.contrib.staticfiles",
@@ -54,7 +54,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("localhost", 6379)],
+            "hosts": [("redis", 6379)],
         },
     },
 }
@@ -80,7 +80,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     # Temporary
-    'corsheaders.middleware.CorsMiddleware',
+    # 'corsheaders.middleware.CorsMiddleware',
 ]
 
 GRAPHENE = {
@@ -128,11 +128,11 @@ WSGI_APPLICATION = 'IronWind.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'djangobackendprod',
-        'USER': 'django',
-        'PASSWORD': os.environ['DB_PASSWORD'],
-        'HOST': 'localhost',
-        'PORT': '',
+        'NAME': os.environ['POSTGRES_DB'],
+        'USER': os.environ['POSTGRES_USER'],
+        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
+        'HOST': os.environ['DATABASE_HOST'],
+        'PORT': os.environ['DATABASE_PORT'],
     }
 }
 
@@ -173,8 +173,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(os.environ['APP_HOME'], 'static')
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(os.environ['APP_HOME'], 'media')
 MEDIA_URL = '/media/'
