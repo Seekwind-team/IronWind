@@ -12,18 +12,18 @@ COPY requirements.txt $APP_HOME
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt    
 
-RUN useradd --user-group --create-home --no-log-init --shell /bin/bash seekwind
+# RUN useradd --user-group --create-home --no-log-init --shell /bin/bash seekwind
 ENV APP_HOME=/home/seekwind/ironwind
 
 # Create the staticfiles directory. This avoids permission errors. 
 RUN mkdir -p $APP_HOME/static
+RUN mkdir -p $APP_HOME/media
 
 # Change the workdir.
 WORKDIR $APP_HOME
     
 COPY . $APP_HOME
-RUN chown -R seekwind:seekwind $APP_HOME   
-
-USER seekwind:seekwind
+# RUN chown -R seekwind:seekwind $APP_HOME   
+# USER seekwind:seekwind
 
 ENTRYPOINT ["/home/seekwind/ironwind/entrypoint.sh"]
