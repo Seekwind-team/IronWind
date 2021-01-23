@@ -151,6 +151,7 @@ class Recommender:
     # get a list of top10 jobs that might be interesting for the user
     # based on jobs similar to those he already liked and jobs that other users liked
     def recommend(self, user_id):
+        self.update()
         result = []
         recommended_jobs = pd.DataFrame()
         userRatings = self.get_rated_jobs(user_id)
