@@ -2,8 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.utils import shuffle
-from joboffer.models import Swipe, JobOffer
+from joboffer.models import *
 
 
 class Recommender:
@@ -24,7 +23,6 @@ class Recommender:
         self.getSwipesData()
         self.getJobsData()
 
-        self.preprocessing()
         self.createBow()
         self.createSimilarityMatrix()
         self.createCorrelationMatrix()
@@ -74,14 +72,6 @@ class Recommender:
         self.jobsdf["location"] = locationlist
         self.jobsdf["jobtitle"] = titlelist
 
-    # clean data of relevant columns
-    def preprocessing(self):
-        for index, row in self.jobsdf.iterrows():
-            columns = ["description", "jobtitle", "location"]
-            for col in columns:
-                # cleaning data
-                row[col] = str(row[col]).replace("­", "")
-
     # create a bag of words for each job to measure similarity of jobs based on features
     def createBow(self):
         # index for matrix that is created later
@@ -106,7 +96,7 @@ class Recommender:
 
     def createSimilarityMatrix(self):
         # create vectorizer for bag of words
-        count = CountVectorizer()
+        count = CountVectorizer(max_df=0.2)
         # create count matrix
         cm = count.fit_transform(self.jobsdf["bow"])
         self.cosine_sim = cosine_similarity(cm)
@@ -157,14 +147,16 @@ class Recommender:
         userRatings = self.get_rated_jobs(user_id)
         # User didnt rate jobs yet
         if len(userRatings) == 0:
-            # get often rated jobs, unless there are no swipes at all yet, then get random offers
+            # get often rated jobs, unless there are no swipes at all yet
             if not self.swipesdf.empty:
                 jobs = self.swipesdf.groupby(by="job_id")["like"].count().sort_values(ascending=False)
+                jobs = jobs.to_frame()
+                for index, row in jobs.iterrows():
+                    result.append(index)
             else:
                 # special case: no one has ever rated anything yet
-                jobs = shuffle(self.jobsdf)
-            # create top10 result list of ids of selected jobs
-            result = list(jobs.iloc[:10].index)
+                for index, row in self.jobsdf.iterrows():
+                    result.append(row["job_id"])
 
         # User rated jobs already
         else:
@@ -175,7 +167,7 @@ class Recommender:
             # Sum up ratings of recommended jobs, then sort ratings descending and add them to result list
             recommended_jobs = recommended_jobs.sum().sort_values(ascending=False)
             result = list(recommended_jobs.iloc[:10].index)
-
+            
             # Add jobs to list, that are similar to jobs a user liked and different to jobs he didnt like
             for jobid, rating in userRatings:
                 if rating == 1:  # like
