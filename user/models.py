@@ -251,7 +251,7 @@ class UserData(models.Model):
     )
 
     profile_picture = models.ImageField(
-        upload_to='images',
+        upload_to='static/images/',
         null=True,
         blank=True,
         help_text=_('profile picture of user')
@@ -342,14 +342,14 @@ class CompanyData(models.Model):
     )
 
     company_picture = models.ImageField(
-        upload_to='images',
+        upload_to='static/images/',
         null=True,
         blank=True,
         help_text=_('eg. Picture of the company Logo')
     )
 
-    meisterbrief = models.ImageField(
-        upload_to='images',
+    meisterbrief = models.FileField(
+        upload_to='static/meisterbriefe/',
         null=True,
         blank=True,
         help_text=_('Picture to validate the company as legally permitted to accept apprentices')

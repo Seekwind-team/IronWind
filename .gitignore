@@ -1,5 +1,3 @@
-#Production specific
-
 # PyCharm things
 idea/
 .idea/
@@ -144,15 +142,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# images
-media/*.jpg
-media/*.jpeg
-media/*.png
+static/images/*.jpg
+static/images/*.png
+static/images/*.jpeg
 
-media/*/*.jpg
-media/*/*.jpeg
-media/*/*.png
-
-# Server Settings
-IronWind/settings.py
-
+static/userfiles/*.jpg
+static/userfiles/*.png
+static/userfiles/*.jpeg

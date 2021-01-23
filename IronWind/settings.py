@@ -1,5 +1,9 @@
+"""
+SETTINGS FOR USE IN IN-DEV ONLY!
+DO NOT USE THIS IN PRODUCTION!
+"""
+
 from pathlib import Path
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,17 +13,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = '+l*(t@ö#4vgu=nuoulf7p4xgrtdz@p+%2(t-(f0r-3lj7n4tj$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 AUTH_USER_MODEL = 'user.Authentication'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-CORS_ORIGIN_ALLOW_ALL = True
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -27,9 +29,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 INSTALLED_APPS = [
     # Websockets and Chatting
     'channels',
-
-    # Temporary
-    #' corsheaders',
 
     # Required for GraphiQL
     "django.contrib.staticfiles",
@@ -49,12 +48,12 @@ INSTALLED_APPS = [
     'chat',
 ]
 
-
+'''
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts": [("localhost", 6379)],
         },
     },
 }
@@ -65,7 +64,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
-'''
+
 
 ASGI_APPLICATION = 'IronWind.routing.application'
 
@@ -78,13 +77,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    # Temporary
-    # 'corsheaders.middleware.CorsMiddleware',
 ]
 
 GRAPHENE = {
-    'SCHEMA': 'IronWind.schema.schema',
+    "SCHEMA": "IronWind.schema.schema",
     'MIDDLEWARE': [
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
     ],
@@ -96,11 +92,13 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-ROOT_URLCONF = 'IronWind.urls'
 
 GRAPHQL_JWT = {
     'JWT_ALLOW_ARGUMENT': True
 }
+
+
+ROOT_URLCONF = 'IronWind.urls'
 
 TEMPLATES = [
     {
@@ -127,12 +125,8 @@ WSGI_APPLICATION = 'IronWind.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ['POSTGRES_DB'],
-        'USER': os.environ['POSTGRES_USER'],
-        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
-        'HOST': os.environ['DATABASE_HOST'],
-        'PORT': os.environ['DATABASE_PORT'],
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -161,7 +155,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'CET'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -173,8 +167,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_ROOT = os.path.join(os.environ['APP_HOME'], 'static')
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = os.path.join(os.environ['APP_HOME'], 'media')
-MEDIA_URL = '/media/'
+STATIC_ROOT = []
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    '/var/www/static/',
+]
