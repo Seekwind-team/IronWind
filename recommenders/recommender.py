@@ -106,7 +106,7 @@ class Recommender:
 
     def createSimilarityMatrix(self):
         # create vectorizer for bag of words
-        count = CountVectorizer()
+        count = CountVectorizer(max_df=0.2)
         # create count matrix
         cm = count.fit_transform(self.jobsdf["bow"])
         self.cosine_sim = cosine_similarity(cm)
@@ -160,11 +160,13 @@ class Recommender:
             # get often rated jobs, unless there are no swipes at all yet, then get random offers
             if not self.swipesdf.empty:
                 jobs = self.swipesdf.groupby(by="job_id")["like"].count().sort_values(ascending=False)
+                jobs = jobs.to_frame()
+                for index, row in jobs.iterrows():
+                    result.append(index)
             else:
                 # special case: no one has ever rated anything yet
-                jobs = shuffle(self.jobsdf)
-            # create top10 result list of ids of selected jobs
-            result = list(jobs.iloc[:10].index)
+                for index, row in self.jobsdf.iterrows():
+                    result.append(row["job_id"])
 
         # User rated jobs already
         else:
