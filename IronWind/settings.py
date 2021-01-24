@@ -17,7 +17,7 @@ DEBUG = False
 
 AUTH_USER_MODEL = 'user.Authentication'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'ironwind']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
