@@ -11,7 +11,7 @@ Backend section for WhiteWater
 
 required imports (pip):
 ```py
-$ pip install -U pip Django django-graphql-jwt graphene-django graphene-file-upload channels_redis graphene-subscriptions
+$ pip install -U Django django-graphql-jwt graphene-django graphene-file-upload channels_redis graphene-subscriptions
 ```
 starting the server:
 execute the following commands in this directory
