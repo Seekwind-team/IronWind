@@ -92,8 +92,7 @@ class Recommender:
             wordlist.append(words)
         self.jobsdf["bow"] = wordlist
 
-        # create a similarity matrix based on job features
-
+    # create a similarity matrix based on job features
     def createSimilarityMatrix(self):
         # create vectorizer for bag of words
         count = CountVectorizer()
