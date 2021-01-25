@@ -96,7 +96,7 @@ class Recommender:
 
     def createSimilarityMatrix(self):
         # create vectorizer for bag of words
-        count = CountVectorizer(max_df=0.2)
+        count = CountVectorizer()
         # create count matrix
         cm = count.fit_transform(self.jobsdf["bow"])
         self.cosine_sim = cosine_similarity(cm)
