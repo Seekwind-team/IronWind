@@ -18,6 +18,10 @@ from recommenders.recommender import Recommender
 
 # from recommenders.recommender import Recommender
 
+#######################################################################################################################
+# Type Classes Contain all Objects that are related to Django's Models for persisting any data
+#######################################################################################################################
+
 class ImageType(DjangoObjectType):
     class Meta:
         model = Image
@@ -65,9 +69,14 @@ class JobOfferType(DjangoObjectType):
         except Exception:
             return None
 
+#######################################################################################################################
+# Mutation Classes Below
+#######################################################################################################################
 
 # creates new Job offer
 class CreateJobOffer(graphene.Mutation):
+    """"Creates new Job Offer for Company User"""
+
     # Method used to add a new Job offer to the system
     ok = graphene.Boolean(description="Will return on successful creation")
     job_offer = graphene.Field(JobOfferType, description="returns created joboffer")
@@ -144,6 +153,8 @@ class CreateJobOffer(graphene.Mutation):
 
 
 class AlterJobOffer(graphene.Mutation):
+    """Used to Alter already posted Job offer"""
+
     ok = graphene.Boolean(description="returns true on successful creation")
     job_offer = graphene.Field(JobOfferType, description="returns altered job offer object")
 
@@ -234,6 +245,8 @@ class AlterJobOffer(graphene.Mutation):
 
 
 class DeleteJobOffer(graphene.Mutation):
+    """"Deletes Joboffer with given ID"""
+
     ok = graphene.Boolean(description="Returns True on successful operation")
 
     class Arguments:
@@ -256,6 +269,8 @@ class DeleteJobOffer(graphene.Mutation):
 
 
 class AddImage(graphene.Mutation):
+    """"Adds an Image to a Joboffer"""
+
     ok = graphene.Boolean(description="returns true on successful operation")
     image = graphene.Field(ImageType, description="Returns Image Object with metadata")
 
@@ -296,6 +311,8 @@ class AddImage(graphene.Mutation):
 
 
 class DeleteImage(graphene.Mutation):
+    """Deletes Image From Joboffer"""
+
     ok = graphene.Boolean(description="returns true on successful operation")
     joboffer = graphene.Field(JobOfferType, description="returns altered job-offer object")
 
@@ -369,6 +386,8 @@ class SaveBookmark(graphene.Mutation):
 
 # used to store like or dislike from user on joboffer
 class SaveSwipe(graphene.Mutation):
+    """Method used to save swipes as Likes and Dislikes"""
+
     ok = graphene.Boolean()
     swipe = graphene.Field(SwipeType, description="returns new swipe")
 
@@ -378,6 +397,8 @@ class SaveSwipe(graphene.Mutation):
                                 description="saves Like(true) or Dislike(false) between User and given job offer")
         reset = graphene.Boolean(description="set to true to reset swipe")
 
+    # TODO: a user that is not enables via "Ausbildungssuche Beenden", should not be allowed to swipe,
+    # therefore the test should either be extended with @user_passes_test(labda u: u.get_data().looking) or include a check for that boolean somewhere within the code
     @login_required
     def mutate(self, info, **kwargs):
         try:
@@ -401,6 +422,8 @@ class SaveSwipe(graphene.Mutation):
         return SaveSwipe(ok=True, swipe=swipe)
 
 class RejectCandidate(graphene.Mutation):
+    """Method used for the 'Reject Candidate' Button on the Company Users Page to hide Users from available
+    candidates """
     ok = graphene.Boolean()
 
     class Arguments:
@@ -424,8 +447,11 @@ class RejectCandidate(graphene.Mutation):
         
         return RejectCandidate(ok=True)
 
+
 # used to store joboffer for user as bookmarks
 class SaveBookmark(graphene.Mutation):
+    """"Method Used to Bookmark Job offers for candidates"""
+
     ok = graphene.Boolean()
     bookmark = graphene.Field(BookmarkType, description="returns new Bookmark")
 
@@ -449,6 +475,8 @@ class SaveBookmark(graphene.Mutation):
 
 
 class DeleteBookmark(graphene.Mutation):
+    """"Method used to Delete stored Bookmarks"""
+
     ok = graphene.Boolean()
 
     class Arguments:
@@ -488,7 +516,8 @@ class EndSearch(graphene.Mutation):
 
 
 class ReactivateSearch(graphene.Mutation):
-    # Used to reactivate the Account as looking for an Apprenticeship
+    """ Used to reactivate the Account as looking for an Apprenticeship"""
+
     ok = graphene.Boolean()
 
     class Arguments:
@@ -501,6 +530,9 @@ class ReactivateSearch(graphene.Mutation):
         userdata.save()
         return ReactivateSearch(True)
 
+#######################################################################################################################
+# Mutation and Query Class that is being passed to the Root-Schema in Source/schema.py
+#######################################################################################################################
 
 class Mutation(graphene.ObjectType):
     create_job_offer = CreateJobOffer.Field()

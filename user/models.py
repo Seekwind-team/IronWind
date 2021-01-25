@@ -223,12 +223,11 @@ class UserData(models.Model):
         help_text=_('Short self-description of user, 2000 characters maximum')
     )
 
+    # Ausbildungssuche-Beenden feature
     looking = models.BooleanField(
         default=True,
         help_text=_('Is actively looking for Job Offers?')
     )
-
-    # TODO: Grades ?
 
     graduation = models.CharField(
         max_length=255,
@@ -267,8 +266,6 @@ class UserData(models.Model):
         blank=True,
         help_text=_('gender of User, uses string to allow all genders')
     )
-
-    # TODO: Geo-Locations?
 
     # soft skills slider values
     soft_skills = models.OneToOneField(
@@ -330,8 +327,6 @@ class CompanyData(models.Model):
         blank=True,
         help_text=_('last name of the responsible HR Manager')
     )
-
-    # TODO: Geo-Location ?
 
     phone_number = models.CharField(
         _('phone number'),
@@ -470,16 +465,3 @@ def cimg_delete(sender, instance, **kwargs):
     # Pass false so FileField doesn't save the model.
     instance.company_picture.delete(False)
     instance.meisterbrief.delete(False)
-
-'''
-# class Image(models.Model):
-    """ProfileImage"""
-    user = models.ForeignKey(Authentication, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to="profileimages")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        """Return profile image"""
-        return self.image.url
-'''
