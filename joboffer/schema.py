@@ -322,6 +322,50 @@ class DeleteImage(graphene.Mutation):
 
         return DeleteImage(ok=True, joboffer=job)
 
+# used to store like or dislike from user on joboffer 
+class SaveSwipe(graphene.Mutation):
+    ok = graphene.Boolean()
+    swipe = graphene.Field(SwipeType, description="returns new swipe")
+    
+    class Arguments:
+        job_id = graphene.Int(required=True, description="ID of swiped job")
+        like = graphene.Boolean(required=True, description="saves Like(true) or Dislike(false) between User and given job offer")
+        reset = graphene.Boolean(description="set to true to reset swipe")
+    
+    @login_required
+    def mutate(self, info, **kwargs):
+        try:
+            job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+        except Exception:
+            raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
+
+        swipe = Swipe(candidate=info.context.user, job_offer=job)
+        swipe.liked = kwargs['like']
+        swipe.save()
+
+        return SaveSwipe(ok=True, swipe=swipe)
+
+
+# used to store joboffer for user as bookmarks
+class SaveBookmark(graphene.Mutation):
+    ok = graphene.Boolean()
+    bookmark = graphene.Field(BookmarkType, description="returns new Bookmark")
+
+    class Arguments:
+        job_id = graphene.Int(required=True, description="ID of job to be bookmarked")
+    
+    @login_required
+    def mutate(self, info, **kwargs):
+        try:
+            job = JobOffer.objects.filter(pk=kwargs['job_id']).get()
+        except Exception:
+            raise GraphQLError("can\'t find Job with ID {}".format(kwargs['job_id']))
+
+        bookmark = Bookmark(candidate=info.context.user, job_offer=job)
+        bookmark.save()
+
+        return SaveBookmark(ok=True, bookmark=bookmark)
+
 
 # used to store like or dislike from user on joboffer
 class SaveSwipe(graphene.Mutation):
@@ -499,7 +543,7 @@ class Query(graphene.AbstractType):
         SwipeType,
         description="returns list of Swipes for logged in company"
     )
-
+    
     all_tags = graphene.List(
         TagType,
     )

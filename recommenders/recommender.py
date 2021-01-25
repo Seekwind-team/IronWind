@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
-from joboffer.models import *
+from sklearn.utils import shuffle
+from joboffer.models import Swipe, JobOffer
 
 
 class Recommender:
@@ -23,6 +24,7 @@ class Recommender:
         self.getSwipesData()
         self.getJobsData()
 
+        self.preprocessing()
         self.createBow()
         self.createSimilarityMatrix()
         self.createCorrelationMatrix()
@@ -71,6 +73,14 @@ class Recommender:
         self.jobsdf["description"] = descriptionlist
         self.jobsdf["location"] = locationlist
         self.jobsdf["jobtitle"] = titlelist
+
+    # clean data of relevant columns
+    def preprocessing(self):
+        for index, row in self.jobsdf.iterrows():
+            columns = ["description", "jobtitle", "location"]
+            for col in columns:
+                # cleaning data
+                row[col] = str(row[col]).replace("­", "")
 
     # create a bag of words for each job to measure similarity of jobs based on features
     def createBow(self):
@@ -147,7 +157,7 @@ class Recommender:
         userRatings = self.get_rated_jobs(user_id)
         # User didnt rate jobs yet
         if len(userRatings) == 0:
-            # get often rated jobs, unless there are no swipes at all yet
+            # get often rated jobs, unless there are no swipes at all yet, then get random offers
             if not self.swipesdf.empty:
                 jobs = self.swipesdf.groupby(by="job_id")["like"].count().sort_values(ascending=False)
                 jobs = jobs.to_frame()
@@ -167,7 +177,7 @@ class Recommender:
             # Sum up ratings of recommended jobs, then sort ratings descending and add them to result list
             recommended_jobs = recommended_jobs.sum().sort_values(ascending=False)
             result = list(recommended_jobs.iloc[:10].index)
-            
+
             # Add jobs to list, that are similar to jobs a user liked and different to jobs he didnt like
             for jobid, rating in userRatings:
                 if rating == 1:  # like

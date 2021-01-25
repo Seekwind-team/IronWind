@@ -11,7 +11,6 @@ from django.dispatch.dispatcher import receiver
 # used for storing hashtags non-redundant
 class Tag(models.Model):
     name = models.CharField(max_length=100, unique = True)
-
     def __str__(self):
         return str(self.name)
 
@@ -100,12 +99,6 @@ class JobOffer(models.Model):
     )
 
     pay_per_year = models.CharField(
-        validators=[
-            int_list_validator(
-                sep=',',
-                allow_negative=False
-            )
-        ],
         max_length = 100,
         blank = True,
         null = True,
@@ -165,7 +158,7 @@ class Image(models.Model):
     )
    
     image = models.ImageField(
-        upload_to='static/jobImages/',
+        upload_to='jobImages',
         null=False,
         help_text=_('Imagefile with metadata')
     )

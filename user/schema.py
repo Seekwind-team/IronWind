@@ -48,6 +48,13 @@ class UserType(DjangoObjectType):
             'password', 'is_superuser', 'message_sender', 'message_receiver', 'note_receiver', 'note_sender'
         )
 
+    images = graphene.List(graphene.String)
+
+    def resolve_images(self, info):
+        try:
+            return Image.objects.filter(model=self).all()
+        except Exception:
+            return None
 
 # Imports UserData from Models
 class UserDataType(DjangoObjectType):
