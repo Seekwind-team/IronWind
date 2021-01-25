@@ -418,6 +418,7 @@ class RejectCandidate(graphene.Mutation):
         
         if swipe.candidate.id == kwargs['candidate_id'] and swipe.liked:
             swipe.rejected = True
+            swipe.save()
         else:
             raise GraphQLError("This Candidate did not apply for your job offer.")
         
