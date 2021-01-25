@@ -19,7 +19,7 @@ from recommenders.recommender import Recommender
 # from recommenders.recommender import Recommender
 
 #######################################################################################################################
-# Thes Type Classes Contain all Objects that are related to Django's Models for persisting any data
+# Type Classes Contain all Objects that are related to Django's Models for persisting any data
 #######################################################################################################################
 
 class ImageType(DjangoObjectType):

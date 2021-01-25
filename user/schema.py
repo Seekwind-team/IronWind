@@ -38,6 +38,10 @@ class Upload(graphene.types.Scalar):
 def is_company(user):
     return user.is_company is True
 
+#######################################################################################################################
+# Type Classes Contain all Objects that are related to Django's Models for persisting any data
+#######################################################################################################################
+
 
 # Imports User Profile from Models
 class UserType(DjangoObjectType):
@@ -87,8 +91,14 @@ class UserFileType(DjangoObjectType):
     exclude_fields = ('user', '')
 
 
+#######################################################################################################################
+# Mutation Classes Below
+#######################################################################################################################
+
 # Deletes currently logged in account
 class DeleteUser(graphene.Mutation):
+    """"Mutation will delete User from Database"""
+
     # returns boolean indicating success of the operation
     ok = graphene.Boolean(description="returns true on successful operation")
 
@@ -129,6 +139,7 @@ class SoftSkillsArguments(graphene.InputObjectType):
 
 # creates new User profile
 class CreateUser(graphene.Mutation):
+    """"Creates New User for Database"""
     user = graphene.Field(UserType, description="returns user created")
 
     class Arguments:
@@ -154,6 +165,7 @@ class CreateUser(graphene.Mutation):
 # Updates Profile with non-sensitive content (eg. password and email is left out on purpose as they demand password
 # verification and are therefore handled separately)
 class UpdatedProfile(graphene.Mutation):
+    """"Mutation Used to Update User profile with new information. Will create corresponding class if none is present"""
     updated_profile = graphene.Field(UserDataType, description="returns updated user profile")
 
     # accepted arguments from mutation
@@ -271,6 +283,8 @@ class UpdatedProfile(graphene.Mutation):
 
 
 class ChangePassword(graphene.Mutation):
+    """"Mutation used to change Users password. Needs old password for confirmation"""
+
     ok = graphene.Boolean(description="returns true on successful operation")
 
     class Arguments:
@@ -289,6 +303,8 @@ class ChangePassword(graphene.Mutation):
 
 
 class ChangeEmail(graphene.Mutation):
+    """Mutation Used to Change users mail adress. Need Password for validation"""
+
     ok = graphene.Boolean(description="returns true on successful operation")
 
     class Arguments:
@@ -312,6 +328,9 @@ class ChangeEmail(graphene.Mutation):
 
 # Used to Update Company Profiles
 class UpdatedCompany(graphene.Mutation):
+    """Mutation Used to fill profile for information. Is also called when creating this class as it will be created
+    if not existing """
+
     updated_profile = graphene.Field(CompanyDataType, description="returns updated company profile")
 
     class Arguments:
@@ -351,6 +370,7 @@ class UpdatedCompany(graphene.Mutation):
 
 
 class UploadUserPicture(graphene.Mutation):
+    """"Picture Used to be stored in either Userdata oder Companydata field as profile Picture"""
     class Arguments:
         file_in = Upload(required=True, description="Uploaded File")
 
@@ -395,6 +415,8 @@ class UploadUserPicture(graphene.Mutation):
 
 
 class UploadMeisterbrief(graphene.Mutation):
+    """"Mutation Used to Upload File to Meisterbrief-Field"""
+
     class Arguments:
         file_in = Upload(required=True, description="Uploaded File")
 
