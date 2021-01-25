@@ -339,8 +339,6 @@ class UpdatedCompany(graphene.Mutation):
         phone_number = graphene.String(description="phone number of the HR manager E.165-Format")
         last_name = graphene.String(description="last name of HR manager")
         first_name = graphene.String(description="first name of HR manager")
-        # company_picture =
-        # meisterbrief #TODO Picture??
 
     @login_required  # requires login
     @user_passes_test(lambda user: is_company(user))
@@ -444,7 +442,7 @@ class UploadMeisterbrief(graphene.Mutation):
 
 class DeleteMeisterbrief(graphene.Mutation):
     """Deletes Meisterbrief from Storage"""
-    
+
     ok = graphene.Boolean()
 
     @user_passes_test(lambda u: u.is_company)
@@ -578,7 +576,7 @@ class Mutation(graphene.ObjectType):
     delete_user = DeleteUser.Field()
     change_password = ChangePassword.Field()
     change_email = ChangeEmail.Field()
-    upload_user_picture = UploadUserPicture.Field()  # TODO: Rename this, confusing af.
+    upload_user_picture = UploadUserPicture.Field()
     add_note = AddNote.Field()
     add_meisterbrief = UploadMeisterbrief.Field()
     delete_meisterbrief = DeleteMeisterbrief.Field()
