@@ -24,7 +24,6 @@ class Recommender:
         self.getSwipesData()
         self.getJobsData()
 
-        self.preprocessing()
         self.createBow()
         self.createSimilarityMatrix()
         self.createCorrelationMatrix()
@@ -74,14 +73,6 @@ class Recommender:
         self.jobsdf["location"] = locationlist
         self.jobsdf["jobtitle"] = titlelist
 
-    # clean data of relevant columns
-    def preprocessing(self):
-        for index, row in self.jobsdf.iterrows():
-            columns = ["description", "jobtitle", "location"]
-            for col in columns:
-                # cleaning data
-                row[col] = str(row[col]).replace("­", "")
-
     # create a bag of words for each job to measure similarity of jobs based on features
     def createBow(self):
         # index for matrix that is created later
@@ -106,7 +97,7 @@ class Recommender:
 
     def createSimilarityMatrix(self):
         # create vectorizer for bag of words
-        count = CountVectorizer(max_df=0.2)
+        count = CountVectorizer()
         # create count matrix
         cm = count.fit_transform(self.jobsdf["bow"])
         self.cosine_sim = cosine_similarity(cm)
