@@ -443,6 +443,8 @@ class UploadMeisterbrief(graphene.Mutation):
 
 
 class DeleteMeisterbrief(graphene.Mutation):
+    """Deletes Meisterbrief from Storage"""
+    
     ok = graphene.Boolean()
 
     @user_passes_test(lambda u: u.is_company)
@@ -460,6 +462,8 @@ class DeleteMeisterbrief(graphene.Mutation):
 
 
 class AddNote(graphene.Mutation):
+    """Allows Company User to add not to a specific user"""
+
     note = graphene.Field(NoteType)
     ok = graphene.Boolean()
 
@@ -484,6 +488,8 @@ class AddNote(graphene.Mutation):
 
 
 class UploadUserFile(graphene.Mutation):
+    """Used to upload a new file for a user"""
+
     ok = graphene.Boolean()
     user_file = graphene.Field(UserFileType)
 
@@ -511,6 +517,7 @@ class UploadUserFile(graphene.Mutation):
 
 
 class ChangeUserFile(graphene.Mutation):
+    """Used to change the description of a file uploaded by user"""
     ok = graphene.Boolean()
     user_file = graphene.Field(UserFileType)
 
@@ -536,6 +543,7 @@ class ChangeUserFile(graphene.Mutation):
 
 
 class DeleteUserFile(graphene.Mutation):
+    """Mutation Used to Delete a File uploaded By User"""
     ok = graphene.Boolean()
 
     class Arguments:
@@ -555,6 +563,11 @@ class DeleteUserFile(graphene.Mutation):
         else:
             raise GraphQLError("Logged in user does not own this file!")
         return DeleteUserFile(ok=False)
+
+
+#######################################################################################################################
+# Mutation and Query Class that is being passed to the Root-Schema in Source/schema.py
+#######################################################################################################################
 
 
 # Create - Update - Delete for all User-Profiles
