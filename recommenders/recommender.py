@@ -129,6 +129,7 @@ class Recommender:
     # create a correlation matrix based on user votes
     def createCorrelationMatrix(self):
         allUserRatings = self.swipesdf.pivot_table(index=['user_id'], columns=['job_id'], values='like')
+        allUserRatings = allUserRatings.astype(float)
         self.corrMatrix = allUserRatings.corr(method="pearson")
 
     # get jobs rated similarly to already rated jobs
