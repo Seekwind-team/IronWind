@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.utils import shuffle
 from joboffer.models import Swipe, JobOffer
 
 
@@ -149,7 +148,7 @@ class Recommender:
         userRatings = self.get_rated_jobs(user_id)
         # User didnt rate jobs yet
         if len(userRatings) == 0:
-            # get often rated jobs, unless there are no swipes at all yet, then get random offers
+            # get often rated jobs, unless there are no swipes at all yet
             if not self.swipesdf.empty:
                 jobs = self.swipesdf.groupby(by="job_id")["like"].count().sort_values(ascending=False)
                 jobs = jobs.to_frame()
