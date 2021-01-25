@@ -334,6 +334,8 @@ class SaveSwipe(graphene.Mutation):
                                 description="saves Like(true) or Dislike(false) between User and given job offer")
         reset = graphene.Boolean(description="set to true to reset swipe")
 
+    # TODO: a user that is not enables via "Ausbildungssuche Beenden", sould not be allowed to swipe,
+    # therefore the test should either be extended with @user_passes_test(labda u: u.get_data().looking) or include a check for that boolean somewhere within the code
     @login_required
     def mutate(self, info, **kwargs):
         try:
